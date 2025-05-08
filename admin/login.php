@@ -1,105 +1,100 @@
 <?php
-require_once '../includes/config.php';
-require_once '../includes/functions.php';
+// Include common functions and authentication
+require_once __DIR__ . '/../includes/functions/common.php';
+require_once __DIR__ . '/../includes/functions/auth.php';
 
-$page_title = 'Admin Login';
-$is_admin = true;
-$error_message = '';
-
-// Check if session timed out
-if (isset($_GET['timeout']) && $_GET['timeout'] == 1) {
-    $error_message = 'Your session has expired. Please log in again.';
-}
+// Start session
+startSession();
 
 // Check if already logged in
-if (isAdminLoggedIn()) {
-    header('Location: index.php');
-    exit;
+if (isLoggedIn()) {
+    // Redirect to dashboard or requested page
+    if (isset($_SESSION['redirect_after_login'])) {
+        $redirect = $_SESSION['redirect_after_login'];
+        unset($_SESSION['redirect_after_login']);
+        redirect($redirect);
+    } else {
+        redirect('/admin/');
+    }
 }
 
-// Handle login form submission
+// Generate CSRF token
+$csrfToken = generateCsrfToken();
+
+// Process login form submission
+$error = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = isset($_POST['username']) ? trim($_POST['username']) : '';
-    $password = isset($_POST['password']) ? $_POST['password'] : '';
-    
-    if (empty($username) || empty($password)) {
-        $error_message = 'Please enter both username and password.';
+    // Validate CSRF token
+    if (!isset($_POST['csrf_token']) || !validateCsrfToken($_POST['csrf_token'])) {
+        $error = 'Invalid form submission. Please try again.';
     } else {
-        $user = authenticateUser($username, $password);
+        // Get form data
+        $username = isset($_POST['username']) ? sanitize($_POST['username']) : '';
+        $password = isset($_POST['password']) ? $_POST['password'] : '';
         
-        if ($user && hasAdminAccess($user)) {
-            createAdminSession($user);
-            
-            // Update last active timestamp
-            $conn = getDbConnection();
-            $username = $conn->real_escape_string($username);
-            $updateQuery = "UPDATE accounts SET lastactive = NOW() WHERE login = '$username'";
-            $conn->query($updateQuery);
-            
-            // Redirect to admin dashboard
-            header('Location: index.php');
-            exit;
+        // Authenticate user
+        if (authenticate($username, $password)) {
+            // Redirect to dashboard or requested page
+            if (isset($_SESSION['redirect_after_login'])) {
+                $redirect = $_SESSION['redirect_after_login'];
+                unset($_SESSION['redirect_after_login']);
+                redirect($redirect);
+            } else {
+                redirect('/admin/');
+            }
         } else {
-            $error_message = 'Invalid credentials or insufficient permissions.';
+            $error = 'Invalid username or password.';
         }
     }
 }
 ?>
-
-<?php include '../includes/header.php'; ?>
-
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="dashboard-card">
-                <div class="card-header text-center">
-                    <h2 class="mb-0"><i class="fas fa-lock me-2"></i> Admin Login</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | L1J Remastered DB</title>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="stylesheet" href="/public/css/admin.css">
+</head>
+<body class="admin-body">
+    <div class="login-container">
+        <div class="login-form">
+            <div class="login-header">
+                <h1>L1J Remastered</h1>
+                <p>Admin Login</p>
+            </div>
+            
+            <?php if ($error): ?>
+            <div class="alert alert-error">
+                <?php echo $error; ?>
+            </div>
+            <?php endif; ?>
+            
+            <form action="login.php" method="POST">
+                <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
+                
+                <div class="form-group">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" id="username" name="username" class="form-control" required autofocus>
                 </div>
-                <div class="card-body">
-                    <?php if (!empty($error_message)): ?>
-                    <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-triangle me-2"></i> <?= $error_message ?>
-                    </div>
-                    <?php endif; ?>
-                    
-                    <form method="post" action="login.php" class="admin-form">
-                        <div class="mb-4">
-                            <label for="username" class="form-label">Username</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-primary-custom border-0">
-                                    <i class="fas fa-user"></i>
-                                </span>
-                                <input type="text" class="form-control" id="username" name="username" 
-                                       placeholder="Enter your username" required autofocus>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="password" class="form-label">Password</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-primary-custom border-0">
-                                    <i class="fas fa-key"></i>
-                                </span>
-                                <input type="password" class="form-control" id="password" name="password" 
-                                       placeholder="Enter your password" required>
-                            </div>
-                        </div>
-                        
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="fas fa-sign-in-alt me-2"></i> Login
-                            </button>
-                        </div>
-                    </form>
+                
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" required>
                 </div>
-                <div class="card-footer text-center">
-                    <a href="../index.php" class="text-accent">
-                        <i class="fas fa-arrow-left me-1"></i> Back to Site
-                    </a>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn">Login</button>
                 </div>
+            </form>
+            
+            <div class="login-footer">
+                <p><a href="/">Back to Site</a></p>
             </div>
         </div>
     </div>
-</div>
-
-<?php include '../includes/footer.php'; ?>
+    
+    <script src="/public/js/main.js"></script>
+</body>
+</html>

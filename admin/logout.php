@@ -1,9 +1,10 @@
 <?php
-require_once '../includes/functions.php';
+// Include authentication functions
+require_once __DIR__ . '/../includes/functions/common.php';
+require_once __DIR__ . '/../includes/functions/auth.php';
 
-// End the admin session
-endAdminSession();
+// Log out the user
+logout();
 
-// Redirect to login page
-header('Location: login.php');
-exit;
+// This will redirect to login page
+?>

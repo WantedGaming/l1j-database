@@ -1,181 +1,113 @@
 <?php
-require_once 'includes/config.php';
-require_once 'includes/functions.php';
+// Set page variables
+$pageTitle = 'L1J Remastered Database Browser';
+$pageSubtitle = 'Browse and explore game data with ease';
+$showHero = true;
+$showSearch = true;
 
-$page_title = 'Home';
-$is_admin = false;
+// Include header
+require_once __DIR__ . '/includes/layouts/header.php';
 
-// Get database statistics for display
-$stats = getDatabaseStats();
+// Define categories
+$categories = [
+    [
+        'id' => 'weapons',
+        'title' => 'Weapons',
+        'description' => 'Browse all weapons including stats, skills and effects.',
+        'icon' => 'sword',
+        'tables' => ['weapon.sql', 'weapon_skill.sql', 'weapon_skill_model.sql', 'weapons_skill_spell_def.sql']
+    ],
+    [
+        'id' => 'armor',
+        'title' => 'Armor',
+        'description' => 'Explore armor pieces and sets with their protective values.',
+        'icon' => 'shield',
+        'tables' => ['armor.sql', 'armor_set.sql']
+    ],
+    [
+        'id' => 'items',
+        'title' => 'Items',
+        'description' => 'Search through potions, scrolls, and other items.',
+        'icon' => 'potion',
+        'tables' => ['etcitem.sql']
+    ],
+    [
+        'id' => 'monsters',
+        'title' => 'Monsters',
+        'description' => 'Learn about monster stats, skills, and drops.',
+        'icon' => 'dragon',
+        'tables' => ['npc.sql (filter by impl "L1Monster" + "L1Doppelganger")', 'mobskill.sql', 'mobgroup.sql']
+    ],
+    [
+        'id' => 'maps',
+        'title' => 'Maps',
+        'description' => 'Discover the world map and teleport locations.',
+        'icon' => 'map',
+        'tables' => ['mapids.sql']
+    ],
+    [
+        'id' => 'dolls',
+        'title' => 'Dolls',
+        'description' => 'View magical dolls and their unique abilities.',
+        'icon' => 'doll',
+        'tables' => ['npc.sql (filter by impl "L1Doll")', 'magicdoll_info.sql', 'magicdoll_potential.sql']
+    ],
+    [
+        'id' => 'npcs',
+        'title' => 'NPCs',
+        'description' => 'Find information about shopkeepers, guards, and quest givers.',
+        'icon' => 'person',
+        'tables' => ['npc.sql (filter by impl "L1Blackknight", "L1Dwarf", "L1Guard", "L1HouseKeeper", "L1Merchant", "L1Npc", "L1Teleporter")']
+    ],
+    [
+        'id' => 'skills',
+        'title' => 'Skills',
+        'description' => 'Learn about active and passive skills for all classes.',
+        'icon' => 'magic',
+        'tables' => ['skills.sql', 'skills_hanlder.sql', 'skills_info.sql', 'skills_passive.sql']
+    ],
+    [
+        'id' => 'polymorph',
+        'title' => 'Polymorph',
+        'description' => 'Explore transformation options and their effects.',
+        'icon' => 'transform',
+        'tables' => ['polymorphs.sql']
+    ]
+];
 ?>
 
-<?php include 'includes/header.php'; ?>
-<?php include 'includes/navigation.php'; ?>
-
-<!-- Hero Section with Search -->
-<section class="hero-section">
-    <div class="container">
-        <h1 class="hero-title">L1J Remastered Database</h1>
-        <p class="hero-subtitle">Explore the comprehensive database of L1J Remastered game with detailed information on items, monsters, maps and more</p>
-        
-        <div class="hero-search">
-            <form class="search-form" action="search.php" method="get">
-                <div class="input-group">
-                    <input type="search" class="form-control form-control-lg" name="q" placeholder="Search for weapons, armor, items, monsters, etc...">
-                    <button class="btn btn-primary btn-lg" type="submit">
-                        <i class="fas fa-search me-2"></i> Search
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</section>
-
-<!-- Categories Section -->
-<section class="py-5">
-    <div class="container">
-        <h2 class="text-center section-title">Database Categories</h2>
-        
-        <div class="row">
-            <?php 
-            $categories = getCategories();
-            $count = 0;
-            
-            foreach ($categories as $category):
-                // Start a new row after every 3 categories
-                if ($count > 0 && $count % 3 === 0):
-                    echo '</div><div class="row">';
-                endif;
-            ?>
-                <div class="col-md-4 mb-4">
-                    <div class="card category-card h-100">
-                        <img src="<?= $category['icon'] ?>" class="card-img-top" alt="<?= $category['name'] ?>">
-                        <div class="card-body">
-                            <h5 class="card-title"><?= $category['name'] ?></h5>
-                            <p class="card-text"><?= $category['description'] ?></p>
-                            <div class="mt-3">
-                                <span class="badge bg-secondary me-1">
-                                    <i class="fas fa-database me-1"></i> <?= number_format($stats[$category['id']] ?? 0) ?>
-                                </span>
-                                <span class="badge bg-secondary">
-                                    <i class="fas fa-table me-1"></i> <?= count($category['tables']) ?> tables
-                                </span>
-                            </div>
-                        </div>
-                        <div class="card-footer text-center">
-                            <a href="category.php?id=<?= $category['id'] ?>" class="btn btn-primary">
-                                <i class="fas fa-search me-1"></i> Browse <?= $category['name'] ?>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            <?php 
-                $count++;
-            endforeach; 
-            ?>
-        </div>
-    </div>
-</section>
-
-<!-- Statistics Section -->
-<!-- Statistics Section -->
-<section class="py-5 bg-secondary-custom">
-    <div class="container">
-        <h2 class="text-center section-title">Database Statistics</h2>
-        
-        <div class="row">
-            <?php 
-            // Using the same image paths as in category definitions
-            $statImages = [
-                'weapons' => 'assets/img/placeholders/weapons.png',
-                'armor' => 'assets/img/placeholders/armor.png',
-                'items' => 'assets/img/placeholders/items.png',
-                'monsters' => 'assets/img/placeholders/monsters.png',
-                'maps' => 'assets/img/placeholders/maps.png',
-                'dolls' => 'assets/img/placeholders/dolls.png',
-                'npcs' => 'assets/img/placeholders/npc.png',
-                'skills' => 'assets/img/placeholders/skill.png',
-                'polymorph' => 'assets/img/placeholders/poly.png'
-            ];
-            
-            foreach ($stats as $category => $count): 
-                $imagePath = $statImages[$category] ?? 'assets/img/placeholders/items.png';
-            ?>
-                <div class="col-md-4 col-sm-6 mb-4">
-                    <div class="stat-card">
-                        <div class="stat-value"><?= number_format($count) ?></div>
-                        <div class="stat-label"><?= ucfirst($category) ?></div>
-                        <img src="<?= $imagePath ?>" class="position-absolute end-0 bottom-0 m-3 opacity-25" style="width: 40px; height: 40px;" alt="<?= ucfirst($category) ?>">
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    </div>
-</section>
-
-<!-- Features Section -->
-<section class="py-5">
-    <div class="container">
-        <h2 class="text-center section-title">Database Features</h2>
-        
-        <div class="row">
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-body text-center p-4">
-                        <div class="mb-3 text-accent">
-                            <i class="fas fa-search fa-3x"></i>
-                        </div>
-                        <h5 class="card-title">Advanced Search</h5>
-                        <p class="card-text">Find items, monsters, and more with our powerful search functionality. Filter by categories, attributes, and more.</p>
-                    </div>
-                </div>
+<div class="container">
+    <div class="cards-grid">
+        <?php foreach ($categories as $category): ?>
+        <div class="card">
+            <div class="card-image">
+                <img src="/public/images/icons/<?php echo $category['icon']; ?>.svg" alt="<?php echo $category['title']; ?> Icon">
             </div>
-            
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-body text-center p-4">
-                        <div class="mb-3 text-accent">
-                            <i class="fas fa-sync-alt fa-3x"></i>
-                        </div>
-                        <h5 class="card-title">Real-time Updates</h5>
-                        <p class="card-text">Our database is regularly updated to match the latest game data, ensuring you always have accurate information.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-body text-center p-4">
-                        <div class="mb-3 text-accent">
-                            <i class="fas fa-mobile-alt fa-3x"></i>
-                        </div>
-                        <h5 class="card-title">Mobile Friendly</h5>
-                        <p class="card-text">Access the database on any device with our responsive design. Perfect for desktop, tablet, or mobile gaming sessions.</p>
-                    </div>
-                </div>
+            <div class="card-content">
+                <h2 class="card-title"><?php echo $category['title']; ?></h2>
+                <p class="card-text"><?php echo $category['description']; ?></p>
+                <a href="/<?php echo $category['id']; ?>/" class="card-link">Browse</a>
             </div>
         </div>
+        <?php endforeach; ?>
     </div>
-</section>
-
-<!-- Call to Action Section -->
-<section class="py-5 bg-primary-custom">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-md-8 mb-4 mb-md-0">
-                <h2 class="mb-3">Ready to explore the database?</h2>
-                <p class="lead mb-0">Start searching or browsing categories to find the information you need.</p>
-            </div>
-            <div class="col-md-4 text-md-end text-center">
-                <a href="search.php" class="btn btn-lg btn-primary me-2 mb-2">
-                    <i class="fas fa-search me-2"></i> Search
-                </a>
-                <a href="#" class="btn btn-lg btn-outline-primary mb-2">
-                    <i class="fas fa-info-circle me-2"></i> Learn More
-                </a>
-            </div>
-        </div>
+    
+    <div class="about-section">
+        <h2>About L1J Remastered Database Browser</h2>
+        <p>
+            This database browser provides easy access to L1J Remastered game data, allowing players and administrators
+            to quickly search, filter, and explore game information. Use the category cards above to navigate to specific
+            sections of interest.
+        </p>
+        <p>
+            The browser includes detailed information about weapons, armor, items, monsters, and more, all organized in a
+            clean and accessible format. For administrators, full CRUD functionality is available to manage and update
+            game data as needed.
+        </p>
     </div>
-</section>
+</div>
 
-<?php include 'includes/footer.php'; ?>
+<?php
+// Include footer
+require_once __DIR__ . '/includes/layouts/footer.php';
+?>

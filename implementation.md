@@ -4,11 +4,13 @@
 A PHP/HTML5/Tailwind CSS/Bootstrap5 database browser for the L1J Remastered game data with admin CRUD functionality. The site will feature a modern, card-based design with a clean, dark theme based on the specified color scheme.
 
 **Color Scheme:**
-- Text: #ffffff
-- Background: #030303
-- Primary: #080808
-- Secondary: #0a0a0a
-- Accent: #e07c4f
+--text: #ffffff;
+--background: #030303
+--primary: #121213;
+--secondary: #161616;
+--accent: #b84a17;
+
+
 
 **Main Categories:**
 1. Weapons - (weapon.sql, weapon_skill.sql, weapon_skill_model.sql, weapons_skill_spell_def.sql)
