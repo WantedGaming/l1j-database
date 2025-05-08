@@ -1,481 +1,334 @@
 <?php
+/**
+ * Admin Edit Weapon
+ * Edit an existing weapon in the database
+ */
+
 // Include database connection
-require_once __DIR__ . '/../../includes/config/database.php';
-require_once __DIR__ . '/../../includes/functions/common.php';
+require_once '../../includes/db_connect.php';
+require_once '../../includes/functions.php';
 
-// Check if ID parameter exists
-if (!isset($_GET['id']) || empty($_GET['id'])) {
-    redirect('/admin/weapons/');
+// Set page title
+$pageTitle = 'Admin - Edit Weapon';
+$showHero = false;
+
+// Extra CSS for admin
+$extraCSS = ['../../assets/css/admin.css'];
+
+// Get weapon ID from URL
+$weaponId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
+// If no ID provided, redirect to weapons list
+if ($weaponId <= 0) {
+    header('Location: ./index.php');
+    exit;
 }
-
-$weaponId = (int)$_GET['id'];
-
-// Get database connection
-$database = new Database();
-$db = $database->getConnection();
-
-// Fetch weapon data
-$stmt = $db->prepare("SELECT * FROM weapon WHERE item_id = ?");
-$stmt->bindParam(1, $weaponId);
-$stmt->execute();
-
-$weapon = $stmt->fetch(PDO::FETCH_ASSOC);
-
-// If weapon not found, redirect to weapons list
-if (!$weapon) {
-    // Set flash message
-    startSession();
-    $_SESSION['flash_message'] = "Weapon with ID $weaponId not found.";
-    $_SESSION['flash_type'] = 'error';
-    
-    redirect('/admin/weapons/');
-}
-
-// Set page variables
-$pageTitle = 'Edit Weapon: ' . $weapon['name'];
-$pageSubtitle = 'Modify weapon properties';
-$showHero = true;
-$showSearch = false;
-$pageSection = 'Admin Weapons';
-$itemName = $weapon['name'];
-
-// Generate CSRF token
-$csrfToken = generateCsrfToken();
 
 // Process form submission
-$errors = [];
-$success = false;
-$formData = $weapon;
-
-// Fetch available weapon types
-$weaponTypesStmt = $db->query("SELECT DISTINCT weapon_type FROM weapon ORDER BY weapon_type");
-$weaponTypes = $weaponTypesStmt->fetchAll(PDO::FETCH_COLUMN);
-
-// Fetch available materials
-$materialsStmt = $db->query("SELECT DISTINCT material FROM weapon ORDER BY material");
-$materials = $materialsStmt->fetchAll(PDO::FETCH_COLUMN);
+$successMessage = '';
+$errorMessage = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Validate CSRF token
-    if (!isset($_POST['csrf_token']) || !validateCsrfToken($_POST['csrf_token'])) {
-        $errors[] = 'Invalid form submission. Please try again.';
-    } else {
-        // Get and sanitize form data
-        foreach ($formData as $key => $value) {
-            if (isset($_POST[$key])) {
-                if (is_numeric($value)) {
-                    $formData[$key] = (int)$_POST[$key];
-                } else {
-                    $formData[$key] = sanitize($_POST[$key]);
-                }
-            }
-        }
-        
-        // Handle checkbox fields (they will only be set if checked)
-        $booleanFields = ['magic_item', 'haste_item', 'can_damage', 'bless', 'trade', 'tradable', 'deletable', 'warehouse', 'npc_sell'];
-        foreach ($booleanFields as $field) {
-            $formData[$field] = isset($_POST[$field]) ? 1 : 0;
-        }
+    try {
+        // Get form data with validation
+        $name = isset($_POST['name']) ? trim($_POST['name']) : '';
+        $descEn = isset($_POST['desc_en']) ? trim($_POST['desc_en']) : '';
+        $type = isset($_POST['type']) ? trim($_POST['type']) : '';
+        $material = isset($_POST['material']) ? trim($_POST['material']) : '';
+        $weight = isset($_POST['weight']) ? (int)$_POST['weight'] : 0;
+        $dmgSmall = isset($_POST['dmg_small']) ? (int)$_POST['dmg_small'] : 0;
+        $dmgLarge = isset($_POST['dmg_large']) ? (int)$_POST['dmg_large'] : 0;
+        $iconId = isset($_POST['icon_id']) ? (int)$_POST['icon_id'] : 0;
+        $strBonus = isset($_POST['str_bonus']) ? (int)$_POST['str_bonus'] : 0;
+        $dexBonus = isset($_POST['dex_bonus']) ? (int)$_POST['dex_bonus'] : 0;
+        $conBonus = isset($_POST['con_bonus']) ? (int)$_POST['con_bonus'] : 0;
+        $intBonus = isset($_POST['int_bonus']) ? (int)$_POST['int_bonus'] : 0;
+        $wisBonus = isset($_POST['wis_bonus']) ? (int)$_POST['wis_bonus'] : 0;
+        $chaBonus = isset($_POST['cha_bonus']) ? (int)$_POST['cha_bonus'] : 0;
+        $hpBonus = isset($_POST['hp_bonus']) ? (int)$_POST['hp_bonus'] : 0;
+        $mpBonus = isset($_POST['mp_bonus']) ? (int)$_POST['mp_bonus'] : 0;
+        $magicLevel = isset($_POST['magic_level']) ? (int)$_POST['magic_level'] : 0;
+        $levelRequired = isset($_POST['level_required']) ? (int)$_POST['level_required'] : 0;
+        $bless = isset($_POST['bless']) ? (int)$_POST['bless'] : 0;
+        $trade = isset($_POST['trade']) ? (int)$_POST['trade'] : 0;
+        $durability = isset($_POST['durability']) ? (int)$_POST['durability'] : 0;
+        $note = isset($_POST['note']) ? trim($_POST['note']) : '';
         
         // Validate required fields
-        if (empty($formData['name'])) {
-            $errors[] = 'Name is required.';
+        if (empty($name) || empty($descEn) || empty($type)) {
+            throw new Exception("Name, Description, and Type are required fields.");
         }
         
-        if (empty($formData['weapon_type'])) {
-            $errors[] = 'Weapon type is required.';
-        }
-        
-        // If no errors, update weapon
-        if (empty($errors)) {
-            try {
-                // Prepare SQL statement
-                $sql = "UPDATE weapon SET
-                    name = :name,
-                    name_id = :name_id,
-                    type = :type,
-                    weapon_type = :weapon_type,
-                    material = :material,
-                    weight = :weight,
-                    dmg_small = :dmg_small,
-                    dmg_large = :dmg_large,
-                    level_min = :level_min,
-                    durability = :durability,
-                    hit_modifier = :hit_modifier,
-                    critical_modifier = :critical_modifier,
-                    range = :range,
-                    safenchant = :safenchant,
-                    add_str = :add_str,
-                    add_dex = :add_dex,
-                    add_con = :add_con,
-                    add_int = :add_int,
-                    add_wis = :add_wis,
-                    add_cha = :add_cha,
-                    add_hp = :add_hp,
-                    add_mp = :add_mp,
-                    magic_level = :magic_level,
-                    magic_item = :magic_item,
-                    haste_item = :haste_item,
-                    can_damage = :can_damage,
-                    bless = :bless,
-                    trade = :trade,
-                    tradable = :tradable,
-                    deletable = :deletable,
-                    warehouse = :warehouse,
-                    npc_sell = :npc_sell,
-                    min_lvl = :min_lvl,
-                    max_lvl = :max_lvl,
-                    description = :description,
-                    icon_id = :icon_id
+        // Update the weapon in the database
+        $sql = "UPDATE weapon SET
+                name = :name, desc_en = :desc_en, type = :type,
+                material = :material, weight = :weight, dmg_small = :dmg_small,
+                dmg_large = :dmg_large, iconId = :icon_id, str_bonus = :str_bonus,
+                dex_bonus = :dex_bonus, con_bonus = :con_bonus, int_bonus = :int_bonus,
+                wis_bonus = :wis_bonus, cha_bonus = :cha_bonus, hp_bonus = :hp_bonus,
+                mp_bonus = :mp_bonus, magic_level = :magic_level, level_required = :level_required,
+                bless = :bless, trade = :trade, durability = :durability, note = :note
                 WHERE item_id = :item_id";
-                
-                // Prepare and execute statement
-                $stmt = $db->prepare($sql);
-                
-                // Bind parameters
-                foreach ($formData as $key => $value) {
-                    $stmt->bindValue(':' . $key, $value);
-                }
-                
-                $stmt->execute();
-                
-                // Set success message
-                $_SESSION['flash_message'] = "Weapon updated successfully.";
-                $_SESSION['flash_type'] = 'success';
-                
-                // Redirect to view the updated weapon
-                redirect('/admin/weapons/view.php?id=' . $weaponId);
-            } catch (PDOException $e) {
-                $errors[] = 'Database error: ' . $e->getMessage();
-            }
-        }
+        
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindParam(':name', $name);
+        $stmt->bindParam(':desc_en', $descEn);
+        $stmt->bindParam(':type', $type);
+        $stmt->bindParam(':material', $material);
+        $stmt->bindParam(':weight', $weight);
+        $stmt->bindParam(':dmg_small', $dmgSmall);
+        $stmt->bindParam(':dmg_large', $dmgLarge);
+        $stmt->bindParam(':icon_id', $iconId);
+        $stmt->bindParam(':str_bonus', $strBonus);
+        $stmt->bindParam(':dex_bonus', $dexBonus);
+        $stmt->bindParam(':con_bonus', $conBonus);
+        $stmt->bindParam(':int_bonus', $intBonus);
+        $stmt->bindParam(':wis_bonus', $wisBonus);
+        $stmt->bindParam(':cha_bonus', $chaBonus);
+        $stmt->bindParam(':hp_bonus', $hpBonus);
+        $stmt->bindParam(':mp_bonus', $mpBonus);
+        $stmt->bindParam(':magic_level', $magicLevel);
+        $stmt->bindParam(':level_required', $levelRequired);
+        $stmt->bindParam(':bless', $bless);
+        $stmt->bindParam(':trade', $trade);
+        $stmt->bindParam(':durability', $durability);
+        $stmt->bindParam(':note', $note);
+        $stmt->bindParam(':item_id', $weaponId);
+        
+        $stmt->execute();
+        
+        $successMessage = "Weapon successfully updated.";
+    } catch (Exception $e) {
+        $errorMessage = "Error updating weapon: " . $e->getMessage();
     }
 }
 
-// Include admin header
-require_once __DIR__ . '/../../includes/layouts/admin_header.php';
+// Get weapon details
+$weapon = getItemById($pdo, 'weapon', 'item_id', $weaponId);
+
+// If weapon not found, show error
+if (!$weapon) {
+    header('Location: ./index.php');
+    exit;
+}
+
+// Include header
+include '../../includes/header.php';
 ?>
 
-<div class="admin-header-actions">
-    <h2>Edit Weapon: <?php echo htmlspecialchars($weapon['name']); ?></h2>
-    
-    <div class="admin-actions">
-        <a href="/admin/weapons/view.php?id=<?php echo $weaponId; ?>" class="btn btn-secondary">View Weapon</a>
-        <a href="/admin/weapons/" class="btn btn-secondary">Back to Weapons</a>
+<div class="admin-header mb-6 p-4">
+    <div class="container">
+        <div class="flex items-center justify-between">
+            <h1 class="section-title">Edit Weapon</h1>
+            <div>
+                <a href="./index.php" class="btn btn-small">← Back to Weapons</a>
+            </div>
+        </div>
     </div>
 </div>
 
-<?php if (!empty($errors)): ?>
-<div class="alert alert-error">
-    <strong>Please fix the following errors:</strong>
-    <ul>
-        <?php foreach ($errors as $error): ?>
-        <li><?php echo $error; ?></li>
-        <?php endforeach; ?>
-    </ul>
+<div class="mb-6">
+    <?php if (!empty($successMessage)): ?>
+    <div class="status-message status-success mb-4">
+        <p><?php echo htmlspecialchars($successMessage); ?></p>
+    </div>
+    <?php endif; ?>
+    
+    <?php if (!empty($errorMessage)): ?>
+    <div class="status-message status-error mb-4">
+        <p><?php echo htmlspecialchars($errorMessage); ?></p>
+    </div>
+    <?php endif; ?>
+    
+    <form method="POST" class="admin-form">
+        <div class="form-row">
+            <div class="form-col">
+                <div class="form-group">
+                    <label for="name" class="form-label">Name (JP)</label>
+                    <input type="text" id="name" name="name" class="form-input" value="<?php echo htmlspecialchars($weapon['name']); ?>" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="desc_en" class="form-label">Description (EN)</label>
+                    <input type="text" id="desc_en" name="desc_en" class="form-input" value="<?php echo htmlspecialchars($weapon['desc_en']); ?>" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="type" class="form-label">Type</label>
+                    <select id="type" name="type" class="form-select" required>
+                        <option value="sword" <?php echo $weapon['type'] === 'sword' ? 'selected' : ''; ?>>Sword</option>
+                        <option value="dagger" <?php echo $weapon['type'] === 'dagger' ? 'selected' : ''; ?>>Dagger</option>
+                        <option value="bow" <?php echo $weapon['type'] === 'bow' ? 'selected' : ''; ?>>Bow</option>
+                        <option value="staff" <?php echo $weapon['type'] === 'staff' ? 'selected' : ''; ?>>Staff</option>
+                        <option value="spear" <?php echo $weapon['type'] === 'spear' ? 'selected' : ''; ?>>Spear</option>
+                        <option value="axe" <?php echo $weapon['type'] === 'axe' ? 'selected' : ''; ?>>Axe</option>
+                        <option value="blunt" <?php echo $weapon['type'] === 'blunt' ? 'selected' : ''; ?>>Blunt</option>
+                        <option value="claw" <?php echo $weapon['type'] === 'claw' ? 'selected' : ''; ?>>Claw</option>
+                        <option value="edoryu" <?php echo $weapon['type'] === 'edoryu' ? 'selected' : ''; ?>>Edoryu</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="material" class="form-label">Material</label>
+                    <select id="material" name="material" class="form-select">
+                        <option value="iron" <?php echo $weapon['material'] === 'iron' ? 'selected' : ''; ?>>Iron</option>
+                        <option value="steel" <?php echo $weapon['material'] === 'steel' ? 'selected' : ''; ?>>Steel</option>
+                        <option value="wood" <?php echo $weapon['material'] === 'wood' ? 'selected' : ''; ?>>Wood</option>
+                        <option value="leather" <?php echo $weapon['material'] === 'leather' ? 'selected' : ''; ?>>Leather</option>
+                        <option value="bone" <?php echo $weapon['material'] === 'bone' ? 'selected' : ''; ?>>Bone</option>
+                        <option value="silver" <?php echo $weapon['material'] === 'silver' ? 'selected' : ''; ?>>Silver</option>
+                        <option value="gold" <?php echo $weapon['material'] === 'gold' ? 'selected' : ''; ?>>Gold</option>
+                        <option value="platinum" <?php echo $weapon['material'] === 'platinum' ? 'selected' : ''; ?>>Platinum</option>
+                        <option value="mithril" <?php echo $weapon['material'] === 'mithril' ? 'selected' : ''; ?>>Mithril</option>
+                        <option value="oriharukon" <?php echo $weapon['material'] === 'oriharukon' ? 'selected' : ''; ?>>Oriharukon</option>
+                        <option value="dragonknightboots" <?php echo $weapon['material'] === 'dragonknightboots' ? 'selected' : ''; ?>>Dragon Knight</option>
+                        <option value="crystal" <?php echo $weapon['material'] === 'crystal' ? 'selected' : ''; ?>>Crystal</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="weight" class="form-label">Weight</label>
+                    <input type="number" id="weight" name="weight" class="form-input" value="<?php echo $weapon['weight']; ?>">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="dmg_small" class="form-label">Damage (Small)</label>
+                            <input type="number" id="dmg_small" name="dmg_small" class="form-input" value="<?php echo $weapon['dmg_small']; ?>">
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="dmg_large" class="form-label">Damage (Large)</label>
+                            <input type="number" id="dmg_large" name="dmg_large" class="form-input" value="<?php echo $weapon['dmg_large']; ?>">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="icon_id" class="form-label">Icon ID</label>
+                    <input type="number" id="icon_id" name="icon_id" class="form-input" value="<?php echo $weapon['iconId']; ?>">
+                </div>
+            </div>
+            
+            <div class="form-col">
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="str_bonus" class="form-label">STR Bonus</label>
+                            <input type="number" id="str_bonus" name="str_bonus" class="form-input" value="<?php echo $weapon['str_bonus']; ?>">
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="dex_bonus" class="form-label">DEX Bonus</label>
+                            <input type="number" id="dex_bonus" name="dex_bonus" class="form-input" value="<?php echo $weapon['dex_bonus']; ?>">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="con_bonus" class="form-label">CON Bonus</label>
+                            <input type="number" id="con_bonus" name="con_bonus" class="form-input" value="<?php echo $weapon['con_bonus']; ?>">
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="int_bonus" class="form-label">INT Bonus</label>
+                            <input type="number" id="int_bonus" name="int_bonus" class="form-input" value="<?php echo $weapon['int_bonus']; ?>">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="wis_bonus" class="form-label">WIS Bonus</label>
+                            <input type="number" id="wis_bonus" name="wis_bonus" class="form-input" value="<?php echo $weapon['wis_bonus']; ?>">
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="cha_bonus" class="form-label">CHA Bonus</label>
+                            <input type="number" id="cha_bonus" name="cha_bonus" class="form-input" value="<?php echo $weapon['cha_bonus']; ?>">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="hp_bonus" class="form-label">HP Bonus</label>
+                            <input type="number" id="hp_bonus" name="hp_bonus" class="form-input" value="<?php echo $weapon['hp_bonus']; ?>">
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="mp_bonus" class="form-label">MP Bonus</label>
+                            <input type="number" id="mp_bonus" name="mp_bonus" class="form-input" value="<?php echo $weapon['mp_bonus']; ?>">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="magic_level" class="form-label">Magic Level</label>
+                            <input type="number" id="magic_level" name="magic_level" class="form-input" value="<?php echo $weapon['magic_level']; ?>">
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="level_required" class="form-label">Level Required</label>
+                            <input type="number" id="level_required" name="level_required" class="form-input" value="<?php echo $weapon['level_required']; ?>">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="bless" class="form-label">Bless</label>
+                            <select id="bless" name="bless" class="form-select">
+                                <option value="0" <?php echo $weapon['bless'] == 0 ? 'selected' : ''; ?>>No</option>
+                                <option value="1" <?php echo $weapon['bless'] == 1 ? 'selected' : ''; ?>>Yes</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="trade" class="form-label">Trade</label>
+                            <select id="trade" name="trade" class="form-select">
+                                <option value="0" <?php echo $weapon['trade'] == 0 ? 'selected' : ''; ?>>Not Tradeable</option>
+                                <option value="1" <?php echo $weapon['trade'] == 1 ? 'selected' : ''; ?>>Tradeable</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="durability" class="form-label">Durability</label>
+                    <input type="number" id="durability" name="durability" class="form-input" value="<?php echo $weapon['durability']; ?>">
+                </div>
+                
+                <div class="form-group">
+                    <label for="note" class="form-label">Notes</label>
+                    <textarea id="note" name="note" class="form-textarea"><?php echo htmlspecialchars($weapon['note']); ?></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-footer">
+            <a href="./index.php" class="btn">Cancel</a>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+    </form>
 </div>
-<?php endif; ?>
-
-<form class="admin-form" method="POST" action="/admin/weapons/edit.php?id=<?php echo $weaponId; ?>">
-    <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
-    <input type="hidden" name="item_id" value="<?php echo $weaponId; ?>">
-    
-    <div class="form-row">
-        <div class="form-group">
-            <label for="item_id_display" class="form-label">Item ID</label>
-            <input type="text" id="item_id_display" class="form-control" value="<?php echo htmlspecialchars($weapon['item_id']); ?>" disabled>
-            <div class="form-text">Unique identifier (cannot be changed)</div>
-        </div>
-        
-        <div class="form-group">
-            <label for="icon_id" class="form-label">Icon ID</label>
-            <input type="number" id="icon_id" name="icon_id" class="form-control" value="<?php echo htmlspecialchars($formData['icon_id']); ?>">
-            <div class="form-text">Icon identifier for this weapon</div>
-        </div>
-    </div>
-    
-    <div class="form-row">
-        <div class="form-group">
-            <label for="name" class="form-label">Name *</label>
-            <input type="text" id="name" name="name" class="form-control" value="<?php echo htmlspecialchars($formData['name']); ?>" required>
-            <div class="form-text">Display name for this weapon</div>
-        </div>
-        
-        <div class="form-group">
-            <label for="name_id" class="form-label">Name ID</label>
-            <input type="text" id="name_id" name="name_id" class="form-control" value="<?php echo htmlspecialchars($formData['name_id']); ?>">
-            <div class="form-text">Internal name identifier</div>
-        </div>
-    </div>
-    
-    <div class="form-row">
-        <div class="form-group">
-            <label for="weapon_type" class="form-label">Weapon Type *</label>
-            <select id="weapon_type" name="weapon_type" class="form-control" required>
-                <option value="">Select Weapon Type</option>
-                <?php foreach ($weaponTypes as $type): ?>
-                <option value="<?php echo $type; ?>" <?php echo $formData['weapon_type'] === $type ? 'selected' : ''; ?>>
-                    <?php echo ucfirst($type); ?>
-                </option>
-                <?php endforeach; ?>
-            </select>
-            <div class="form-text">Type of weapon (sword, dagger, etc.)</div>
-        </div>
-        
-        <div class="form-group">
-            <label for="material" class="form-label">Material</label>
-            <select id="material" name="material" class="form-control">
-                <?php foreach ($materials as $material): ?>
-                <option value="<?php echo $material; ?>" <?php echo $formData['material'] === $material ? 'selected' : ''; ?>>
-                    <?php echo ucfirst($material); ?>
-                </option>
-                <?php endforeach; ?>
-            </select>
-            <div class="form-text">Material the weapon is made from</div>
-        </div>
-    </div>
-    
-    <div class="form-row">
-        <div class="form-group">
-            <label for="weight" class="form-label">Weight</label>
-            <input type="number" id="weight" name="weight" class="form-control" value="<?php echo htmlspecialchars($formData['weight']); ?>">
-            <div class="form-text">Weight of the weapon</div>
-        </div>
-        
-        <div class="form-group">
-            <label for="level_min" class="form-label">Level Requirement</label>
-            <input type="number" id="level_min" name="level_min" class="form-control" value="<?php echo htmlspecialchars($formData['level_min']); ?>">
-            <div class="form-text">Minimum level required to use this weapon</div>
-        </div>
-    </div>
-    
-    <div class="form-row">
-        <div class="form-group">
-            <label for="dmg_small" class="form-label">Damage (Small)</label>
-            <input type="number" id="dmg_small" name="dmg_small" class="form-control" value="<?php echo htmlspecialchars($formData['dmg_small']); ?>">
-            <div class="form-text">Base damage against small creatures</div>
-        </div>
-        
-        <div class="form-group">
-            <label for="dmg_large" class="form-label">Damage (Large)</label>
-            <input type="number" id="dmg_large" name="dmg_large" class="form-control" value="<?php echo htmlspecialchars($formData['dmg_large']); ?>">
-            <div class="form-text">Base damage against large creatures</div>
-        </div>
-    </div>
-    
-    <div class="form-row">
-        <div class="form-group">
-            <label for="hit_modifier" class="form-label">Hit Modifier</label>
-            <input type="number" id="hit_modifier" name="hit_modifier" class="form-control" value="<?php echo htmlspecialchars($formData['hit_modifier']); ?>">
-            <div class="form-text">Bonus/penalty to hit accuracy</div>
-        </div>
-        
-        <div class="form-group">
-            <label for="critical_modifier" class="form-label">Critical Modifier</label>
-            <input type="number" id="critical_modifier" name="critical_modifier" class="form-control" value="<?php echo htmlspecialchars($formData['critical_modifier']); ?>">
-            <div class="form-text">Bonus/penalty to critical hit chance</div>
-        </div>
-    </div>
-    
-    <div class="form-row">
-        <div class="form-group">
-            <label for="range" class="form-label">Range</label>
-            <input type="number" id="range" name="range" class="form-control" value="<?php echo htmlspecialchars($formData['range']); ?>">
-            <div class="form-text">Attack range (0 for melee weapons)</div>
-        </div>
-        
-        <div class="form-group">
-            <label for="durability" class="form-label">Durability</label>
-            <input type="number" id="durability" name="durability" class="form-control" value="<?php echo htmlspecialchars($formData['durability']); ?>">
-            <div class="form-text">Weapon durability/uses before breaking</div>
-        </div>
-    </div>
-    
-    <div class="form-row">
-        <div class="form-group">
-            <label for="safenchant" class="form-label">Safe Enchant</label>
-            <input type="number" id="safenchant" name="safenchant" class="form-control" value="<?php echo htmlspecialchars($formData['safenchant']); ?>">
-            <div class="form-text">Maximum safe enchantment level</div>
-        </div>
-        
-        <div class="form-group">
-            <label for="magic_level" class="form-label">Magic Level</label>
-            <input type="number" id="magic_level" name="magic_level" class="form-control" value="<?php echo htmlspecialchars($formData['magic_level']); ?>">
-            <div class="form-text">Magical power level of the weapon</div>
-        </div>
-    </div>
-    
-    <h3>Stat Modifiers</h3>
-    
-    <div class="form-row">
-        <div class="form-group">
-            <label for="add_str" class="form-label">STR Modifier</label>
-            <input type="number" id="add_str" name="add_str" class="form-control" value="<?php echo htmlspecialchars($formData['add_str']); ?>">
-            <div class="form-text">Strength bonus/penalty</div>
-        </div>
-        
-        <div class="form-group">
-            <label for="add_dex" class="form-label">DEX Modifier</label>
-            <input type="number" id="add_dex" name="add_dex" class="form-control" value="<?php echo htmlspecialchars($formData['add_dex']); ?>">
-            <div class="form-text">Dexterity bonus/penalty</div>
-        </div>
-    </div>
-    
-    <div class="form-row">
-        <div class="form-group">
-            <label for="add_con" class="form-label">CON Modifier</label>
-            <input type="number" id="add_con" name="add_con" class="form-control" value="<?php echo htmlspecialchars($formData['add_con']); ?>">
-            <div class="form-text">Constitution bonus/penalty</div>
-        </div>
-        
-        <div class="form-group">
-            <label for="add_int" class="form-label">INT Modifier</label>
-            <input type="number" id="add_int" name="add_int" class="form-control" value="<?php echo htmlspecialchars($formData['add_int']); ?>">
-            <div class="form-text">Intelligence bonus/penalty</div>
-        </div>
-    </div>
-    
-    <div class="form-row">
-        <div class="form-group">
-            <label for="add_wis" class="form-label">WIS Modifier</label>
-            <input type="number" id="add_wis" name="add_wis" class="form-control" value="<?php echo htmlspecialchars($formData['add_wis']); ?>">
-            <div class="form-text">Wisdom bonus/penalty</div>
-        </div>
-        
-        <div class="form-group">
-            <label for="add_cha" class="form-label">CHA Modifier</label>
-            <input type="number" id="add_cha" name="add_cha" class="form-control" value="<?php echo htmlspecialchars($formData['add_cha']); ?>">
-            <div class="form-text">Charisma bonus/penalty</div>
-        </div>
-    </div>
-    
-    <div class="form-row">
-        <div class="form-group">
-            <label for="add_hp" class="form-label">HP Modifier</label>
-            <input type="number" id="add_hp" name="add_hp" class="form-control" value="<?php echo htmlspecialchars($formData['add_hp']); ?>">
-            <div class="form-text">HP bonus/penalty</div>
-        </div>
-        
-        <div class="form-group">
-            <label for="add_mp" class="form-label">MP Modifier</label>
-            <input type="number" id="add_mp" name="add_mp" class="form-control" value="<?php echo htmlspecialchars($formData['add_mp']); ?>">
-            <div class="form-text">MP bonus/penalty</div>
-        </div>
-    </div>
-    
-    <h3>Weapon Properties</h3>
-    
-    <div class="form-row">
-        <div class="form-group">
-            <label for="min_lvl" class="form-label">Min Level</label>
-            <input type="number" id="min_lvl" name="min_lvl" class="form-control" value="<?php echo htmlspecialchars($formData['min_lvl']); ?>">
-            <div class="form-text">Minimum character level</div>
-        </div>
-        
-        <div class="form-group">
-            <label for="max_lvl" class="form-label">Max Level</label>
-            <input type="number" id="max_lvl" name="max_lvl" class="form-control" value="<?php echo htmlspecialchars($formData['max_lvl']); ?>">
-            <div class="form-text">Maximum character level (0 for no limit)</div>
-        </div>
-    </div>
-    
-    <div class="form-row">
-        <div class="form-group checkbox-group">
-            <div class="checkbox-container">
-                <input type="checkbox" id="magic_item" name="magic_item" <?php echo $formData['magic_item'] ? 'checked' : ''; ?>>
-                <label for="magic_item">Magic Item</label>
-            </div>
-            <div class="form-text">Weapon is considered magical</div>
-        </div>
-        
-        <div class="form-group checkbox-group">
-            <div class="checkbox-container">
-                <input type="checkbox" id="haste_item" name="haste_item" <?php echo $formData['haste_item'] ? 'checked' : ''; ?>>
-                <label for="haste_item">Haste Item</label>
-            </div>
-            <div class="form-text">Weapon provides haste effect</div>
-        </div>
-    </div>
-    
-    <div class="form-row">
-        <div class="form-group checkbox-group">
-            <div class="checkbox-container">
-                <input type="checkbox" id="can_damage" name="can_damage" <?php echo $formData['can_damage'] ? 'checked' : ''; ?>>
-                <label for="can_damage">Can Damage</label>
-            </div>
-            <div class="form-text">Weapon can inflict damage</div>
-        </div>
-        
-        <div class="form-group checkbox-group">
-            <div class="checkbox-container">
-                <input type="checkbox" id="bless" name="bless" <?php echo $formData['bless'] ? 'checked' : ''; ?>>
-                <label for="bless">Blessed</label>
-            </div>
-            <div class="form-text">Weapon is blessed</div>
-        </div>
-    </div>
-    
-    <h3>Item Flags</h3>
-    
-    <div class="form-row">
-        <div class="form-group checkbox-group">
-            <div class="checkbox-container">
-                <input type="checkbox" id="trade" name="trade" <?php echo $formData['trade'] ? 'checked' : ''; ?>>
-                <label for="trade">Trade</label>
-            </div>
-            <div class="form-text">Can be traded between players</div>
-        </div>
-        
-        <div class="form-group checkbox-group">
-            <div class="checkbox-container">
-                <input type="checkbox" id="tradable" name="tradable" <?php echo $formData['tradable'] ? 'checked' : ''; ?>>
-                <label for="tradable">Sellable</label>
-            </div>
-            <div class="form-text">Can be sold to NPCs</div>
-        </div>
-    </div>
-    
-    <div class="form-row">
-        <div class="form-group checkbox-group">
-            <div class="checkbox-container">
-                <input type="checkbox" id="deletable" name="deletable" <?php echo $formData['deletable'] ? 'checked' : ''; ?>>
-                <label for="deletable">Deletable</label>
-            </div>
-            <div class="form-text">Can be deleted by players</div>
-        </div>
-        
-        <div class="form-group checkbox-group">
-            <div class="checkbox-container">
-                <input type="checkbox" id="warehouse" name="warehouse" <?php echo $formData['warehouse'] ? 'checked' : ''; ?>>
-                <label for="warehouse">Storage</label>
-            </div>
-            <div class="form-text">Can be stored in warehouse</div>
-        </div>
-    </div>
-    
-    <div class="form-row">
-        <div class="form-group checkbox-group">
-            <div class="checkbox-container">
-                <input type="checkbox" id="npc_sell" name="npc_sell" <?php echo $formData['npc_sell'] ? 'checked' : ''; ?>>
-                <label for="npc_sell">NPC Sell</label>
-            </div>
-            <div class="form-text">Can be purchased from NPCs</div>
-        </div>
-    </div>
-    
-    <div class="form-group">
-        <label for="description" class="form-label">Description</label>
-        <textarea id="description" name="description" class="form-control" rows="5"><?php echo htmlspecialchars($formData['description']); ?></textarea>
-        <div class="form-text">Detailed description of the weapon</div>
-    </div>
-    
-    <div class="form-actions">
-        <button type="submit" class="btn">Update Weapon</button>
-        <a href="/admin/weapons/view.php?id=<?php echo $weaponId; ?>" class="btn btn-secondary">Cancel</a>
-    </div>
-</form>
 
 <?php
-// Include admin footer
-require_once __DIR__ . '/../../includes/layouts/admin_footer.php';
+// Include footer
+include '../../includes/footer.php';
 ?>

@@ -1,0 +1,363 @@
+/*
+ * L1J Database Admin Stylesheet
+ * Additional styles specific to the admin section
+ */
+
+/* Admin Header */
+.admin-header {
+    background-color: var(--secondary);
+    color: var(--text);
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.admin-header h1 {
+    margin-bottom: 0.5rem;
+}
+
+.admin-header p {
+    opacity: 0.9;
+}
+
+/* Admin Cards */
+.admin-card {
+    background-color: var(--secondary);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.admin-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.admin-card h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* Form Styles */
+.admin-form {
+    background-color: var(--secondary);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Login Form Styles */
+.login-card {
+    width: 100%;
+    max-width: 350px;
+    box-sizing: border-box;
+    overflow: hidden;
+    margin-top: 3rem;
+}
+
+.form-input {
+    width: 100%;
+    max-width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: var(--primary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    color: var(--text);
+    box-sizing: border-box;
+    display: block;
+}
+
+.form-input:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+
+.admin-form .form-group {
+    margin-bottom: 1.25rem;
+}
+
+.admin-form .form-label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.admin-form .form-input,
+.admin-form .form-select,
+.admin-form .form-textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: var(--primary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    color: var(--text);
+}
+
+.admin-form .form-input:focus,
+.admin-form .form-select:focus,
+.admin-form .form-textarea:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+
+.admin-form .form-textarea {
+    min-height: 150px;
+}
+
+.admin-form .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -0.5rem;
+}
+
+.admin-form .form-col {
+    flex: 1;
+    padding: 0 0.5rem;
+    min-width: 200px;
+}
+
+.admin-form .form-footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.admin-form .form-footer .btn {
+    margin-left: 0.5rem;
+}
+
+/* Admin Tables */
+.admin-table-container {
+    background-color: var(--secondary);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table th {
+    background-color: var(--primary);
+    text-align: left;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+}
+
+.admin-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.admin-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.admin-table .actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Status Messages */
+.status-message {
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+}
+
+.status-success {
+    background-color: rgba(39, 174, 96, 0.2);
+    border: 1px solid rgba(39, 174, 96, 0.4);
+}
+
+.status-error {
+    background-color: rgba(231, 76, 60, 0.2);
+    border: 1px solid rgba(231, 76, 60, 0.4);
+}
+
+.status-warning {
+    background-color: rgba(243, 156, 18, 0.2);
+    border: 1px solid rgba(243, 156, 18, 0.4);
+}
+
+.status-info {
+    background-color: rgba(52, 152, 219, 0.2);
+    border: 1px solid rgba(52, 152, 219, 0.4);
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.action-button {
+    background-color: var(--secondary);
+    color: var(--text);
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.action-button:hover {
+    background-color: var(--primary);
+}
+
+.action-button.edit {
+    background-color: rgba(52, 152, 219, 0.2);
+}
+
+.action-button.delete {
+    background-color: rgba(231, 76, 60, 0.2);
+}
+
+.action-button.view {
+    background-color: rgba(39, 174, 96, 0.2);
+}
+
+/* Admin Tabs */
+.admin-tabs {
+    display: flex;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 1.5rem;
+}
+
+.admin-tabs .tab {
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.admin-tabs .tab:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.admin-tabs .tab.active {
+    border-bottom: 2px solid var(--accent);
+    font-weight: 600;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Admin Dashboard Widgets */
+.widget-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.widget {
+    background-color: var(--secondary);
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.widget-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.widget-content {
+    margin-bottom: 1rem;
+}
+
+.widget-footer {
+    text-align: right;
+    font-size: 0.875rem;
+}
+
+/* Statistics */
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    opacity: 0.7;
+}
+
+/* Background Styles */
+.bg-accent {
+    background-color: rgba(235, 84, 14, 0.2);
+}
+
+.bg-dark {
+    background-color: var(--primary);
+}
+
+/* Utility Classes */
+.text-right {
+    text-align: right;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.mb-0 {
+    margin-bottom: 0;
+}
+
+.mr-2 {
+    margin-right: 0.5rem;
+}
+
+.ml-2 {
+    margin-left: 0.5rem;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .admin-form .form-row {
+        flex-direction: column;
+    }
+    
+    .admin-form .form-col {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+    
+    .admin-form .form-footer {
+        flex-direction: column;
+    }
+    
+    .admin-form .form-footer .btn {
+        width: 100%;
+        margin-left: 0;
+        margin-bottom: 0.5rem;
+    }
+    
+    .admin-tabs {
+        flex-wrap: wrap;
+    }
+    
+    .admin-tabs .tab {
+        flex: 1 0 auto;
+        text-align: center;
+    }
+}

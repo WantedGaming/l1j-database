@@ -1,113 +1,121 @@
 <?php
-// Set page variables
-$pageTitle = 'L1J Remastered Database Browser';
-$pageSubtitle = 'Browse and explore game data with ease';
+/**
+ * Home Page
+ * Main landing page for the L1J Database
+ */
+
+// Include database connection
+require_once 'includes/db_connect.php';
+require_once 'includes/functions.php';
+
+// Set page title and hero visibility
+$pageTitle = 'Home';
 $showHero = true;
-$showSearch = true;
 
 // Include header
-require_once __DIR__ . '/includes/layouts/header.php';
-
-// Define categories
-$categories = [
-    [
-        'id' => 'weapons',
-        'title' => 'Weapons',
-        'description' => 'Browse all weapons including stats, skills and effects.',
-        'icon' => 'sword',
-        'tables' => ['weapon.sql', 'weapon_skill.sql', 'weapon_skill_model.sql', 'weapons_skill_spell_def.sql']
-    ],
-    [
-        'id' => 'armor',
-        'title' => 'Armor',
-        'description' => 'Explore armor pieces and sets with their protective values.',
-        'icon' => 'shield',
-        'tables' => ['armor.sql', 'armor_set.sql']
-    ],
-    [
-        'id' => 'items',
-        'title' => 'Items',
-        'description' => 'Search through potions, scrolls, and other items.',
-        'icon' => 'potion',
-        'tables' => ['etcitem.sql']
-    ],
-    [
-        'id' => 'monsters',
-        'title' => 'Monsters',
-        'description' => 'Learn about monster stats, skills, and drops.',
-        'icon' => 'dragon',
-        'tables' => ['npc.sql (filter by impl "L1Monster" + "L1Doppelganger")', 'mobskill.sql', 'mobgroup.sql']
-    ],
-    [
-        'id' => 'maps',
-        'title' => 'Maps',
-        'description' => 'Discover the world map and teleport locations.',
-        'icon' => 'map',
-        'tables' => ['mapids.sql']
-    ],
-    [
-        'id' => 'dolls',
-        'title' => 'Dolls',
-        'description' => 'View magical dolls and their unique abilities.',
-        'icon' => 'doll',
-        'tables' => ['npc.sql (filter by impl "L1Doll")', 'magicdoll_info.sql', 'magicdoll_potential.sql']
-    ],
-    [
-        'id' => 'npcs',
-        'title' => 'NPCs',
-        'description' => 'Find information about shopkeepers, guards, and quest givers.',
-        'icon' => 'person',
-        'tables' => ['npc.sql (filter by impl "L1Blackknight", "L1Dwarf", "L1Guard", "L1HouseKeeper", "L1Merchant", "L1Npc", "L1Teleporter")']
-    ],
-    [
-        'id' => 'skills',
-        'title' => 'Skills',
-        'description' => 'Learn about active and passive skills for all classes.',
-        'icon' => 'magic',
-        'tables' => ['skills.sql', 'skills_hanlder.sql', 'skills_info.sql', 'skills_passive.sql']
-    ],
-    [
-        'id' => 'polymorph',
-        'title' => 'Polymorph',
-        'description' => 'Explore transformation options and their effects.',
-        'icon' => 'transform',
-        'tables' => ['polymorphs.sql']
-    ]
-];
+include 'includes/header.php';
 ?>
 
-<div class="container">
-    <div class="cards-grid">
-        <?php foreach ($categories as $category): ?>
-        <div class="card">
-            <div class="card-image">
-                <img src="/public/images/icons/<?php echo $category['icon']; ?>.svg" alt="<?php echo $category['title']; ?> Icon">
+<section class="mb-8">
+    <h2 class="section-title">Welcome to the L1J Database</h2>
+    <p>The L1J Database is a comprehensive resource for Lineage 1 server data, providing detailed information about weapons, armor, items, monsters, maps, and more. Use the search bar above or explore categories below to find what you're looking for.</p>
+</section>
+
+<section class="mb-8">
+    <h2 class="section-title">Browse Categories</h2>
+    <div class="grid grid-cols-3 gap-8">
+        <a href="weapons/" class="card category-card">
+            <img src="<?php echo getImagePath('item', 47); ?>" alt="Weapons" class="category-icon">
+            <h3 class="category-title">Weapons</h3>
+            <p class="card-description">Explore swords, daggers, bows, staves, and other weapons</p>
+        </a>
+        
+        <a href="armor/" class="card category-card">
+            <img src="<?php echo getImagePath('item', 20322); ?>" alt="Armor" class="category-icon">
+            <h3 class="category-title">Armor</h3>
+            <p class="card-description">Browse helmets, shields, armor, gloves, and boots</p>
+        </a>
+        
+        <a href="items/" class="card category-card">
+            <img src="<?php echo getImagePath('item', 40308); ?>" alt="Items" class="category-icon">
+            <h3 class="category-title">Items</h3>
+            <p class="card-description">Find scrolls, potions, jewels, and other miscellaneous items</p>
+        </a>
+        
+        <a href="monsters/" class="card category-card">
+            <img src="<?php echo getImagePath('monster', 45); ?>" alt="Monsters" class="category-icon">
+            <h3 class="category-title">Monsters</h3>
+            <p class="card-description">Learn about all monsters, their drops, and spawn locations</p>
+        </a>
+        
+        <a href="maps/" class="card category-card">
+            <img src="<?php echo getImagePath('map', 4); ?>" alt="Maps" class="category-icon">
+            <h3 class="category-title">Maps</h3>
+            <p class="card-description">Explore game regions, cities, dungeons, and other areas</p>
+        </a>
+        
+        <a href="skills/" class="card category-card">
+            <img src="<?php echo getImagePath('skill', 1); ?>" alt="Skills" class="category-icon">
+            <h3 class="category-title">Skills</h3>
+            <p class="card-description">Discover character skills, spells, and abilities</p>
+        </a>
+    </div>
+</section>
+
+<section class="mb-8">
+    <h2 class="section-title">Recent Updates</h2>
+    <div class="list-container">
+        <?php
+        // Get recent updates (placeholder query - would be replaced with actual data)
+        $updates = [
+            [
+                'date' => '2025-05-01',
+                'title' => 'New Weapons Added',
+                'description' => 'Added 10 new weapons to the database.'
+            ],
+            [
+                'date' => '2025-04-28',
+                'title' => 'Monster Spawn Updates',
+                'description' => 'Updated spawn locations for several monsters.'
+            ],
+            [
+                'date' => '2025-04-22',
+                'title' => 'New Map Information',
+                'description' => 'Added detailed information for the Dragon Valley map.'
+            ],
+            [
+                'date' => '2025-04-15',
+                'title' => 'Item Search Improved',
+                'description' => 'Enhanced search functionality for items.'
+            ]
+        ];
+        
+        foreach ($updates as $update):
+        ?>
+        <div class="list-row">
+            <div class="item-details">
+                <div class="item-name"><?php echo $update['title']; ?></div>
+                <div class="item-info">
+                    <?php echo $update['description']; ?>
+                </div>
             </div>
-            <div class="card-content">
-                <h2 class="card-title"><?php echo $category['title']; ?></h2>
-                <p class="card-text"><?php echo $category['description']; ?></p>
-                <a href="/<?php echo $category['id']; ?>/" class="card-link">Browse</a>
+            <div class="text-right">
+                <div class="text-light"><?php echo date('M j, Y', strtotime($update['date'])); ?></div>
             </div>
         </div>
         <?php endforeach; ?>
     </div>
-    
-    <div class="about-section">
-        <h2>About L1J Remastered Database Browser</h2>
-        <p>
-            This database browser provides easy access to L1J Remastered game data, allowing players and administrators
-            to quickly search, filter, and explore game information. Use the category cards above to navigate to specific
-            sections of interest.
-        </p>
-        <p>
-            The browser includes detailed information about weapons, armor, items, monsters, and more, all organized in a
-            clean and accessible format. For administrators, full CRUD functionality is available to manage and update
-            game data as needed.
-        </p>
+</section>
+
+<section>
+    <h2 class="section-title">Contribute</h2>
+    <div class="card p-6">
+        <p class="mb-4">The L1J Database is a community-driven project. If you'd like to contribute by adding or updating information, please contact the administrator or use the admin section to submit changes.</p>
+        <a href="contact.php" class="btn btn-primary">Contact Us</a>
     </div>
-</div>
+</section>
 
 <?php
 // Include footer
-require_once __DIR__ . '/includes/layouts/footer.php';
+include 'includes/footer.php';
 ?>

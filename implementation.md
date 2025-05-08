@@ -1,16 +1,14 @@
 # L1J Database Website Implementation Plan
 
 ## Project Overview
-A PHP/HTML5/Tailwind CSS/Bootstrap5 database browser for the L1J Remastered game data with admin CRUD functionality. The site will feature a modern, card-based design with a clean, dark theme based on the specified color scheme.
+A PHP/HTML5/Tailwind CSS/ database browser for the L1J Remastered game data with admin CRUD functionality. The site will feature a modern, card-based design with a clean, dark theme based on the specified color scheme.
 
 **Color Scheme:**
---text: #ffffff;
---background: #030303
---primary: #121213;
---secondary: #161616;
---accent: #b84a17;
-
-
+    --text: #ffffff;
+    --background: #030303;
+    --primary: #080808;
+    --secondary: #0a0a0a;
+    --accent: #f94b1f;
 
 **Main Categories:**
 1. Weapons - (weapon.sql, weapon_skill.sql, weapon_skill_model.sql, weapons_skill_spell_def.sql)
@@ -33,7 +31,7 @@ A PHP/HTML5/Tailwind CSS/Bootstrap5 database browser for the L1J Remastered game
     - Admin
 - admin header should similar, but with return or back to site
 - all pages should have hero section with search bar inside
-- index page should have 3 categories per row.
+- index page should have 3 categories cards per row.
 - public index page should match admin dashboard with little differences
 - each categories should have a list view, and a detail view, named accordingly
 - folder structure should be easy to understand, without making it so complex

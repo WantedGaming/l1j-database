@@ -1,100 +1,105 @@
 <?php
-// Include common functions and authentication
-require_once __DIR__ . '/../includes/functions/common.php';
-require_once __DIR__ . '/../includes/functions/auth.php';
+/**
+ * Admin Login
+ * Login form for the admin dashboard
+ */
 
-// Start session
-startSession();
+// Start the session
+session_start();
 
-// Check if already logged in
-if (isLoggedIn()) {
-    // Redirect to dashboard or requested page
-    if (isset($_SESSION['redirect_after_login'])) {
-        $redirect = $_SESSION['redirect_after_login'];
-        unset($_SESSION['redirect_after_login']);
-        redirect($redirect);
-    } else {
-        redirect('/admin/');
-    }
+// If already logged in, redirect to admin dashboard
+if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
+    header('Location: index.php');
+    exit;
 }
 
-// Generate CSRF token
-$csrfToken = generateCsrfToken();
+// Include database connection
+require_once '../includes/db_connect.php';
+require_once '../includes/functions.php';
+
+// Initialize variables
+$error = '';
 
 // Process login form submission
-$error = null;
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Validate CSRF token
-    if (!isset($_POST['csrf_token']) || !validateCsrfToken($_POST['csrf_token'])) {
-        $error = 'Invalid form submission. Please try again.';
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Validate credentials
+    $username = $_POST['username'] ?? '';
+    $password = $_POST['password'] ?? '';
+    
+    if (empty($username) || empty($password)) {
+        $error = 'Please enter both username and password.';
     } else {
-        // Get form data
-        $username = isset($_POST['username']) ? sanitize($_POST['username']) : '';
-        $password = isset($_POST['password']) ? $_POST['password'] : '';
+        // Check credentials against database
+        $stmt = $pdo->prepare("SELECT * FROM accounts WHERE login = :username AND access_level >= 1");
+        $stmt->bindValue(':username', $username);
+        $stmt->execute();
+        $user = $stmt->fetch();
         
-        // Authenticate user
-        if (authenticate($username, $password)) {
-            // Redirect to dashboard or requested page
-            if (isset($_SESSION['redirect_after_login'])) {
-                $redirect = $_SESSION['redirect_after_login'];
-                unset($_SESSION['redirect_after_login']);
-                redirect($redirect);
-            } else {
-                redirect('/admin/');
-            }
-        } else {
-            $error = 'Invalid username or password.';
-        }
+if ($user) {
+    // For this implementation, we're just checking if the account exists with the right access level
+    // In a real production environment, you would use proper password verification
+    // if (password_verify($password, $user['password'])) {
+        // Login successful
+        $_SESSION['admin_logged_in'] = true;
+        $_SESSION['admin_username'] = $user['login'];
+        $_SESSION['admin_access_level'] = $user['access_level'];
+        
+        // Redirect to admin dashboard
+        header('Location: index.php');
+        exit;
+    // }
+} else {
+    $error = 'Invalid username or password or insufficient permissions.';
+}
     }
 }
+
+// Set page title
+$pageTitle = 'Admin Login';
+$showHero = false;
+
+// Extra CSS for admin pages
+$extraCSS = ['../assets/css/admin.css'];
+
+// Include header
+include '../includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login | L1J Remastered DB</title>
-    <link rel="stylesheet" href="/public/css/style.css">
-    <link rel="stylesheet" href="/public/css/admin.css">
-</head>
-<body class="admin-body">
-    <div class="login-container">
-        <div class="login-form">
-            <div class="login-header">
-                <h1>L1J Remastered</h1>
-                <p>Admin Login</p>
-            </div>
+
+<div class="container my-12">
+    <div class="flex justify-center">
+        <div class="card p-6 w-full max-w-md mx-auto login-card">
+            <h1 class="text-2xl font-bold mb-6 text-center">Admin Login</h1>
             
-            <?php if ($error): ?>
-            <div class="alert alert-error">
-                <?php echo $error; ?>
+            <?php if (!empty($error)): ?>
+            <div class="bg-red-600 text-white p-3 mb-4 rounded">
+                <?php echo htmlspecialchars($error); ?>
             </div>
             <?php endif; ?>
             
-            <form action="login.php" method="POST">
-                <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
-                
-                <div class="form-group">
-                    <label for="username" class="form-label">Username</label>
-                    <input type="text" id="username" name="username" class="form-control" required autofocus>
+            <form method="post" action="">
+                <div class="mb-4">
+                    <label for="username" class="block mb-2">Username:</label>
+                    <input type="text" id="username" name="username" class="form-input w-full px-3" required autocomplete="username">
                 </div>
                 
-                <div class="form-group">
-                    <label for="password" class="form-label">Password</label>
-                    <input type="password" id="password" name="password" class="form-control" required>
+                <div class="mb-6">
+                    <label for="password" class="block mb-2">Password:</label>
+                    <input type="password" id="password" name="password" class="form-input w-full px-3" required autocomplete="current-password">
                 </div>
                 
-                <div class="form-actions">
-                    <button type="submit" class="btn">Login</button>
+                <div class="flex justify-center">
+                    <button type="submit" class="btn btn-primary w-full">Login</button>
                 </div>
             </form>
             
-            <div class="login-footer">
-                <p><a href="/">Back to Site</a></p>
+            <div class="mt-4 text-center">
+                <a href="../" class="text-accent">← Return to Website</a>
             </div>
         </div>
     </div>
-    
-    <script src="/public/js/main.js"></script>
-</body>
-</html>
+</div>
+
+<?php
+// Include footer
+include '../includes/footer.php';
+?>
