@@ -1,0 +1,27 @@
+characters.sql
+
+Column: Class
+[M] Knight (48) => /assets/img/placeholders/class/48_0.png
+[F] Knight (48) => /assets/img/placeholders/class/48_1.png
+[M] Royal (0) => /assets/img/placeholders/class/0_0.png
+[F] Royal (0) => /assets/img/placeholders/class/0_1.png
+[M] Wizard (2079) => /assets/img/placeholders/class/2079_0.png
+[F] Wizard (2079) => /assets/img/placeholders/class/2079_1.png
+[M] DragonKnight (6661) => /assets/img/placeholders/class/6661_0.png
+[F] DragonKnight (6661) => /assets/img/placeholders/class/6661_1.png
+[M] Lancer (19299) => /assets/img/placeholders/class/19299_0.png
+[F] Lancer (19299) => /assets/img/placeholders/class/19299_1.png
+[M] Fencer (18499) => /assets/img/placeholders/class/18499_0.png
+[F] Fencer (18499) => /assets/img/placeholders/class/18499_1.png
+[M] Elf (37) => /assets/img/placeholders/class/37_0.png
+[F] Elf (37) => /assets/img/placeholders/class/37_1.png
+[M] DarkElf (2796) => /assets/img/placeholders/class/2796_0.png
+[F] DarkElf (2796) => /assets/img/placeholders/class/2796_1.png
+[M] Illusionist (6650) => /assets/img/placeholders/class/6650_0.png
+[F] Illusionist (6650) => /assets/img/placeholders/class/6650_1.png
+[M] Warrior (20577) => /assets/img/placeholders/class/20577_0.png
+[F] Warrior (20577) => /assets/img/placeholders/class/20577_1.png
+
+Column: gender
+Male (0)
+Female (1)
