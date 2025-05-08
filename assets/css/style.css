@@ -5,9 +5,9 @@
 
 :root {
     --color-text: #ffffff;
-    --color-background: #0a0a0a;
-    --color-primary: #121212;
-    --color-secondary: #1a1a1a;
+    --color-background: #030303;
+    --color-primary: #080808;
+    --color-secondary: #0a0a0a;
     --color-accent: #e07c4f;
     --color-accent-glow: rgba(224, 124, 79, 0.3);
     --color-dark-accent: #b45a35;

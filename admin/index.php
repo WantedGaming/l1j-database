@@ -59,6 +59,19 @@ $statIcons = [
     'skills' => 'bolt',
     'polymorph' => 'exchange-alt'
 ];
+
+// Define image paths for categories - only used in Database Overview
+$statImages = [
+    'weapons' => '../assets/img/placeholders/weapons.png',
+    'armor' => '../assets/img/placeholders/armor.png',
+    'items' => '../assets/img/placeholders/items.png',
+    'monsters' => '../assets/img/placeholders/monsters.png',
+    'maps' => '../assets/img/placeholders/maps.png',
+    'dolls' => '../assets/img/placeholders/dolls.png',
+    'npcs' => '../assets/img/placeholders/npc.png',
+    'skills' => '../assets/img/placeholders/skill.png',
+    'polymorph' => '../assets/img/placeholders/poly.png'
+];
 ?>
 
 <?php include '../includes/header.php'; ?>
@@ -152,12 +165,14 @@ $statIcons = [
     <!-- Dashboard Overview -->
     <h3 class="mb-4"><i class="fas fa-chart-line me-2"></i> Database Overview</h3>
     <div class="row mb-4">
-        <?php foreach ($stats as $category => $count): ?>
+        <?php foreach ($stats as $category => $count): 
+            $imagePath = $statImages[$category] ?? '../assets/img/placeholders/items.png';
+        ?>
         <div class="col-md-4 col-sm-6 mb-4">
             <div class="admin-stat-card position-relative">
                 <div class="stat-value"><?= number_format($count) ?></div>
                 <div class="stat-label"><?= ucfirst($category) ?></div>
-                <i class="fas fa-<?= $statIcons[$category] ?? 'database' ?> stat-icon"></i>
+                <img src="<?= $imagePath ?>" alt="<?= ucfirst($category) ?>" class="stat-icon">
             </div>
         </div>
         <?php endforeach; ?>
@@ -247,7 +262,7 @@ $statIcons = [
                                 </div>
                                 <div class="card-body">
                                     <div class="mb-3">
-                                        <strong>Tables:</strong>
+                                        <strong class="text-accent">Tables:</strong>
                                         <div class="d-flex flex-wrap gap-1 mt-1">
                                             <?php foreach ($category['tables'] as $table): ?>
                                             <span class="badge bg-secondary"><?= $table ?></span>
@@ -255,7 +270,7 @@ $statIcons = [
                                         </div>
                                     </div>
                                     <div>
-                                        <strong>Records:</strong> 
+                                        <strong class="text-accent">Records:</strong> 
                                         <span class="badge bg-primary"><?= number_format($stats[$category['id']] ?? 0) ?></span>
                                     </div>
                                 </div>
