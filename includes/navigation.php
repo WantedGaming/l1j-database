@@ -1,6 +1,12 @@
 <?php
 // Get relative path prefix based on if we're in admin or not
 $path_prefix = isset($is_admin) && $is_admin ? '../' : '';
+
+// Check for admin login status
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+$is_logged_in = isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true;
 ?>
 <nav class="site-navigation navbar navbar-expand-lg navbar-dark">
     <div class="container">
@@ -35,11 +41,26 @@ $path_prefix = isset($is_admin) && $is_admin ? '../' : '';
                     </ul>
                 </li>
                 
+                <?php if ($is_logged_in): ?>
+                <!-- Admin is logged in: Show admin dashboard link and logout -->
                 <li class="nav-item">
-                    <a class="nav-link" href="<?= $path_prefix . (isset($is_admin) && $is_admin ? '' : 'admin/') ?>">
-                        <i class="fas fa-cog me-1"></i> <?= isset($is_admin) && $is_admin ? 'Admin Dashboard' : 'Admin' ?>
+                    <a class="nav-link <?= (isset($is_admin) && $is_admin) ? 'active' : '' ?>" href="<?= $path_prefix ?>admin/">
+                        <i class="fas fa-cog me-1"></i> Admin Dashboard
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link text-danger" href="<?= $path_prefix ?>admin/logout.php">
+                        <i class="fas fa-sign-out-alt me-1"></i> Logout
+                    </a>
+                </li>
+                <?php else: ?>
+                <!-- Not logged in: Show admin login link -->
+                <li class="nav-item">
+                    <a class="nav-link" href="<?= $path_prefix ?>admin/login.php">
+                        <i class="fas fa-lock me-1"></i> Admin Login
+                    </a>
+                </li>
+                <?php endif; ?>
             </ul>
             
             <form class="d-flex search-form" action="<?= $path_prefix ?>search.php" method="get">
@@ -50,6 +71,13 @@ $path_prefix = isset($is_admin) && $is_admin ? '../' : '';
                     </button>
                 </div>
             </form>
+            
+            <?php if ($is_logged_in): ?>
+            <div class="ms-3 d-none d-lg-flex align-items-center text-light">
+                <i class="fas fa-user-circle me-2"></i>
+                <span><?= $_SESSION['admin_user_id'] ?></span>
+            </div>
+            <?php endif; ?>
         </div>
     </div>
 </nav>

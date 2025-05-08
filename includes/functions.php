@@ -251,3 +251,108 @@ function getCategoryFromTable($table) {
             return 'unknown';
     }
 }
+
+/**
+ * Authentication related functions
+ */
+
+/**
+ * Authenticate a user based on login credentials
+ * 
+ * @param string $username Username (login field in accounts table)
+ * @param string $password Password
+ * @return array|false User data if authenticated, false otherwise
+ */
+function authenticateUser($username, $password) {
+    $conn = getDbConnection();
+    
+    // Sanitize inputs
+    $username = $conn->real_escape_string($username);
+    
+    // Query the accounts table
+    $query = "SELECT * FROM accounts WHERE login = '$username' LIMIT 1";
+    $result = $conn->query($query);
+    
+    if ($result && $result->num_rows > 0) {
+        $user = $result->fetch_assoc();
+        
+        // Password verification
+        // Note: This is simplified and assumes passwords are stored in plaintext
+        // In a real application, you should use password_hash and password_verify
+        if ($user['password'] === $password) {
+            return $user;
+        }
+    }
+    
+    return false;
+}
+
+/**
+ * Check if the current user is logged in as admin
+ * 
+ * @return bool True if user is logged in as admin
+ */
+function isAdminLoggedIn() {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    
+    return isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true;
+}
+
+/**
+ * Check if user has admin access level
+ * 
+ * @param array $user User data from database
+ * @return bool True if user has admin access level
+ */
+function hasAdminAccess($user) {
+    // Admin users should have access_level of 1 or higher
+    return isset($user['access_level']) && $user['access_level'] >= 1;
+}
+
+/**
+ * Create an admin session for the user
+ * 
+ * @param array $user User data from database
+ * @return void
+ */
+function createAdminSession($user) {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    
+    $_SESSION['admin_logged_in'] = true;
+    $_SESSION['admin_user_id'] = $user['login'];
+    $_SESSION['admin_access_level'] = $user['access_level'];
+    $_SESSION['admin_last_activity'] = time();
+}
+
+/**
+ * End the admin session
+ * 
+ * @return void
+ */
+function endAdminSession() {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    
+    // Unset all session variables
+    $_SESSION = [];
+    
+    // Destroy the session
+    session_destroy();
+}
+
+/**
+ * Require admin authentication or redirect to login
+ * 
+ * @return void
+ */
+function requireAdminAuth() {
+    if (!isAdminLoggedIn()) {
+        header('Location: login.php');
+        exit;
+    }
+}

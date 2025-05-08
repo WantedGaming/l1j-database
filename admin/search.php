@@ -1,6 +1,9 @@
 <?php
-require_once '../config.php';
+require_once '../includes/config.php';
 require_once '../includes/functions.php';
+
+// Require admin authentication
+requireAdminAuth();
 
 $page_title = 'Admin Search';
 $is_admin = true;
@@ -37,9 +40,17 @@ if ($category) {
                 <h1>Admin Search</h1>
             </div>
             <div class="col-md-6 text-md-end">
-                <a href="index.php" class="btn btn-outline-primary">
-                    <i class="fas fa-tachometer-alt"></i> Back to Dashboard
-                </a>
+                <div class="d-flex justify-content-md-end">
+                    <span class="me-3 d-flex align-items-center">
+                        <i class="fas fa-user-circle me-2"></i> <?= $_SESSION['admin_user_id'] ?>
+                    </span>
+                    <a href="logout.php" class="btn btn-outline-danger me-2">
+                        <i class="fas fa-sign-out-alt me-1"></i> Logout
+                    </a>
+                    <a href="index.php" class="btn btn-outline-primary">
+                        <i class="fas fa-tachometer-alt"></i> Back to Dashboard
+                    </a>
+                </div>
             </div>
         </div>
     </div>
