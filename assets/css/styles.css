@@ -11,6 +11,8 @@
     --primary: #080808;
     --secondary: #0a0a0a;
     --accent: #f94b1f;
+    --card-border: rgba(255, 255, 255, 0.05);
+    --card-hover-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
 }
 
 /* Base Styles */
@@ -130,15 +132,24 @@ a:hover {
     position: relative;
 }
 
+/* Navigation Link Icon Alignment */
 .nav-link {
-    color: var(--text);
-    font-weight: 500;
-    padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.5rem;
 }
 
 .nav-link:hover {
     color: var(--accent);
     text-decoration: none;
+}
+
+.nav-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  object-fit: contain;
 }
 
 /* Dropdown Menu */
@@ -158,20 +169,63 @@ a:hover {
     padding: 0.5rem 0;
 }
 
+.dropdown-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
 .dropdown:hover .dropdown-content {
     display: block;
 }
 
+/* Dropdown Item Icon Alignment */
 .dropdown-item {
-    display: block;
-    padding: 0.5rem 1rem;
-    color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.5rem 1rem;
 }
 
 .dropdown-item:hover {
     background-color: var(--primary);
     color: var(--accent);
     text-decoration: none;
+}
+
+/* Additional CSS for new dropdown layout */
+.database-dropdown {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(150px, 1fr));
+    min-width: 600px;
+    padding: 1rem;
+}
+
+.dropdown-section {
+    padding: 0.5rem;
+}
+
+.dropdown-heading {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+    .database-dropdown {
+        grid-template-columns: 1fr 1fr;
+        min-width: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .database-dropdown {
+        grid-template-columns: 1fr;
+        min-width: 200px;
+    }
 }
 
 /* Hero Section */
@@ -232,17 +286,20 @@ a:hover {
     background-color: #d74a0d;
 }
 
-/* Cards */
+/* Redesigned Cards */
 .card {
     background-color: var(--secondary);
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    border: 1px solid var(--card-border);
 }
 
 .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    transform: translateY(-8px);
+    box-shadow: var(--card-hover-shadow);
+    text-decoration: none;
 }
 
 .card-img {
@@ -261,37 +318,88 @@ a:hover {
     margin-bottom: 0.5rem;
 }
 
-.card-description {
-    opacity: 0.8;
-    margin-bottom: 1rem;
-}
-
+/* Modern Category Cards */
 .category-card {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 2rem;
-    text-align: center;
+    height: 100%;
 }
 
-.category-icon {
-    width: 64px;
-    height: 64px;
-    margin-bottom: 1rem;
+/* Card Header */
+.card-header {
+    padding: 1.5rem 1.5rem 0;
+    width: 100%;
 }
 
-.category-title {
+.category-card .category-title {
     font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0;
+    position: relative;
+    padding-bottom: 1rem;
+}
+
+.category-card .category-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background-color: var(--accent);
+    border-radius: 2px;
+}
+
+/* Card Content */
+.category-card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem;
+    flex-grow: 1;
+}
+
+/* Larger Icon */
+.category-card .category-icon {
+    width: 80px;
+    height: 80px;
+    margin: 1rem 0 1.5rem;
+    transition: transform 0.3s ease;
+}
+
+.card.category-card:hover .category-icon {
+    transform: scale(1.1);
+}
+
+/* Description with proper padding */
+.category-card .card-description {
+    color: var(--text);
+    opacity: 0.8;
+    padding: 0 1rem;
+    margin: 0;
+    transition: color 0.3s ease;
+    text-align: center;
+    line-height: 1.5;
+}
+
+/* Change only description color on hover */
+.card.category-card:hover .card-description {
+    color: var(--accent);
+}
+
+/* Override any text decoration on card anchors */
+a.card:hover {
+    text-decoration: none;
 }
 
 /* List View */
 .list-container {
     background-color: var(--secondary);
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
     margin-bottom: 2rem;
+    border: 1px solid var(--card-border);
 }
 
 .list-header {
@@ -348,8 +456,9 @@ a:hover {
 .detail-image {
     width: 100%;
     height: auto;
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
+    border: 1px solid var(--card-border);
 }
 
 .detail-image img {
@@ -359,8 +468,9 @@ a:hover {
 
 .detail-content {
     background-color: var(--secondary);
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 2rem;
+    border: 1px solid var(--card-border);
 }
 
 .detail-title {
@@ -400,6 +510,8 @@ a:hover {
 .table-container {
     overflow-x: auto;
     margin-bottom: 2rem;
+    border-radius: 12px;
+    border: 1px solid var(--card-border);
 }
 
 .data-table {
@@ -443,9 +555,10 @@ a:hover {
     height: 40px;
     background-color: var(--secondary);
     color: var(--text);
-    border-radius: 4px;
+    border-radius: 8px;
     text-decoration: none;
     transition: background-color 0.3s ease;
+    border: 1px solid var(--card-border);
 }
 
 .page-link:hover {
@@ -456,6 +569,7 @@ a:hover {
 .page-link.active {
     background-color: var(--accent);
     font-weight: 600;
+    border-color: var(--accent);
 }
 
 /* Forms */
@@ -476,7 +590,7 @@ a:hover {
     padding: 0.75rem 1rem;
     background-color: var(--primary);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
+    border-radius: 8px;
     color: var(--text);
 }
 
@@ -499,15 +613,20 @@ a:hover {
     background-color: var(--accent);
     color: var(--text);
     border: none;
-    border-radius: 4px;
+    border-radius: 8px;
     cursor: pointer;
     font-weight: 500;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .btn:hover {
     background-color: #d74a0d;
     text-decoration: none;
+    transform: translateY(-2px);
+}
+
+.btn:active {
+    transform: translateY(0);
 }
 
 .btn-primary {
@@ -516,6 +635,7 @@ a:hover {
 
 .btn-secondary {
     background-color: var(--secondary);
+    border: 1px solid var(--card-border);
 }
 
 .btn-small {
@@ -533,6 +653,7 @@ a:hover {
     background-color: var(--primary);
     padding: 3rem 0;
     margin-top: 4rem;
+    border-top: 1px solid var(--card-border);
 }
 
 .footer-grid {
@@ -545,6 +666,18 @@ a:hover {
     font-size: 1.25rem;
     margin-bottom: 1.5rem;
     color: var(--accent);
+    position: relative;
+    padding-bottom: 0.75rem;
+}
+
+.footer-column h3::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 30px;
+    height: 2px;
+    background-color: var(--accent);
 }
 
 .footer-links {
@@ -560,10 +693,12 @@ a:hover {
 .footer-links a {
     color: var(--text);
     opacity: 0.8;
+    transition: opacity 0.3s ease, color 0.3s ease;
 }
 
 .footer-links a:hover {
     opacity: 1;
+    color: var(--accent);
 }
 
 .footer-bottom {
@@ -578,11 +713,14 @@ a:hover {
 .admin-header {
     background-color: var(--accent);
     color: var(--text);
+    border-radius: 12px;
 }
 
 .admin-nav {
     background-color: var(--primary);
     padding: 1rem 0;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
 }
 
 .admin-content {
@@ -591,9 +729,10 @@ a:hover {
 
 .admin-card {
     background-color: var(--secondary);
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
+    border: 1px solid var(--card-border);
 }
 
 /* Utilities */
@@ -680,12 +819,12 @@ a:hover {
     }
     
     .search-input {
-        border-radius: 4px;
+        border-radius: 8px;
         margin-bottom: 0.5rem;
     }
     
     .search-button {
-        border-radius: 4px;
+        border-radius: 8px;
         width: 100%;
     }
 }

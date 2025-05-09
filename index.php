@@ -25,39 +25,93 @@ include 'includes/header.php';
     <h2 class="section-title">Browse Categories</h2>
     <div class="grid grid-cols-3 gap-8">
         <a href="weapons/" class="card category-card">
-            <img src="<?php echo getImagePath('item', 47); ?>" alt="Weapons" class="category-icon">
-            <h3 class="category-title">Weapons</h3>
-            <p class="card-description">Explore swords, daggers, bows, staves, and other weapons</p>
+            <div class="card-header">
+                <h3 class="category-title">Weapons</h3>
+            </div>
+            <div class="category-card-content">
+                <img src="assets/img/placeholders/weapons.png" alt="Weapons" class="category-icon">
+                <p class="card-description">Discover powerful blades, bows, and magical staves</p>
+            </div>
         </a>
         
         <a href="armor/" class="card category-card">
-            <img src="<?php echo getImagePath('item', 20322); ?>" alt="Armor" class="category-icon">
-            <h3 class="category-title">Armor</h3>
-            <p class="card-description">Browse helmets, shields, armor, gloves, and boots</p>
+            <div class="card-header">
+                <h3 class="category-title">Armor</h3>
+            </div>
+            <div class="category-card-content">
+                <img src="assets/img/placeholders/armor.png" alt="Armor" class="category-icon">
+                <p class="card-description">Find protective gear for every class and level</p>
+            </div>
         </a>
         
         <a href="items/" class="card category-card">
-            <img src="<?php echo getImagePath('item', 40308); ?>" alt="Items" class="category-icon">
-            <h3 class="category-title">Items</h3>
-            <p class="card-description">Find scrolls, potions, jewels, and other miscellaneous items</p>
+            <div class="card-header">
+                <h3 class="category-title">Items</h3>
+            </div>
+            <div class="category-card-content">
+                <img src="assets/img/placeholders/items.png" alt="Items" class="category-icon">
+                <p class="card-description">Explore potions, scrolls, and valuable treasures</p>
+            </div>
         </a>
         
         <a href="monsters/" class="card category-card">
-            <img src="<?php echo getImagePath('monster', 45); ?>" alt="Monsters" class="category-icon">
-            <h3 class="category-title">Monsters</h3>
-            <p class="card-description">Learn about all monsters, their drops, and spawn locations</p>
+            <div class="card-header">
+                <h3 class="category-title">Monsters</h3>
+            </div>
+            <div class="category-card-content">
+                <img src="assets/img/placeholders/monsters.png" alt="Monsters" class="category-icon">
+                <p class="card-description">Study foes, their abilities, and valuable drops</p>
+            </div>
         </a>
         
         <a href="maps/" class="card category-card">
-            <img src="<?php echo getImagePath('map', 4); ?>" alt="Maps" class="category-icon">
-            <h3 class="category-title">Maps</h3>
-            <p class="card-description">Explore game regions, cities, dungeons, and other areas</p>
+            <div class="card-header">
+                <h3 class="category-title">Maps</h3>
+            </div>
+            <div class="category-card-content">
+                <img src="assets/img/placeholders/maps.png" alt="Maps" class="category-icon">
+                <p class="card-description">Navigate through diverse regions and dungeons</p>
+            </div>
         </a>
         
         <a href="skills/" class="card category-card">
-            <img src="<?php echo getImagePath('skill', 1); ?>" alt="Skills" class="category-icon">
-            <h3 class="category-title">Skills</h3>
-            <p class="card-description">Discover character skills, spells, and abilities</p>
+            <div class="card-header">
+                <h3 class="category-title">Skills</h3>
+            </div>
+            <div class="category-card-content">
+                <img src="assets/img/placeholders/skill.png" alt="Skill" class="category-icon">
+                <p class="card-description">Master character abilities and powerful spells</p>
+            </div>
+        </a>
+        
+        <a href="dolls/" class="card category-card">
+            <div class="card-header">
+                <h3 class="category-title">Dolls</h3>
+            </div>
+            <div class="category-card-content">
+                <img src="assets/img/placeholders/dolls.png" alt="Dolls" class="category-icon">
+                <p class="card-description">Browse companion pets and their special abilities</p>
+            </div>
+        </a>
+        
+        <a href="npc/" class="card category-card">
+            <div class="card-header">
+                <h3 class="category-title">NPCs</h3>
+            </div>
+            <div class="category-card-content">
+                <img src="assets/img/placeholders/npc.png" alt="NPC" class="category-icon">
+                <p class="card-description">Find merchants, quest givers, and key characters</p>
+            </div>
+        </a>
+        
+        <a href="polymorph/" class="card category-card">
+            <div class="card-header">
+                <h3 class="category-title">Polymorph</h3>
+            </div>
+            <div class="category-card-content">
+                <img src="assets/img/placeholders/poly.png" alt="Polymorph" class="category-icon">
+                <p class="card-description">Explore transformations and their unique powers</p>
+            </div>
         </a>
     </div>
 </section>

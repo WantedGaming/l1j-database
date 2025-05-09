@@ -206,28 +206,28 @@ function getImagePath($type, $id) {
         case 'weapon':
         case 'armor':
         case 'item':
-            return "assets/img/icons/icons/{$id}.png";
+            return "assets/img/icons/icons/{$iconId}.png";
         
         case 'map':
-            return "assets/img/icons/maps/{$id}.jpeg";
+            return "assets/img/icons/maps/{$pngId}.jpeg";
             
         case 'doll':
-            return "assets/img/icons/dolls/{$id}.png";
+            return "assets/img/icons/dolls/{$iconId}.png";
             
         case 'npc':
-            return "assets/img/icons/npcs/{$id}.png";
+            return "assets/img/icons/npcs/{$spriteId}.png";
             
         case 'skill':
-            return "assets/img/icons/skills/{$id}.png";
+            return "assets/img/icons/skills/{$icon}.png";
             
         case 'polymorph':
-            return "assets/img/icons/poly/{$id}.png";
+            return "assets/img/icons/poly/{$iconId}.png";
             
         case 'monster':
-            return "assets/img/icons/monsters/ms{$id}.png";
+            return "assets/img/icons/monsters/ms{$spriteId}.png";
             
         default:
-            return "assets/img/placeholders/default.png";
+            return "assets/img/placeholders/weapons-placeholder.png";
     }
 }
 

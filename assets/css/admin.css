@@ -3,16 +3,36 @@
  * Additional styles specific to the admin section
  */
 
+:root {
+    --card-border: rgba(255, 255, 255, 0.05);
+    --card-hover-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+}
+
 /* Admin Header */
 .admin-header {
     background-color: var(--secondary);
     color: var(--text);
-    border-radius: 8px;
+    border-radius: 12px;
     margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    border: 1px solid var(--card-border);
 }
 
 .admin-header h1 {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    position: relative;
+    padding-bottom: 0.75rem;
+}
+
+.admin-header h1::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background-color: var(--accent);
+    border-radius: 2px;
 }
 
 .admin-header p {
@@ -22,29 +42,44 @@
 /* Admin Cards */
 .admin-card {
     background-color: var(--secondary);
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 1.5rem;
     margin-bottom: 1rem;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid var(--card-border);
 }
 
 .admin-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    transform: translateY(-8px);
+    box-shadow: var(--card-hover-shadow);
 }
 
 .admin-card h3 {
     font-size: 1.25rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    position: relative;
+    padding-bottom: 0.75rem;
+}
+
+.admin-card h3::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 2px;
+    background-color: var(--accent);
+    border-radius: 2px;
 }
 
 /* Form Styles */
 .admin-form {
     background-color: var(--secondary);
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
+    border: 1px solid var(--card-border);
 }
 
 /* Login Form Styles */
@@ -54,6 +89,9 @@
     box-sizing: border-box;
     overflow: hidden;
     margin-top: 3rem;
+    border-radius: 12px;
+    border: 1px solid var(--card-border);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 
 .form-input {
@@ -62,15 +100,17 @@
     padding: 0.75rem 1rem;
     background-color: var(--primary);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
+    border-radius: 8px;
     color: var(--text);
     box-sizing: border-box;
     display: block;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .form-input:focus {
     border-color: var(--accent);
     outline: none;
+    box-shadow: 0 0 0 2px rgba(249, 75, 31, 0.2);
 }
 
 .admin-form .form-group {
@@ -80,6 +120,7 @@
 .admin-form .form-label {
     font-weight: 600;
     margin-bottom: 0.5rem;
+    display: block;
 }
 
 .admin-form .form-input,
@@ -89,8 +130,9 @@
     padding: 0.75rem 1rem;
     background-color: var(--primary);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
+    border-radius: 8px;
     color: var(--text);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .admin-form .form-input:focus,
@@ -98,10 +140,12 @@
 .admin-form .form-textarea:focus {
     border-color: var(--accent);
     outline: none;
+    box-shadow: 0 0 0 2px rgba(249, 75, 31, 0.2);
 }
 
 .admin-form .form-textarea {
     min-height: 150px;
+    resize: vertical;
 }
 
 .admin-form .form-row {
@@ -131,9 +175,10 @@
 /* Admin Tables */
 .admin-table-container {
     background-color: var(--secondary);
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
     margin-bottom: 1.5rem;
+    border: 1px solid var(--card-border);
 }
 
 .admin-table {
@@ -165,8 +210,9 @@
 /* Status Messages */
 .status-message {
     padding: 1rem;
-    border-radius: 4px;
+    border-radius: 8px;
     margin-bottom: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .status-success {
@@ -200,27 +246,35 @@
     background-color: var(--secondary);
     color: var(--text);
     border: none;
-    border-radius: 4px;
+    border-radius: 8px;
     padding: 0.5rem 0.75rem;
     font-size: 0.875rem;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .action-button:hover {
     background-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.action-button:active {
+    transform: translateY(0);
 }
 
 .action-button.edit {
     background-color: rgba(52, 152, 219, 0.2);
+    border: 1px solid rgba(52, 152, 219, 0.3);
 }
 
 .action-button.delete {
     background-color: rgba(231, 76, 60, 0.2);
+    border: 1px solid rgba(231, 76, 60, 0.3);
 }
 
 .action-button.view {
     background-color: rgba(39, 174, 96, 0.2);
+    border: 1px solid rgba(39, 174, 96, 0.3);
 }
 
 /* Admin Tabs */
@@ -228,12 +282,19 @@
     display: flex;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     margin-bottom: 1.5rem;
+    background-color: var(--secondary);
+    border-radius: 12px 12px 0 0;
+    padding: 0 0.5rem;
+    border: 1px solid var(--card-border);
+    border-bottom: none;
 }
 
 .admin-tabs .tab {
-    padding: 0.75rem 1.5rem;
+    padding: 1rem 1.5rem;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
+    border-bottom: 2px solid transparent;
+    position: relative;
 }
 
 .admin-tabs .tab:hover {
@@ -245,8 +306,25 @@
     font-weight: 600;
 }
 
+.admin-tabs .tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--accent);
+}
+
 .tab-content {
     display: none;
+    background-color: var(--secondary);
+    border-radius: 0 0 12px 12px;
+    padding: 1.5rem;
+    border: 1px solid var(--card-border);
+    border-top: none;
+    margin-top: -1.5rem;
+    margin-bottom: 1.5rem;
 }
 
 .tab-content.active {
@@ -263,8 +341,15 @@
 
 .widget {
     background-color: var(--secondary);
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 1.5rem;
+    border: 1px solid var(--card-border);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.widget:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--card-hover-shadow);
 }
 
 .widget-header {
@@ -272,11 +357,14 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .widget-title {
     font-size: 1.25rem;
     font-weight: 600;
+    position: relative;
 }
 
 .widget-content {
@@ -286,14 +374,17 @@
 .widget-footer {
     text-align: right;
     font-size: 0.875rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Statistics */
 .stat-value {
-    font-size: 2rem;
+    font-size: 2.5rem;
     font-weight: 700;
     color: var(--accent);
     margin-bottom: 0.5rem;
+    line-height: 1.2;
 }
 
 .stat-label {
@@ -308,6 +399,72 @@
 
 .bg-dark {
     background-color: var(--primary);
+}
+
+/* Admin Badge */
+.admin-badge {
+    display: inline-block;
+    background-color: var(--accent);
+    color: var(--text);
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.admin-logo-container {
+    display: flex;
+    align-items: center;
+}
+
+/* Admin Footer Styling */
+.admin-footer {
+    background-color: var(--primary);
+    padding: 2rem 0;
+    margin-top: 3rem;
+    border-top: 1px solid var(--card-border);
+}
+
+.admin-footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.admin-footer-logo {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.admin-footer-logo span {
+    color: var(--accent);
+}
+
+.admin-footer-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.admin-footer-links a {
+    color: var(--text);
+    opacity: 0.8;
+    transition: opacity 0.3s ease, color 0.3s ease;
+}
+
+.admin-footer-links a:hover {
+    opacity: 1;
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.admin-footer-bottom {
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+    opacity: 0.6;
 }
 
 /* Utility Classes */
@@ -359,5 +516,17 @@
     .admin-tabs .tab {
         flex: 1 0 auto;
         text-align: center;
+    }
+    
+    /* Mobile Responsiveness for Admin Footer */
+    .admin-footer-content {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .admin-footer-links {
+        flex-wrap: wrap;
+        justify-content: center;
     }
 }

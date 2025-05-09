@@ -13,7 +13,7 @@ $pageTitle = 'Admin - Manage Weapons';
 $showHero = false;
 
 // Extra CSS for admin
-$extraCSS = ['../../assets/css/admin.css'];
+$extraCSS = ['assets/css/admin.css'];
 
 // Get current page number
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
