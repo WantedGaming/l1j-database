@@ -71,19 +71,32 @@ header {
     margin-right: 10px;
 }
 
+/* Navigation Styles - UPDATED */
+nav {
+    display: flex;
+    align-items: center;
+}
+
 .nav-menu {
     display: flex;
     list-style: none;
+    align-items: center;
+    height: 100%;
 }
 
 .nav-item {
     margin-left: 20px;
+    position: relative;
+    display: flex;
+    align-items: center;
 }
 
 .nav-link {
     font-weight: 500;
     padding: 5px 10px;
     border-radius: 4px;
+    display: flex;
+    align-items: center;
 }
 
 .nav-link:hover, 
@@ -143,7 +156,7 @@ header {
     cursor: pointer;
 }
 
-/* Card Grid Layout */
+/* Card Grid Layout - UPDATED */
 .card-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -155,7 +168,11 @@ header {
     display: flex;
     flex-direction: column;
     height: 100%;
+    background-color: var(--primary);
+    border-radius: 8px;
+    overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .card:hover {
@@ -175,6 +192,7 @@ header {
     font-size: 18px;
     font-weight: 600;
     margin: 0;
+    color: #ffffff;
 }
 
 .card-img-container {
@@ -195,6 +213,7 @@ header {
     max-height: 140px;
     object-fit: contain;
     transition: transform 0.3s ease;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
 .card:hover .card-img {
@@ -207,12 +226,22 @@ header {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    background-color: var(--primary);
 }
 
 .card-text {
     margin-bottom: 15px;
     font-size: 14px;
     color: #ddd;
+    line-height: 1.5;
+}
+
+.card-count {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    padding-top: 10px;
+    border-top: 1px solid var(--secondary);
 }
 
 /* List View Styles */
@@ -472,6 +501,122 @@ footer {
     background-color: var(--accent);
 }
 
+/* Dropdown Menu Styles - UPDATED */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.dropdown-toggle i {
+    font-size: 12px;
+    transition: transform 0.3s ease;
+}
+
+.dropdown:hover .dropdown-toggle i {
+    transform: rotate(180deg);
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 100;
+    min-width: 180px;
+    background-color: var(--primary);
+    border-radius: 4px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    border: 1px solid var(--secondary);
+    margin-top: 5px;
+}
+
+.dropdown:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-item {
+    list-style: none;
+}
+
+.dropdown-link {
+    display: block;
+    padding: 10px 15px;
+    color: var(--text);
+    transition: background-color 0.3s ease;
+}
+
+.dropdown-link:hover,
+.dropdown-link.active {
+    background-color: var(--secondary);
+    color: var(--accent);
+}
+
+/* Table styles for map details page */
+.breadcrumb {
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th, .data-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--secondary);
+}
+
+.data-table th {
+    background-color: var(--secondary);
+}
+
+.detail-properties-list {
+    list-style: none;
+}
+
+.detail-properties-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--secondary);
+    display: flex;
+    justify-content: space-between;
+}
+
+.property-label {
+    font-weight: 500;
+    color: #aaa;
+}
+
+.npc-list {
+    list-style: none;
+}
+
+.npc-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--secondary);
+}
+
+.npc-location {
+    font-size: 12px;
+    color: #aaa;
+    margin-left: 8px;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 768px) {
     .card-grid {
@@ -515,62 +660,4 @@ footer {
     .nav-item {
         margin: 0 10px;
     }
-}
-
-/* Dropdown Menu Styles */
-.dropdown {
-    position: relative;
-}
-
-.dropdown-toggle {
-    display: flex;
-    align-items: center;
-}
-
-.dropdown-toggle i {
-    margin-left: 5px;
-    font-size: 12px;
-    transition: transform 0.3s ease;
-}
-
-.dropdown:hover .dropdown-toggle i {
-    transform: rotate(180deg);
-}
-
-.dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    z-index: 100;
-    min-width: 180px;
-    background-color: var(--primary);
-    border-radius: 4px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(10px);
-    transition: all 0.3s ease;
-}
-
-.dropdown:hover .dropdown-menu {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-.dropdown-item {
-    list-style: none;
-}
-
-.dropdown-link {
-    display: block;
-    padding: 10px 15px;
-    color: var(--text);
-    transition: background-color 0.3s ease;
-}
-
-.dropdown-link:hover,
-.dropdown-link.active {
-    background-color: var(--secondary);
-    color: var(--accent);
 }

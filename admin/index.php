@@ -60,6 +60,11 @@ $polyQuery = "SELECT COUNT(*) as count FROM polymorphs";
 $polyResult = executeQuery($polyQuery, $conn);
 $stats['polymorph'] = $polyResult ? $polyResult->fetch_assoc()['count'] : 0;
 
+// Get total accounts count
+$accountQuery = "SELECT COUNT(*) as count FROM accounts";
+$accountResult = executeQuery($accountQuery, $conn);
+$stats['accounts'] = $accountResult ? $accountResult->fetch_assoc()['count'] : 0;
+
 // Calculate total database entries
 $totalEntries = array_sum($stats);
 
@@ -240,6 +245,20 @@ include 'includes/admin-header.php';
                     <div class="admin-card-count"><?php echo number_format($stats['polymorph']); ?></div>
                 </div>
             </a>
+			
+			<!-- Accounts & Character Management Card -->
+            <a href="<?php echo $adminBaseUrl; ?>pages/polymorph/admin-polymorph-list.php" class="admin-card">
+                <div class="admin-card-header">
+                    <h2 class="admin-card-title">Accounts</h2>
+                </div>
+                <div class="admin-card-img">
+                    <img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/accounts.png" alt="Accounts" width="80" height="80">
+                </div>
+                <div class="admin-card-body">
+                    <div class="admin-card-count"><?php echo number_format($stats['accounts']); ?></div>
+                </div>
+            </a>
+			
         </div>
     </section>
 </div>

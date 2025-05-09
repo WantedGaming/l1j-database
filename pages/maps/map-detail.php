@@ -232,63 +232,6 @@ include '../../includes/header.php';
     </div>
 </section>
 
-<style>
-.breadcrumb {
-    margin-bottom: 20px;
-    font-size: 14px;
-}
-
-.table-responsive {
-    overflow-x: auto;
-}
-
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.data-table th, .data-table td {
-    padding: 8px 12px;
-    text-align: left;
-    border-bottom: 1px solid var(--secondary);
-}
-
-.data-table th {
-    background-color: var(--secondary);
-}
-
-.detail-properties-list {
-    list-style: none;
-}
-
-.detail-properties-list li {
-    padding: 8px 0;
-    border-bottom: 1px solid var(--secondary);
-    display: flex;
-    justify-content: space-between;
-}
-
-.property-label {
-    font-weight: 500;
-    color: #aaa;
-}
-
-.npc-list {
-    list-style: none;
-}
-
-.npc-list li {
-    padding: 8px 0;
-    border-bottom: 1px solid var(--secondary);
-}
-
-.npc-location {
-    font-size: 12px;
-    color: #aaa;
-    margin-left: 8px;
-}
-</style>
-
 <?php
 // Include footer
 include '../../includes/footer.php';
