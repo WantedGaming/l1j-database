@@ -174,9 +174,9 @@ function getClassImagePath($classId, $gender) {
     // Default image if class not found
     $imagePath = $baseUrl . 'unknown.png';
     
-    // Class mapping with unique IDs
+    // Class mapping with unique IDs - aligned with getClassName function
     switch ($classId) {
-        case 0: // Crown
+        case 0: // Royal
             $imagePath = $baseUrl . ($gender == 0 ? '10591.png' : '10592.png');
             break;
         case 48: // Knight
@@ -194,17 +194,17 @@ function getClassImagePath($classId, $gender) {
         case 6661: // Dragon Knight
             $imagePath = $baseUrl . ($gender == 0 ? '10601.png' : '10602.png');
             break;
-        case 18499: // Illusionist
+        case 6650: // Illusionist (corrected from 18499)
             $imagePath = $baseUrl . ($gender == 0 ? '10607.png' : '10608.png');
             break;
-        case 19278: // Fencer - CORRECTED UNIQUE ID
+        case 18499: // Fencer (corrected from 19278)
             $imagePath = $baseUrl . ($gender == 0 ? '10589.png' : '10590.png');
             break;
-        case 19988: // Lancer - CORRECTED UNIQUE ID
-            $imagePath = $baseUrl . ($gender == 0 ? '10603.png' : '10604.png'); // Adjusted image numbers
+        case 19299: // Lancer (corrected from 19988)
+            $imagePath = $baseUrl . ($gender == 0 ? '10603.png' : '10604.png');
             break;
-        case 20344: // Warrior - CORRECTED UNIQUE ID
-            $imagePath = $baseUrl . ($gender == 0 ? '10605.png' : '10606.png'); // Adjusted image numbers
+        case 20577: // Warrior (corrected from 20344)
+            $imagePath = $baseUrl . ($gender == 0 ? '10605.png' : '10606.png');
             break;    
     }
     
