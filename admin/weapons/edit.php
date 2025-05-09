@@ -112,8 +112,8 @@ if (!$weapon) {
     exit;
 }
 
-// Include header
-include '../../includes/header.php';
+// Include admin header
+include '../../includes/admin-header.php';
 ?>
 
 <div class="admin-header mb-6 p-4">
@@ -329,6 +329,6 @@ include '../../includes/header.php';
 </div>
 
 <?php
-// Include footer
-include '../../includes/footer.php';
+// Include admin footer
+include '../../includes/admin-footer.php';
 ?>

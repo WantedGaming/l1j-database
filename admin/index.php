@@ -30,8 +30,8 @@ $showHero = false;
 // Extra CSS for admin
 $extraCSS = ['../assets/css/admin.css'];
 
-// Include header
-include '../includes/header.php';
+// Include admin header instead of regular header
+include '../includes/admin-header.php';
 
 // Get total counts for each section
 $weaponsCount = $pdo->query("SELECT COUNT(*) FROM weapon")->fetchColumn();
@@ -214,6 +214,6 @@ $skillsCount = $pdo->query("SELECT COUNT(*) FROM skills")->fetchColumn();
 </div>
 
 <?php
-// Include footer
-include '../includes/footer.php';
+// Include admin footer instead of regular footer
+include '../includes/admin-footer.php';
 ?>

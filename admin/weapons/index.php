@@ -13,7 +13,7 @@ $pageTitle = 'Admin - Manage Weapons';
 $showHero = false;
 
 // Extra CSS for admin
-$extraCSS = ['assets/css/admin.css'];
+$extraCSS = ['../../assets/css/admin.css'];
 
 // Get current page number
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
@@ -53,8 +53,8 @@ if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])
     }
 }
 
-// Include header
-include '../../includes/header.php';
+// Include admin header instead of regular header
+include '../../includes/admin-header.php';
 ?>
 
 <div class="admin-header mb-6 p-4">
@@ -195,6 +195,6 @@ function confirmDelete(id, name) {
 </script>
 
 <?php
-// Include footer
-include '../../includes/footer.php';
+// Include admin footer instead of regular footer
+include '../../includes/admin-footer.php';
 ?>

@@ -61,8 +61,8 @@ $showHero = false;
 // Extra CSS for admin pages
 $extraCSS = ['../assets/css/admin.css'];
 
-// Include header
-include '../includes/header.php';
+// Include admin header instead of regular header
+include '../includes/admin-header.php';
 ?>
 
 <div class="container my-12">
@@ -100,6 +100,6 @@ include '../includes/header.php';
 </div>
 
 <?php
-// Include footer
-include '../includes/footer.php';
+// Include admin footer instead of regular footer
+include '../includes/admin-footer.php';
 ?>
