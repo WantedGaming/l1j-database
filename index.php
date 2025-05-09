@@ -87,7 +87,7 @@ $categoryCounts['polymorph'] = $polyResult ? $polyResult->fetch_assoc()['count']
                 <div class="card-header">
                     <h2 class="card-title">Weapons</h2>
                 </div>
-                <img src="<?php echo $baseUrl; ?>assets/img/placeholders/weapons.png alt="Weapons" class="card-img">
+                <img src="<?php echo $baseUrl; ?>assets/img/placeholders/weapons.png" alt="Weapons" class="card-img">
                 <div class="card-body">
                     <p class="card-text">Browse through a comprehensive collection of Lineage II weapons including swords, daggers, staves, and more.</p>
                     <div class="card-count"><?php echo number_format($categoryCounts['weapons']); ?> Weapons</div>

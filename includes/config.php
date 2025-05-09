@@ -6,8 +6,8 @@
 
 // Define base URL
 // Adjust this based on your server configuration
-$baseUrl = '/lineage2db/';
-$adminBaseUrl = '/lineage2db/admin/';
+$baseUrl = '/l1j-database/';
+$adminBaseUrl = '/l1j-database/admin/';
 
 // Set default timezone
 date_default_timezone_set('UTC');
