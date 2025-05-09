@@ -38,7 +38,7 @@ include '../../includes/admin-header.php';
         <div class="hero-header">
             <div class="admin-hero-content">
                 <h1 class="admin-hero-title">Account Management</h1>
-                <p class="admin-hero-subtitle">Manage user accounts and character data - <?php echo number_format($totalAccounts); ?> accounts found</p>
+                <p class="admin-hero-subtitle">Manage accounts and character - <?php echo number_format($totalAccounts); ?> accounts found</p>
             </div>
         </div>
         
