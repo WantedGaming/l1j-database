@@ -247,7 +247,7 @@ include 'includes/admin-header.php';
             </a>
 			
 			<!-- Accounts & Character Management Card -->
-            <a href="<?php echo $adminBaseUrl; ?>pages/polymorph/admin-polymorph-list.php" class="admin-card">
+            <a href="<?php echo $adminBaseUrl; ?>pages/accounts/account-list.php" class="admin-card">
                 <div class="admin-card-header">
                     <h2 class="admin-card-title">Accounts</h2>
                 </div>
