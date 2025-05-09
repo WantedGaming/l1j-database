@@ -1,219 +1,250 @@
 <?php
 /**
- * Admin Dashboard
- * Main administration page for managing the L1J Database
+ * Admin Dashboard Home
+ * Displays statistics and quick access to different database sections
  */
 
-// Start the session
-session_start();
-
-// Check if logged in and has admin access, redirect to login page if not
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    header('Location: login.php');
-    exit;
-}
-
-// Check if user has admin access level
-if (!isset($_SESSION['admin_access_level']) || $_SESSION['admin_access_level'] < 1) {
-    header('Location: login.php?error=insufficient_permissions');
-    exit;
-}
-
-// Include database connection
+// Include admin configuration and database connection
 require_once '../includes/db_connect.php';
-require_once '../includes/functions.php';
+require_once 'includes/admin-config.php';
 
-// Set page title
+// Set current page for navigation highlighting
+$currentAdminPage = 'dashboard';
 $pageTitle = 'Admin Dashboard';
-$showHero = false;
 
-// Extra CSS for admin
-$extraCSS = ['../assets/css/admin.css'];
+// Get database statistics
+$stats = [];
 
-// Include admin header instead of regular header
-include '../includes/admin-header.php';
+// Get total weapons count
+$weaponQuery = "SELECT COUNT(*) as count FROM weapon";
+$weaponResult = executeQuery($weaponQuery, $conn);
+$stats['weapons'] = $weaponResult ? $weaponResult->fetch_assoc()['count'] : 0;
 
-// Get total counts for each section
-$weaponsCount = $pdo->query("SELECT COUNT(*) FROM weapon")->fetchColumn();
-$armorCount = $pdo->query("SELECT COUNT(*) FROM armor")->fetchColumn();
-$itemsCount = $pdo->query("SELECT COUNT(*) FROM etcitem")->fetchColumn();
-// Use the 'impl' column to distinguish between monster and NPC types
-$monstersCount = $pdo->query("SELECT COUNT(*) FROM npc WHERE impl LIKE '%Monster%'")->fetchColumn();
-$npcsCount = $pdo->query("SELECT COUNT(*) FROM npc WHERE impl NOT LIKE '%Monster%'")->fetchColumn();
-$mapsCount = $pdo->query("SELECT COUNT(*) FROM mapids")->fetchColumn();
-$skillsCount = $pdo->query("SELECT COUNT(*) FROM skills")->fetchColumn();
+// Get total armor count
+$armorQuery = "SELECT COUNT(*) as count FROM armor";
+$armorResult = executeQuery($armorQuery, $conn);
+$stats['armor'] = $armorResult ? $armorResult->fetch_assoc()['count'] : 0;
+
+// Get total items count
+$itemQuery = "SELECT COUNT(*) as count FROM etcitem";
+$itemResult = executeQuery($itemQuery, $conn);
+$stats['items'] = $itemResult ? $itemResult->fetch_assoc()['count'] : 0;
+
+// Get total monsters count
+$monsterQuery = "SELECT COUNT(*) as count FROM npc WHERE impl = 'L1Monster'";
+$monsterResult = executeQuery($monsterQuery, $conn);
+$stats['monsters'] = $monsterResult ? $monsterResult->fetch_assoc()['count'] : 0;
+
+// Get total maps count
+$mapQuery = "SELECT COUNT(*) as count FROM mapids";
+$mapResult = executeQuery($mapQuery, $conn);
+$stats['maps'] = $mapResult ? $mapResult->fetch_assoc()['count'] : 0;
+
+// Get total dolls count
+$dollQuery = "SELECT COUNT(*) as count FROM magicdoll_info";
+$dollResult = executeQuery($dollQuery, $conn);
+$stats['dolls'] = $dollResult ? $dollResult->fetch_assoc()['count'] : 0;
+
+// Get total NPCs count
+$npcQuery = "SELECT COUNT(*) as count FROM npc WHERE impl = 'L1Npc' OR impl = 'L1Merchant'";
+$npcResult = executeQuery($npcQuery, $conn);
+$stats['npcs'] = $npcResult ? $npcResult->fetch_assoc()['count'] : 0;
+
+// Get total skills count
+$skillQuery = "SELECT COUNT(*) as count FROM skills";
+$skillResult = executeQuery($skillQuery, $conn);
+$stats['skills'] = $skillResult ? $skillResult->fetch_assoc()['count'] : 0;
+
+// Get total polymorph count
+$polyQuery = "SELECT COUNT(*) as count FROM polymorphs";
+$polyResult = executeQuery($polyQuery, $conn);
+$stats['polymorph'] = $polyResult ? $polyResult->fetch_assoc()['count'] : 0;
+
+// Calculate total database entries
+$totalEntries = array_sum($stats);
+
+// Include header
+include 'includes/admin-header.php';
 ?>
 
-<div class="admin-page-header mb-6 p-4">
-    <div class="container">
-        <h1 class="section-title">Admin Dashboard</h1>
-        <p>Welcome to the L1J Database administration panel. From here, you can manage all aspects of the database.</p>
-    </div>
-</div>
-
-<div class="mb-6">
-    <h2 class="section-title">Database Overview</h2>
+<div class="container">
+    <!-- Admin Hero Section -->
+    <section class="admin-hero">
+        <div class="admin-hero-content">
+            <h1 class="admin-hero-title">Lineage II Database Administration</h1>
+            <p class="admin-hero-subtitle">Manage game content across <?php echo number_format($totalEntries); ?> database entries</p>
+        </div>
+    </section>
     
-    <div class="grid grid-cols-3 gap-6">
-        <div class="admin-card">
-            <h3>Weapons</h3>
-            <p class="text-accent"><?php echo formatNumber($weaponsCount); ?> items</p>
-            <div class="mt-4">
-                <a href="weapons/" class="btn">Manage Weapons</a>
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-sword"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number"><?php echo number_format($stats['weapons']); ?></div>
+                    <div class="stat-label">Weapons</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-shield"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number"><?php echo number_format($stats['armor']); ?></div>
+                    <div class="stat-label">Armor</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-box"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number"><?php echo number_format($stats['items']); ?></div>
+                    <div class="stat-label">Items</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-dragon"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number"><?php echo number_format($stats['monsters']); ?></div>
+                    <div class="stat-label">Monsters</div>
+                </div>
             </div>
         </div>
-        
-        <div class="admin-card">
-            <h3>Armor</h3>
-            <p class="text-accent"><?php echo formatNumber($armorCount); ?> items</p>
-            <div class="mt-4">
-                <a href="armor/" class="btn">Manage Armor</a>
-            </div>
-        </div>
-        
-        <div class="admin-card">
-            <h3>Items</h3>
-            <p class="text-accent"><?php echo formatNumber($itemsCount); ?> items</p>
-            <div class="mt-4">
-                <a href="items/" class="btn">Manage Items</a>
-            </div>
-        </div>
-        
-        <div class="admin-card">
-            <h3>Monsters</h3>
-            <p class="text-accent"><?php echo formatNumber($monstersCount); ?> entries</p>
-            <div class="mt-4">
-                <a href="monsters/" class="btn">Manage Monsters</a>
-            </div>
-        </div>
-        
-        <div class="admin-card">
-            <h3>Maps</h3>
-            <p class="text-accent"><?php echo formatNumber($mapsCount); ?> entries</p>
-            <div class="mt-4">
-                <a href="maps/" class="btn">Manage Maps</a>
-            </div>
-        </div>
-        
-        <div class="admin-card">
-            <h3>NPCs</h3>
-            <p class="text-accent"><?php echo formatNumber($npcsCount); ?> entries</p>
-            <div class="mt-4">
-                <a href="npcs/" class="btn">Manage NPCs</a>
-            </div>
-        </div>
-        
-        <div class="admin-card">
-            <h3>Skills</h3>
-            <p class="text-accent"><?php echo formatNumber($skillsCount); ?> entries</p>
-            <div class="mt-4">
-                <a href="skills/" class="btn">Manage Skills</a>
-            </div>
-        </div>
-        
-        <div class="admin-card">
-            <h3>Droplist</h3>
-            <p class="text-accent">Manage item drops</p>
-            <div class="mt-4">
-                <a href="droplist/" class="btn">Manage Drops</a>
-            </div>
-        </div>
-        
-        <div class="admin-card">
-            <h3>Spawns</h3>
-            <p class="text-accent">Manage monster spawns</p>
-            <div class="mt-4">
-                <a href="spawns/" class="btn">Manage Spawns</a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="mb-6">
-    <h2 class="section-title">Recent Activity</h2>
+    </section>
     
-    <div class="admin-card">
-        <div class="table-container">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Action</th>
-                        <th>Item</th>
-                        <th>User</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    // This would normally be populated from a database table
-                    // We're using placeholder data for now
-                    $activities = [
-                        [
-                            'date' => '2025-05-08 14:23:15',
-                            'action' => 'Added',
-                            'item' => 'Diamond Sword (Weapon ID: 3421)',
-                            'user' => 'Admin'
-                        ],
-                        [
-                            'date' => '2025-05-08 11:45:32',
-                            'action' => 'Updated',
-                            'item' => 'Orc (Monster ID: 45)',
-                            'user' => 'Admin'
-                        ],
-                        [
-                            'date' => '2025-05-07 16:12:08',
-                            'action' => 'Deleted',
-                            'item' => 'Crystal Plate (Armor ID: 2032)',
-                            'user' => 'Admin'
-                        ],
-                        [
-                            'date' => '2025-05-07 09:55:41',
-                            'action' => 'Updated',
-                            'item' => 'Giran Castle (Map ID: 4)',
-                            'user' => 'Admin'
-                        ],
-                        [
-                            'date' => '2025-05-06 17:30:22',
-                            'action' => 'Added',
-                            'item' => 'Elven Bow (Weapon ID: 3589)',
-                            'user' => 'Admin'
-                        ]
-                    ];
-                    
-                    foreach ($activities as $activity):
-                    ?>
-                    <tr>
-                        <td><?php echo date('M j, Y H:i', strtotime($activity['date'])); ?></td>
-                        <td><?php echo $activity['action']; ?></td>
-                        <td><?php echo htmlspecialchars($activity['item']); ?></td>
-                        <td><?php echo htmlspecialchars($activity['user']); ?></td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+    <!-- Database Management Cards -->
+    <section class="admin-sections">
+        <div class="admin-card-grid">
+            <!-- Weapons Management Card -->
+            <a href="<?php echo $adminBaseUrl; ?>pages/weapons/admin-weapon-list.php" class="admin-card">
+                <div class="admin-card-header">
+                    <h2 class="admin-card-title">Weapons</h2>
+                </div>
+                <div class="admin-card-img">
+                    <img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/weapon.png" alt="Weapon" width="80" height="80">
+                </div>
+                <div class="admin-card-body">
+                    <div class="admin-card-count"><?php echo number_format($stats['weapons']); ?></div>
+                </div>
+            </a>
+            
+            <!-- Armor Management Card -->
+            <a href="<?php echo $adminBaseUrl; ?>pages/armor/admin-armor-list.php" class="admin-card">
+                <div class="admin-card-header">
+                    <h2 class="admin-card-title">Armor</h2>
+                </div>
+                <div class="admin-card-img">
+                    <img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/armor.png" alt="Armor" width="80" height="80">
+                </div>
+                <div class="admin-card-body">
+                    <div class="admin-card-count"><?php echo number_format($stats['armor']); ?></div>
+                </div>
+            </a>
+            
+            <!-- Items Management Card -->
+            <a href="<?php echo $adminBaseUrl; ?>pages/items/admin-item-list.php" class="admin-card">
+                <div class="admin-card-header">
+                    <h2 class="admin-card-title">Items</h2>
+                </div>
+                <div class="admin-card-img">
+                    <img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/items.png" alt="Items" width="80" height="80">
+                </div>
+                <div class="admin-card-body">
+                    <div class="admin-card-count"><?php echo number_format($stats['items']); ?></div>
+                </div>
+            </a>
+            
+            <!-- Monsters Management Card -->
+            <a href="<?php echo $adminBaseUrl; ?>pages/monsters/admin-monster-list.php" class="admin-card">
+                <div class="admin-card-header">
+                    <h2 class="admin-card-title">Monsters</h2>
+                </div>
+                <div class="admin-card-img">
+                    <img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/monsters.png" alt="Monsters" width="80" height="80">
+                </div>
+                <div class="admin-card-body">
+                    <div class="admin-card-count"><?php echo number_format($stats['monsters']); ?></div>
+                </div>
+            </a>
+            
+            <!-- Maps Management Card -->
+            <a href="<?php echo $adminBaseUrl; ?>pages/maps/admin-map-list.php" class="admin-card">
+                <div class="admin-card-header">
+                    <h2 class="admin-card-title">Maps</h2>
+                </div>
+                <div class="admin-card-img">
+                    <img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/maps.png" alt="Maps" width="80" height="80">
+                </div>
+                <div class="admin-card-body">
+                    <div class="admin-card-count"><?php echo number_format($stats['maps']); ?></div>
+                </div>
+            </a>
+            
+            <!-- Dolls Management Card -->
+            <a href="<?php echo $adminBaseUrl; ?>pages/dolls/admin-doll-list.php" class="admin-card">
+                <div class="admin-card-header">
+                    <h2 class="admin-card-title">Magic Dolls</h2>
+                </div>
+                <div class="admin-card-img">
+                    <img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/magic_dolls.png" alt="Magic Dolls" width="80" height="80">
+                </div>
+                <div class="admin-card-body">
+                    <div class="admin-card-count"><?php echo number_format($stats['dolls']); ?></div>
+                </div>
+            </a>
+            
+            <!-- NPCs Management Card -->
+            <a href="<?php echo $adminBaseUrl; ?>pages/npcs/admin-npc-list.php" class="admin-card">
+                <div class="admin-card-header">
+                    <h2 class="admin-card-title">NPCs</h2>
+                </div>
+                <div class="admin-card-img">
+                    <img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/npc.png" alt="NPCs" width="80" height="80">
+                </div>
+                <div class="admin-card-body">
+                    <div class="admin-card-count"><?php echo number_format($stats['npcs']); ?></div>
+                </div>
+            </a>
+            
+            <!-- Skills Management Card -->
+            <a href="<?php echo $adminBaseUrl; ?>pages/skills/admin-skill-list.php" class="admin-card">
+                <div class="admin-card-header">
+                    <h2 class="admin-card-title">Skills</h2>
+                </div>
+                <div class="admin-card-img">
+                    <img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/skills.png" alt="Skills" width="80" height="80">
+                </div>
+                <div class="admin-card-body">
+                    <div class="admin-card-count"><?php echo number_format($stats['skills']); ?></div>
+                </div>
+            </a>
+            
+            <!-- Polymorph Management Card -->
+            <a href="<?php echo $adminBaseUrl; ?>pages/polymorph/admin-polymorph-list.php" class="admin-card">
+                <div class="admin-card-header">
+                    <h2 class="admin-card-title">Polymorph</h2>
+                </div>
+                <div class="admin-card-img">
+                    <img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/polymorphs.png" alt="Polymorph" width="80" height="80">
+                </div>
+                <div class="admin-card-body">
+                    <div class="admin-card-count"><?php echo number_format($stats['polymorph']); ?></div>
+                </div>
+            </a>
         </div>
-    </div>
-</div>
-
-<div class="mb-6">
-    <h2 class="section-title">Quick Actions</h2>
-    
-    <div class="grid grid-cols-2 gap-6">
-        <div class="admin-card">
-            <h3 class="mb-4">Backup Database</h3>
-            <p class="mb-4">Create a backup of the current database state.</p>
-            <a href="backup.php" class="btn">Create Backup</a>
-        </div>
-        
-        <div class="admin-card">
-            <h3 class="mb-4">Server Statistics</h3>
-            <p class="mb-4">View server performance and database statistics.</p>
-            <a href="stats.php" class="btn">View Statistics</a>
-        </div>
-    </div>
+    </section>
 </div>
 
 <?php
-// Include admin footer instead of regular footer
-include '../includes/admin-footer.php';
+// Include footer
+include 'includes/admin-footer.php';
 ?>

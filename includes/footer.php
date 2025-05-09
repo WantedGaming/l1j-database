@@ -1,57 +1,49 @@
-</main>
-    
-    <footer class="footer">
+<?php
+/**
+ * Footer component for public section
+ */
+?>
+    <footer>
         <div class="container">
-            <div class="footer-grid">
+            <div class="footer-content">
                 <div class="footer-column">
-                    <h3>Navigation</h3>
+                    <h3>Equipment</h3>
                     <ul class="footer-links">
-                        <li><a href="weapons/">Weapons</a></li>
-                        <li><a href="armor/">Armor</a></li>
-                        <li><a href="items/">Items</a></li>
-                        <li><a href="monsters/">Monsters</a></li>
-                        <li><a href="maps/">Maps</a></li>
+                        <li class="footer-link"><a href="<?php echo $baseUrl; ?>pages/weapons/weapon-list.php">Weapons</a></li>
+                        <li class="footer-link"><a href="<?php echo $baseUrl; ?>pages/armor/armor-list.php">Armor</a></li>
+                        <li class="footer-link"><a href="<?php echo $baseUrl; ?>pages/items/item-list.php">Items</a></li>
+                        <li class="footer-link"><a href="<?php echo $baseUrl; ?>pages/dolls/doll-list.php">Magic Dolls</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>World</h3>
+                    <ul class="footer-links">
+                        <li class="footer-link"><a href="<?php echo $baseUrl; ?>pages/monsters/monster-list.php">Monsters</a></li>
+                        <li class="footer-link"><a href="<?php echo $baseUrl; ?>pages/npcs/npc-list.php">NPCs</a></li>
+                        <li class="footer-link"><a href="<?php echo $baseUrl; ?>pages/maps/map-list.php">Maps</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Character</h3>
+                    <ul class="footer-links">
+                        <li class="footer-link"><a href="<?php echo $baseUrl; ?>pages/skills/skill-list.php">Skills</a></li>
+                        <li class="footer-link"><a href="<?php echo $baseUrl; ?>pages/polymorph/polymorph-list.php">Polymorph</a></li>
                     </ul>
                 </div>
                 <div class="footer-column">
                     <h3>Resources</h3>
                     <ul class="footer-links">
-                        <li><a href="dolls/">Magic Dolls</a></li>
-                        <li><a href="npcs/">NPCs</a></li>
-                        <li><a href="skills/">Skills</a></li>
-                        <li><a href="polymorph/">Polymorph</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h3>Admin</h3>
-                    <ul class="footer-links">
-                        <li><a href="admin/">Admin Dashboard</a></li>
-                        <li><a href="admin/items/">Manage Items</a></li>
-                        <li><a href="admin/monsters/">Manage Monsters</a></li>
-                        <li><a href="admin/maps/">Manage Maps</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h3>About</h3>
-                    <ul class="footer-links">
-                        <li><a href="about.php">About L1J Database</a></li>
-                        <li><a href="contact.php">Contact Us</a></li>
-                        <li><a href="privacy.php">Privacy Policy</a></li>
-                        <li><a href="terms.php">Terms of Use</a></li>
+                        <li class="footer-link"><a href="<?php echo $baseUrl; ?>pages/about.php">About</a></li>
+                        <li class="footer-link"><a href="<?php echo $baseUrl; ?>pages/contact.php">Contact</a></li>
                     </ul>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; <?php echo date('Y'); ?> L1J Database. All rights reserved.</p>
+            <div class="copyright">
+                <p>&copy; <?php echo date('Y'); ?> Lineage II Database. All rights reserved.</p>
             </div>
         </div>
     </footer>
-    
-    <script src="assets/js/functions.js"></script>
-    <?php if (isset($extraJS)): ?>
-        <?php foreach ($extraJS as $js): ?>
-            <script src="<?php echo $js; ?>"></script>
-        <?php endforeach; ?>
-    <?php endif; ?>
+
+    <script src="<?php echo $baseUrl; ?>assets/js/main.js"></script>
 </body>
 </html>

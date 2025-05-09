@@ -1,26 +1,38 @@
 <?php
 /**
- * Database Connection
- * This file handles the connection to the L1J Remastered database
+ * Database connection file
+ * Establishes connection to MySQL database
  */
 
 // Database configuration
 $db_host = 'localhost';
+$db_user = 'root';  // Replace with your database username
+$db_pass = '';      // Replace with your database password
 $db_name = 'l1j_remastered';
-$db_user = 'root';
-$db_pass = '';
 
-// PDO connection options
-$options = [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    PDO::ATTR_EMULATE_PREPARES => false,
-];
+// Create connection
+$conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
 
-// Try to connect to the database
-try {
-    $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass, $options);
-} catch (PDOException $e) {
-    // If connection fails, display error message and exit
-    die("Database connection failed: " . $e->getMessage());
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Set character set
+$conn->set_charset("utf8mb4");
+
+/**
+ * Execute SQL query with error handling
+ * 
+ * @param string $sql SQL query to execute
+ * @param mysqli $connection Database connection
+ * @return mysqli_result|bool Result object or boolean
+ */
+function executeQuery($sql, $connection) {
+    $result = $connection->query($sql);
+    if (!$result) {
+        error_log("Query failed: " . $connection->error . " - SQL: " . $sql);
+        return false;
+    }
+    return $result;
 }
