@@ -87,7 +87,9 @@ $categoryCounts['polymorph'] = $polyResult ? $polyResult->fetch_assoc()['count']
                 <div class="card-header">
                     <h2 class="card-title">Weapons</h2>
                 </div>
-                <img src="<?php echo $baseUrl; ?>assets/img/placeholders/weapons.png" alt="Weapons" class="card-img">
+                <div class="card-img-container">
+                    <img src="<?php echo $baseUrl; ?>assets/img/placeholders/weapons.png" alt="Weapons" class="card-img">
+                </div>
                 <div class="card-body">
                     <p class="card-text">Browse through a comprehensive collection of Lineage II weapons including swords, daggers, staves, and more.</p>
                     <div class="card-count"><?php echo number_format($categoryCounts['weapons']); ?> Weapons</div>
@@ -99,7 +101,9 @@ $categoryCounts['polymorph'] = $polyResult ? $polyResult->fetch_assoc()['count']
                 <div class="card-header">
                     <h2 class="card-title">Armor</h2>
                 </div>
-                <img src="<?php echo $baseUrl; ?>assets/img/placeholders/armor.png" alt="Armor" class="card-img">
+                <div class="card-img-container">
+                    <img src="<?php echo $baseUrl; ?>assets/img/placeholders/armor.png" alt="Armor" class="card-img">
+                </div>
                 <div class="card-body">
                     <p class="card-text">Discover all types of armor including helmets, body armor, gloves, boots, and shields.</p>
                     <div class="card-count"><?php echo number_format($categoryCounts['armor']); ?> Armor Pieces</div>
@@ -111,7 +115,9 @@ $categoryCounts['polymorph'] = $polyResult ? $polyResult->fetch_assoc()['count']
                 <div class="card-header">
                     <h2 class="card-title">Items</h2>
                 </div>
-                <img src="<?php echo $baseUrl; ?>assets/img/placeholders/items.png" alt="Items" class="card-img">
+                <div class="card-img-container">
+                    <img src="<?php echo $baseUrl; ?>assets/img/placeholders/items.png" alt="Items" class="card-img">
+                </div>
                 <div class="card-body">
                     <p class="card-text">Explore consumables, quest items, crafting materials, and other special items.</p>
                     <div class="card-count"><?php echo number_format($categoryCounts['items']); ?> Items</div>
@@ -123,7 +129,9 @@ $categoryCounts['polymorph'] = $polyResult ? $polyResult->fetch_assoc()['count']
                 <div class="card-header">
                     <h2 class="card-title">Monsters</h2>
                 </div>
-                <img src="<?php echo $baseUrl; ?>assets/img/placeholders/monsters.png" alt="Monsters" class="card-img">
+                <div class="card-img-container">
+                    <img src="<?php echo $baseUrl; ?>assets/img/placeholders/monsters.png" alt="Monsters" class="card-img">
+                </div>
                 <div class="card-body">
                     <p class="card-text">Information about all monsters in the world of Lineage II, including bosses, regular monsters, and their drop tables.</p>
                     <div class="card-count"><?php echo number_format($categoryCounts['monsters']); ?> Monsters</div>
@@ -135,7 +143,9 @@ $categoryCounts['polymorph'] = $polyResult ? $polyResult->fetch_assoc()['count']
                 <div class="card-header">
                     <h2 class="card-title">Maps</h2>
                 </div>
-                <img src="<?php echo $baseUrl; ?>assets/img/placeholders/maps.png" alt="Maps" class="card-img">
+                <div class="card-img-container">
+                    <img src="<?php echo $baseUrl; ?>assets/img/placeholders/maps.png" alt="Maps" class="card-img">
+                </div>
                 <div class="card-body">
                     <p class="card-text">Detailed maps of the Lineage II world, including cities, dungeons, and hunting grounds.</p>
                     <div class="card-count"><?php echo number_format($categoryCounts['maps']); ?> Maps</div>
@@ -147,7 +157,9 @@ $categoryCounts['polymorph'] = $polyResult ? $polyResult->fetch_assoc()['count']
                 <div class="card-header">
                     <h2 class="card-title">Magic Dolls</h2>
                 </div>
-                <img src="<?php echo $baseUrl; ?>assets/img/placeholders/dolls.png" alt="Magic Dolls" class="card-img">
+                <div class="card-img-container">
+                    <img src="<?php echo $baseUrl; ?>assets/img/placeholders/dolls.png" alt="Magic Dolls" class="card-img">
+                </div>
                 <div class="card-body">
                     <p class="card-text">Find information about magic dolls and their special abilities and bonuses.</p>
                     <div class="card-count"><?php echo number_format($categoryCounts['dolls']); ?> Magic Dolls</div>
@@ -159,7 +171,9 @@ $categoryCounts['polymorph'] = $polyResult ? $polyResult->fetch_assoc()['count']
                 <div class="card-header">
                     <h2 class="card-title">NPCs</h2>
                 </div>
-                <img src="<?php echo $baseUrl; ?>assets/img/placeholders/npc.png" alt="NPCs" class="card-img">
+                <div class="card-img-container">
+                    <img src="<?php echo $baseUrl; ?>assets/img/placeholders/npc.png" alt="NPCs" class="card-img">
+                </div>
                 <div class="card-body">
                     <p class="card-text">Information about all non-player characters, including merchants, quest givers, and trainers.</p>
                     <div class="card-count"><?php echo number_format($categoryCounts['npcs']); ?> NPCs</div>
@@ -171,7 +185,9 @@ $categoryCounts['polymorph'] = $polyResult ? $polyResult->fetch_assoc()['count']
                 <div class="card-header">
                     <h2 class="card-title">Skills</h2>
                 </div>
-                <img src="<?php echo $baseUrl; ?>assets/img/placeholders/skill.png" alt="Skills" class="card-img">
+                <div class="card-img-container">
+                    <img src="<?php echo $baseUrl; ?>assets/img/placeholders/skill.png" alt="Skills" class="card-img">
+                </div>
                 <div class="card-body">
                     <p class="card-text">Detailed information about all active and passive skills available to different character classes.</p>
                     <div class="card-count"><?php echo number_format($categoryCounts['skills']); ?> Skills</div>
@@ -183,13 +199,15 @@ $categoryCounts['polymorph'] = $polyResult ? $polyResult->fetch_assoc()['count']
                 <div class="card-header">
                     <h2 class="card-title">Polymorph</h2>
                 </div>
-                <img src="<?php echo $baseUrl; ?>assets/img/placeholders/poly.png" alt="Polymorph" class="card-img">
+                <div class="card-img-container">
+                    <img src="<?php echo $baseUrl; ?>assets/img/placeholders/poly.png" alt="Polymorph" class="card-img">
+                </div>
                 <div class="card-body">
                     <p class="card-text">Information about polymorph transformations and their special abilities.</p>
                     <div class="card-count"><?php echo number_format($categoryCounts['polymorph']); ?> Polymorph Forms</div>
                 </div>
             </a>
-			</div>
+        </div>
     </div>
 </section>
 
