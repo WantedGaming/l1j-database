@@ -86,18 +86,11 @@ include '../../includes/admin-header.php';
                     </div>
                     
                     <div class="account-details">
-                        <div class="account-info-grid">
+                        <!-- Modified to use a horizontal layout with both items in the same row -->
+                        <div class="account-info-row">
                             <div class="account-info-item">
                                 <div class="account-info-label">Last Active</div>
-                                <div class="account-info-value"><?php echo formatDateTime($account['lastactive']); ?></div>
-                            </div>
-                            <div class="account-info-item">
-                                <div class="account-info-label">Last Quit</div>
-                                <div class="account-info-value"><?php echo formatDateTime($account['lastQuit']); ?></div>
-                            </div>
-                            <div class="account-info-item">
-                                <div class="account-info-label">IP Address</div>
-                                <div class="account-info-value"><?php echo htmlspecialchars($account['ip']); ?></div>
+                                <div class="account-info-value"><?php echo formatTimeUSA($account['lastactive']); ?></div>
                             </div>
                             <div class="account-info-item">
                                 <div class="account-info-label">Access Level</div>
@@ -109,12 +102,12 @@ include '../../includes/admin-header.php';
                     </div>
                     
                     <div class="characters-section">
-                        <div class="section-header" style="padding: 10px 15px; background-color: var(--secondary); border-bottom: 1px solid #1a1a1a;">
-                            <h4 style="margin: 0; font-size: 16px; font-weight: 500;">Characters (<?php echo count($characters); ?>)</h4>
+                        <div class="section-header">
+                            <h4>Characters (<?php echo count($characters); ?>)</h4>
                         </div>
                         
                         <?php if (empty($characters)): ?>
-                            <div style="padding: 15px; text-align: center; color: #999;">
+                            <div class="empty-characters">
                                 No characters for this account.
                             </div>
                         <?php else: ?>
@@ -130,22 +123,20 @@ include '../../includes/admin-header.php';
                                                 <a href="<?php echo $adminBaseUrl; ?>pages/accounts/character-detail.php?id=<?php echo $character['objid']; ?>">
                                                     <?php echo htmlspecialchars($character['char_name']); ?>
                                                 </a>
-                                                <?php if (!empty($character['Clanname'])): ?>
-                                                    <span class="clan-info"><?php echo htmlspecialchars($character['Clanname']); ?></span>
-                                                <?php endif; ?>
+                                                <?php /* Removed clan name display since we're not fetching it */ ?>
                                             </div>
                                             <div class="character-class">
                                                 <?php echo getClassName($character['Class'], $character['gender']); ?>
-                                            </div>
-                                            <div class="character-metadata">
-                                                <span>HP: <?php echo $character['CurHp']; ?>/<?php echo $character['MaxHp']; ?></span>
-                                                <span>MP: <?php echo $character['CurMp']; ?>/<?php echo $character['MaxMp']; ?></span>
                                             </div>
                                         </div>
                                     </li>
                                 <?php endforeach; ?>
                             </ul>
                         <?php endif; ?>
+                    </div>
+                    
+                    <div class="account-ip">
+                        IP: <span class="account-ip-value"><?php echo htmlspecialchars($account['ip']); ?></span>
                     </div>
                 </div>
             <?php endforeach; ?>
