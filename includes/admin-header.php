@@ -8,7 +8,21 @@
 if (!isset($_SESSION['admin_logged_in']) && 
     basename($_SERVER['PHP_SELF']) != 'login.php' && 
     !strpos($_SERVER['REQUEST_URI'], 'login.php')) {
-    header('Location: ../admin/login.php');
+    
+    // Determine correct path to login page
+    if (strpos($_SERVER['PHP_SELF'], '/admin/weapons/') !== false || 
+        strpos($_SERVER['PHP_SELF'], '/admin/armor/') !== false || 
+        strpos($_SERVER['PHP_SELF'], '/admin/items/') !== false || 
+        strpos($_SERVER['PHP_SELF'], '/admin/monsters/') !== false || 
+        strpos($_SERVER['PHP_SELF'], '/admin/maps/') !== false || 
+        strpos($_SERVER['PHP_SELF'], '/admin/npcs/') !== false || 
+        strpos($_SERVER['PHP_SELF'], '/admin/skills/') !== false || 
+        strpos($_SERVER['PHP_SELF'], '/admin/dolls/') !== false || 
+        strpos($_SERVER['PHP_SELF'], '/admin/polymorph/') !== false) {
+        header('Location: ../login.php');
+    } else {
+        header('Location: login.php');
+    }
     exit;
 }
 ?>
@@ -22,18 +36,22 @@ if (!isset($_SESSION['admin_logged_in']) &&
     // Determine if we're in a subdirectory within admin
     $rootPath = "";
     $adminPath = "";
-    if (strpos($_SERVER['PHP_SELF'], '/admin/weapons/') !== false || 
-        strpos($_SERVER['PHP_SELF'], '/admin/armor/') !== false || 
-        strpos($_SERVER['PHP_SELF'], '/admin/items/') !== false || 
-        strpos($_SERVER['PHP_SELF'], '/admin/monsters/') !== false || 
-        strpos($_SERVER['PHP_SELF'], '/admin/maps/') !== false || 
-        strpos($_SERVER['PHP_SELF'], '/admin/npcs/') !== false || 
-        strpos($_SERVER['PHP_SELF'], '/admin/skills/') !== false || 
-        strpos($_SERVER['PHP_SELF'], '/admin/dolls/') !== false || 
-        strpos($_SERVER['PHP_SELF'], '/admin/polymorph/') !== false) {
+    $currentPath = $_SERVER['PHP_SELF'];
+    
+    if (strpos($currentPath, '/admin/weapons/') !== false || 
+        strpos($currentPath, '/admin/armor/') !== false || 
+        strpos($currentPath, '/admin/items/') !== false || 
+        strpos($currentPath, '/admin/monsters/') !== false || 
+        strpos($currentPath, '/admin/maps/') !== false || 
+        strpos($currentPath, '/admin/npcs/') !== false || 
+        strpos($currentPath, '/admin/skills/') !== false || 
+        strpos($currentPath, '/admin/dolls/') !== false || 
+        strpos($currentPath, '/admin/polymorph/') !== false) {
+        // We are in a subdirectory
         $rootPath = "../../";
         $adminPath = "../";
     } else {
+        // We are in the main admin directory
         $rootPath = "../";
         $adminPath = "";
     }
@@ -47,14 +65,14 @@ if (!isset($_SESSION['admin_logged_in']) &&
     <?php endif; ?>
 </head>
 <body class="admin-body">
-    <header class="admin-header header">
+    <header class="header admin-header">
         <div class="container header-container">
             <div class="admin-logo-container">
                 <a href="<?php echo $rootPath; ?>index.php" class="logo">L1J <span>Database</span></a>
                 <span class="admin-badge">Admin Panel</span>
             </div>
             
-            <nav class="admin-nav">
+            <nav class="nav">
                 <div class="nav-item">
                     <a href="<?php echo $adminPath; ?>index.php" class="nav-link">
                         <img src="<?php echo $rootPath; ?>assets/img/icons/icons/40128.png" alt="Dashboard" class="nav-icon">
@@ -62,32 +80,29 @@ if (!isset($_SESSION['admin_logged_in']) &&
                     </a>
                 </div>
                 
-                <div class="nav-item">
-                    <a href="<?php echo $adminPath; ?>weapons/" class="nav-link">
-                        <img src="<?php echo $rootPath; ?>assets/img/icons/icons/47.png" alt="Weapons" class="nav-icon">
-                        Weapons
+                <div class="nav-item dropdown">
+                    <a href="#" class="nav-link">
+                        <img src="<?php echo $rootPath; ?>assets/img/icons/icons/40308.png" alt="Manage" class="nav-icon">
+                        Manage
                     </a>
-                </div>
-                
-                <div class="nav-item">
-                    <a href="<?php echo $adminPath; ?>armor/" class="nav-link">
-                        <img src="<?php echo $rootPath; ?>assets/img/icons/icons/20322.png" alt="Armor" class="nav-icon">
-                        Armor
-                    </a>
-                </div>
-                
-                <div class="nav-item">
-                    <a href="<?php echo $adminPath; ?>items/" class="nav-link">
-                        <img src="<?php echo $rootPath; ?>assets/img/icons/icons/40308.png" alt="Items" class="nav-icon">
-                        Items
-                    </a>
-                </div>
-                
-                <div class="nav-item">
-                    <a href="<?php echo $adminPath; ?>monsters/" class="nav-link">
-                        <img src="<?php echo $rootPath; ?>assets/img/icons/icons/7.png" alt="Monsters" class="nav-icon">
-                        Monsters
-                    </a>
+                    <div class="dropdown-content">
+                        <a href="<?php echo $adminPath; ?>weapons/" class="dropdown-item">
+                            <img src="<?php echo $rootPath; ?>assets/img/icons/icons/47.png" alt="Weapons" class="dropdown-icon">
+                            Weapons
+                        </a>
+                        <a href="<?php echo $adminPath; ?>armor/" class="dropdown-item">
+                            <img src="<?php echo $rootPath; ?>assets/img/icons/icons/20322.png" alt="Armor" class="dropdown-icon">
+                            Armor
+                        </a>
+                        <a href="<?php echo $adminPath; ?>items/" class="dropdown-item">
+                            <img src="<?php echo $rootPath; ?>assets/img/icons/icons/40308.png" alt="Items" class="dropdown-icon">
+                            Items
+                        </a>
+                        <a href="<?php echo $adminPath; ?>monsters/" class="dropdown-item">
+                            <img src="<?php echo $rootPath; ?>assets/img/icons/icons/7.png" alt="Monsters" class="dropdown-icon">
+                            Monsters
+                        </a>
+                    </div>
                 </div>
                 
                 <div class="nav-item dropdown">

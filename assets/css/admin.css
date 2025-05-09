@@ -12,10 +12,14 @@
 .admin-header {
     background-color: var(--secondary);
     color: var(--text);
-    border-radius: 12px;
+    border-radius: 0;
     margin-bottom: 1.5rem;
-    padding: 1.5rem;
-    border: 1px solid var(--card-border);
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--card-border);
+}
+
+.admin-header .container {
+    padding: 0 1rem;
 }
 
 .admin-header h1 {
@@ -37,6 +41,16 @@
 
 .admin-header p {
     opacity: 0.9;
+}
+
+/* Admin Header Page Title */
+.admin-page-header {
+    background-color: var(--secondary);
+    color: var(--text);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    border: 1px solid var(--card-border);
 }
 
 /* Admin Cards */

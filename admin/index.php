@@ -44,7 +44,7 @@ $mapsCount = $pdo->query("SELECT COUNT(*) FROM mapids")->fetchColumn();
 $skillsCount = $pdo->query("SELECT COUNT(*) FROM skills")->fetchColumn();
 ?>
 
-<div class="admin-header mb-6 p-4">
+<div class="admin-page-header mb-6 p-4">
     <div class="container">
         <h1 class="section-title">Admin Dashboard</h1>
         <p>Welcome to the L1J Database administration panel. From here, you can manage all aspects of the database.</p>

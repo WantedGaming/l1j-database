@@ -57,7 +57,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])
 include '../../includes/admin-header.php';
 ?>
 
-<div class="admin-header mb-6 p-4">
+<div class="admin-page-header mb-6 p-4">
     <div class="container">
         <div class="flex items-center justify-between">
             <h1 class="section-title">Manage Weapons</h1>
