@@ -259,18 +259,18 @@ include 'includes/admin-header.php';
                 </div>
             </a>
 			
-			<!-- Database Tools -->
-            <a href="<?php echo $adminBaseUrl; ?>tools/db-tools.php" class="admin-card">
-                <div class="admin-card-header">
-                    <h2 class="admin-card-title">DB Tools</h2>
-                </div>
-                <div class="admin-card-img">
-                    <img src="<?php echo $baseUrl; ?>assets/img/placeholders/settings.png" alt="Setting" width="80" height="80">
-                </div>
-                <div class="admin-card-body">
-                    <div class="admin-card-count"><?php echo number_format($stats['accounts']); ?></div>
-                </div>
-            </a>
+            <!-- Database Tools -->
+			<a href="<?php echo $adminBaseUrl; ?>tools/tools-index.php" class="admin-card">
+				<div class="admin-card-header">
+					<h2 class="admin-card-title">DB Tools</h2>
+				</div>
+				<div class="admin-card-img">
+					<img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/settings.png" alt="Setting" width="80" height="80">
+				</div>
+				<div class="admin-card-body">
+					<div class="admin-card-count">Database Tools</div>
+				</div>
+			</a>
 			
         </div>
     </section>
