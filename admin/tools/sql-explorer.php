@@ -154,7 +154,7 @@ include '../includes/admin-header.php';
                 <p class="admin-hero-subtitle">Execute custom SQL queries and analyze results</p>
             </div>
             <div class="hero-actions">
-                <a href="<?php echo $adminBaseUrl; ?>tools/index.php" class="btn btn-secondary">
+                <a href="<?php echo $adminBaseUrl; ?>tools/tools-index.php" class="btn btn-secondary">
                     <i class="fas fa-arrow-left btn-icon"></i> Back to Tools
                 </a>
             </div>

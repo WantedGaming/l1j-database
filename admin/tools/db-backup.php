@@ -294,6 +294,100 @@ function restoreBackup($conn, $backupPath) {
 }
 ?>
 
+<!-- Add CSS for improved table groups styling -->
+<style>
+.table-group {
+    margin-bottom: 10px;
+    border: 1px solid var(--secondary);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table-group-header {
+    cursor: pointer;
+    padding: 10px 15px;
+    background-color: var(--primary);
+    border-bottom: 1px solid var(--secondary);
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.table-group-header:hover {
+    background-color: var(--secondary);
+}
+
+.table-group-header label {
+    display: block;
+    width: 100%;
+    cursor: pointer;
+    font-weight: 600;
+    margin-bottom: 0;
+    font-size: 1.05em;
+    color: var(--text);
+}
+
+.table-group-header .toggle-icon {
+    margin-left: 10px;
+    transition: transform 0.2s ease;
+}
+
+.table-group-header .toggle-icon.collapsed {
+    transform: rotate(-90deg);
+}
+
+.table-group-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    background-color: var(--primary);
+    padding: 0 15px;
+}
+
+.table-group-content.expanded {
+    max-height: 1000px;
+    padding: 10px 15px;
+    transition: max-height 0.5s ease-in;
+}
+
+.checkbox-item {
+    margin-bottom: 5px;
+    padding-left: 15px;
+    border-left: 2px solid var(--secondary);
+    padding: 6px 8px;
+    transition: background-color 0.2s;
+}
+
+.checkbox-item:nth-child(odd) {
+    background-color: var(--secondary);
+}
+
+.checkbox-item:hover {
+    background-color: #1a1a1a;
+}
+
+.checkbox-header {
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: var(--primary);
+    border-radius: 4px;
+    font-weight: bold;
+    border: 1px solid var(--secondary);
+}
+
+.group-table-count {
+    margin-left: 5px;
+    padding: 2px 6px;
+    background-color: var(--accent);
+    color: var(--text);
+    border-radius: 10px;
+    font-size: 0.8em;
+    font-weight: normal;
+}
+</style>
+</style>
+
 <div class="container">
     <!-- Admin Hero Section -->
     <div class="admin-hero">
@@ -303,7 +397,7 @@ function restoreBackup($conn, $backupPath) {
                 <p class="admin-hero-subtitle">Create and manage database backups</p>
             </div>
             <div class="hero-actions">
-                <a href="<?php echo $adminBaseUrl; ?>tools/index.php" class="btn btn-secondary">
+                <a href="<?php echo $adminBaseUrl; ?>tools/tools-index.php" class="btn btn-secondary">
                     <i class="fas fa-arrow-left btn-icon"></i> Back to Tools
                 </a>
             </div>
@@ -342,8 +436,12 @@ function restoreBackup($conn, $backupPath) {
                         <div class="table-group-header">
                             <label>
                                 <input type="checkbox" class="group-selector" data-group="<?php echo $prefix; ?>"> 
-                                <?php echo ucfirst($prefix); ?> Tables (<?php echo count($groupTables); ?>)
+                                <?php echo ucfirst($prefix); ?> Tables 
+                                <span class="group-table-count"><?php echo count($groupTables); ?></span>
                             </label>
+                            <span class="toggle-icon">
+                                <i class="fas fa-chevron-down"></i>
+                            </span>
                         </div>
                         
                         <div class="table-group-content">
@@ -433,6 +531,18 @@ document.addEventListener('DOMContentLoaded', function() {
         groupSelectors.forEach(checkbox => {
             checkbox.checked = isChecked;
         });
+        
+        // Expand all groups if checked, collapse if unchecked
+        const tableGroupContents = document.querySelectorAll('.table-group-content');
+        tableGroupContents.forEach(content => {
+            if (isChecked) {
+                content.classList.add('expanded');
+                content.previousElementSibling.querySelector('.toggle-icon i').classList.remove('collapsed');
+            } else {
+                content.classList.remove('expanded');
+                content.previousElementSibling.querySelector('.toggle-icon i').classList.add('collapsed');
+            }
+        });
     });
     
     // Group selector checkboxes
@@ -445,6 +555,13 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll(`.table-checkbox[data-group="${group}"]`).forEach(checkbox => {
                 checkbox.checked = isChecked;
             });
+            
+            // Expand group content when checked
+            const content = this.closest('.table-group-header').nextElementSibling;
+            if (isChecked && !content.classList.contains('expanded')) {
+                content.classList.add('expanded');
+                this.closest('.table-group-header').querySelector('.toggle-icon i').classList.remove('collapsed');
+            }
             
             // Update select all checkbox
             updateSelectAllCheckbox();
@@ -490,14 +607,23 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.target.type === 'checkbox') return;
             
             const content = this.nextElementSibling;
+            const toggleIcon = this.querySelector('.toggle-icon i');
             const expanded = content.classList.contains('expanded');
             
             if (expanded) {
                 content.classList.remove('expanded');
+                toggleIcon.classList.add('collapsed');
             } else {
                 content.classList.add('expanded');
+                toggleIcon.classList.remove('collapsed');
             }
         });
+        
+        // Initialize all groups as collapsed
+        const content = header.nextElementSibling;
+        const toggleIcon = header.querySelector('.toggle-icon i');
+        content.classList.remove('expanded');
+        toggleIcon.classList.add('collapsed');
     });
 });
 </script>

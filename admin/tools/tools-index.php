@@ -17,7 +17,7 @@ $toolsDirectory = __DIR__;
 $tools = [];
 
 // Exclude index.php and non-PHP files
-$excludeFiles = ['index.php', '.', '..'];
+$excludeFiles = ['index.php', '.', '..', 'download-backup.php'];
 
 // Define essential tools that should always appear
 $essentialTools = [
@@ -26,6 +26,7 @@ $essentialTools = [
         'title' => 'Database Backup & Restore',
         'file' => 'db-backup.php',
         'icon' => 'fa-save',
+        'custom_icon' => 'assets/img/tool-icons/backup.png',
         'description' => 'Create and restore database backups with selective table options'
     ],
     [
@@ -33,13 +34,15 @@ $essentialTools = [
         'title' => 'SQL Query Explorer',
         'file' => 'sql-explorer.php',
         'icon' => 'fa-code',
+        'custom_icon' => 'assets/img/tool-icons/sql.png',
         'description' => 'Execute and analyze custom SQL queries with history and templates'
     ],
     [
-        'name' => 'column-relationships',
+        'name' => 'column-relationship',
         'title' => 'Column Relationship Finder',
         'file' => 'column-relationship.php',
         'icon' => 'fa-sitemap',
+        'custom_icon' => 'assets/img/tool-icons/relationship.png',
         'description' => 'Find similarly named columns across tables (like item_id and itemId)'
     ],
     [
@@ -47,6 +50,7 @@ $essentialTools = [
         'title' => 'Database Analyzer',
         'file' => 'db-tools.php',
         'icon' => 'fa-database',
+        'custom_icon' => 'assets/img/tool-icons/analyzer.png',
         'description' => 'Analyze database structure, tables, and column categories'
     ]
 ];
@@ -71,20 +75,27 @@ if ($handle = opendir($toolsDirectory)) {
             
             // Set default icon based on tool name
             $icon = 'fa-tools';
+            $customIcon = '';
             
             // Specific icons for known tools
             if (strpos($toolName, 'db') !== false) {
                 $icon = 'fa-database';
+                $customIcon = 'assets/img/tool-icons/database.png';
             } elseif (strpos($toolName, 'map') !== false) {
                 $icon = 'fa-map';
+                $customIcon = 'assets/img/tool-icons/map.png';
             } elseif (strpos($toolName, 'item') !== false || strpos($toolName, 'weapon') !== false) {
                 $icon = 'fa-box';
+                $customIcon = 'assets/img/tool-icons/item.png';
             } elseif (strpos($toolName, 'account') !== false || strpos($toolName, 'user') !== false) {
                 $icon = 'fa-user';
+                $customIcon = 'assets/img/tool-icons/user.png';
             } elseif (strpos($toolName, 'backup') !== false) {
                 $icon = 'fa-save';
+                $customIcon = 'assets/img/tool-icons/backup.png';
             } elseif (strpos($toolName, 'log') !== false) {
                 $icon = 'fa-file-alt';
+                $customIcon = 'assets/img/tool-icons/log.png';
             }
             
             $tools[$toolName] = [
@@ -92,6 +103,7 @@ if ($handle = opendir($toolsDirectory)) {
                 'title' => $toolTitle,
                 'file' => $entry,
                 'icon' => $icon,
+                'custom_icon' => $customIcon,
                 'description' => 'Additional database administration tool'
             ];
         }
@@ -133,8 +145,92 @@ include '../includes/admin-header.php';
         </div>
     </div>
     
+    <!-- Custom CSS for 3 cards per row and custom icons -->
+    <style>
+        .admin-tools-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 992px) {
+            .admin-tools-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .admin-tools-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .tool-card {
+            background-color: var(--primary);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .tool-card-header {
+            padding: 15px;
+            background-color: var(--secondary);
+            border-bottom: 1px solid var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .tool-card-icon {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(249, 75, 31, 0.1);
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+        
+        .tool-card-icon img {
+            max-width: 32px;
+            max-height: 32px;
+        }
+        
+        .tool-card-icon i {
+            color: var(--accent);
+            font-size: 24px;
+        }
+        
+        .tool-card-title {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .tool-card-body {
+            padding: 15px;
+            flex-grow: 1;
+        }
+        
+        .tool-card-desc {
+            margin: 0;
+            color: #bbb;
+            line-height: 1.5;
+        }
+    </style>
+    
     <!-- Tools Grid -->
-    <div class="admin-card-grid">
+    <div class="admin-tools-grid">
         <?php if (empty($tools)): ?>
             <div class="alert alert-info">
                 <i class="fas fa-info-circle alert-icon"></i>
@@ -142,15 +238,19 @@ include '../includes/admin-header.php';
             </div>
         <?php else: ?>
             <?php foreach ($tools as $tool): ?>
-                <a href="<?php echo $adminBaseUrl; ?>tools/<?php echo $tool['file']; ?>" class="admin-card">
-                    <div class="admin-card-header">
-                        <h2 class="admin-card-title">
-                            <i class="fas <?php echo $tool['icon']; ?>"></i> 
-                            <?php echo $tool['title']; ?>
-                        </h2>
+                <a href="<?php echo $adminBaseUrl; ?>tools/<?php echo $tool['file']; ?>" class="tool-card">
+                    <div class="tool-card-header">
+                        <div class="tool-card-icon">
+                            <?php if (!empty($tool['custom_icon']) && file_exists($_SERVER['DOCUMENT_ROOT'] . '/' . $tool['custom_icon'])): ?>
+                                <img src="<?php echo '/' . $tool['custom_icon']; ?>" alt="<?php echo $tool['title']; ?> Icon">
+                            <?php else: ?>
+                                <i class="fas <?php echo $tool['icon']; ?>"></i>
+                            <?php endif; ?>
+                        </div>
+                        <h2 class="tool-card-title"><?php echo $tool['title']; ?></h2>
                     </div>
-                    <div class="admin-card-body">
-                        <p class="admin-card-desc"><?php echo $tool['description']; ?></p>
+                    <div class="tool-card-body">
+                        <p class="tool-card-desc"><?php echo $tool['description']; ?></p>
                     </div>
                 </a>
             <?php endforeach; ?>

@@ -14,35 +14,43 @@ require_once '../includes/admin-config.php';
 $currentAdminPage = 'db-tools';
 $pageTitle = 'Database Tools';
 
-// Get the current tool from request
-$currentTool = isset($_GET['tool']) ? sanitizeInput($_GET['tool']) : 'column-analyzer';
-
-// Available tools array - add new tools here
-$availableTools = [
-    'column-analyzer' => [
-        'name' => 'Column Analyzer',
-        'description' => 'Analyze table columns, count them, and categorize by purpose',
-        'icon' => 'fa-table-columns'
-    ],
-    // Add more tools as needed
-    // 'table-comparator' => [
-    //     'name' => 'Table Comparator',
-    //     'description' => 'Compare structure of different tables',
-    //     'icon' => 'fa-code-compare'
-    // ],
-];
+// Get the current tool from request - default will always be column-analyzer
+$currentTool = 'column-analyzer';
 
 // Process the tool-specific form submissions
 $results = [];
 $message = '';
 $messageType = '';
 
+// Fetch all table names for dropdown
+function getAllTables($conn) {
+    $tables = [];
+    
+    $query = "SELECT TABLE_NAME 
+              FROM information_schema.TABLES 
+              WHERE TABLE_SCHEMA = '{$conn->real_escape_string($GLOBALS['db_name'])}'
+              ORDER BY TABLE_NAME";
+    
+    $result = $conn->query($query);
+    
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $tables[] = $row['TABLE_NAME'];
+        }
+    }
+    
+    return $tables;
+}
+
+// Get all tables for dropdown
+$allTables = getAllTables($conn);
+
 // Processing for Column Analyzer tool
 if ($currentTool == 'column-analyzer' && isset($_POST['analyze_table'])) {
     $tableName = isset($_POST['table_name']) ? sanitizeInput($_POST['table_name']) : '';
     
     if (empty($tableName)) {
-        $message = "Please enter a table name.";
+        $message = "Please select a table name.";
         $messageType = 'warning';
     } else {
         $results = analyzeTableColumns($conn, $tableName);
@@ -264,6 +272,11 @@ function getCategoryBadge($category) {
                 <h1 class="admin-hero-title">Database Tools</h1>
                 <p class="admin-hero-subtitle">Analyze and manage your database structure</p>
             </div>
+			<div class="hero-actions">
+                <a href="<?php echo $adminBaseUrl; ?>tools/tools-index.php" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left btn-icon"></i> Back to Tools
+                </a>
+            </div>
         </div>
     </div>
     
@@ -274,130 +287,116 @@ function getCategoryBadge($category) {
     </div>
     <?php endif; ?>
     
-    <!-- Tools Navigation -->
-    <div class="admin-card-grid">
-        <?php foreach ($availableTools as $toolId => $tool): ?>
-        <a href="<?php echo $adminBaseUrl; ?>pages/tools/db-tools.php?tool=<?php echo $toolId; ?>" 
-           class="admin-card <?php echo $currentTool === $toolId ? 'active' : ''; ?>">
-            <div class="admin-card-header">
-                <h2 class="admin-card-title">
-                    <i class="fas <?php echo $tool['icon']; ?>"></i> 
-                    <?php echo $tool['name']; ?>
-                </h2>
-            </div>
-            <div class="admin-card-body">
-                <p><?php echo $tool['description']; ?></p>
-            </div>
-        </a>
-        <?php endforeach; ?>
-    </div>
-    
     <!-- Tool Content -->
     <div class="admin-form-container">
-        <?php if ($currentTool === 'column-analyzer'): ?>
-            <h2 class="admin-form-title">Column Analyzer</h2>
-            
-            <form method="POST" action="">
-                <div class="form-group">
-                    <label for="table_name" class="form-label">Table Name</label>
-                    <div class="search-input-group">
-                        <input type="text" id="table_name" name="table_name" class="form-control" placeholder="Enter table name (e.g., characters, weapon, mapids)" required>
-                        <button type="submit" name="analyze_table" class="btn btn-primary">
-                            <i class="fas fa-search"></i> Analyze
-                        </button>
-                    </div>
-                </div>
-            </form>
-            
-            <?php if (!empty($results) && !isset($results['error'])): ?>
-                <div class="admin-table-header">
-                    <h3 class="admin-table-title">
-                        Analysis Results for '<?php echo htmlspecialchars($results['table_name']); ?>'
-                    </h3>
-                    <div class="admin-table-actions">
-                        <span class="badge bg-primary">Total Columns: <?php echo $results['column_count']; ?></span>
-                    </div>
-                </div>
-                
-                <!-- Category Summary -->
-                <div class="detail-section">
-                    <h3 class="detail-section-title">Column Categories</h3>
-                    <div class="stats-grid">
-                        <?php foreach ($results['categories'] as $category => $data): ?>
-                        <div class="stat-item">
-                            <div class="stat-label"><?php echo getCategoryBadge($category); ?></div>
-                            <div class="stat-value"><?php echo $data['count']; ?> columns</div>
-                            <div class="stat-meta"><?php echo $data['purpose']; ?></div>
-                        </div>
+        <h2 class="admin-form-title">Column Analyzer</h2>
+        
+        <form method="POST" action="">
+            <div class="form-group">
+                <label for="table_name" class="form-label">Select Table</label>
+                <div class="search-input-group">
+                    <select id="table_name" name="table_name" class="form-control" required>
+                        <option value="">-- Select a table --</option>
+                        <?php foreach ($allTables as $table): ?>
+                            <option value="<?php echo htmlspecialchars($table); ?>" <?php echo (isset($_POST['table_name']) && $_POST['table_name'] === $table) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($table); ?>
+                            </option>
                         <?php endforeach; ?>
-                    </div>
-                </div>
-
-                <!-- Detailed Column List -->
-                <div class="admin-table">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Column Name</th>
-                                <th>Data Type</th>
-                                <th>Nullable</th>
-                                <th>Default</th>
-                                <th>Extra</th>
-                                <th>Category</th>
-                                <th>Purpose</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($results['columns'] as $column): ?>
-                            <tr>
-                                <td><strong><?php echo htmlspecialchars($column['COLUMN_NAME']); ?></strong></td>
-                                <td><?php echo htmlspecialchars($column['COLUMN_TYPE']); ?></td>
-                                <td><?php echo $column['IS_NULLABLE'] === 'YES' ? 'Yes' : 'No'; ?></td>
-                                <td><?php echo $column['COLUMN_DEFAULT'] !== null ? htmlspecialchars($column['COLUMN_DEFAULT']) : 'NULL'; ?></td>
-                                <td><?php echo htmlspecialchars($column['EXTRA']); ?></td>
-                                <td><?php echo getCategoryBadge($column['category']); ?></td>
-                                <td><?php echo htmlspecialchars($column['purpose']); ?></td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-                
-                <!-- Category Breakdown -->
-                <div class="admin-form-container">
-                    <h3 class="admin-form-title">Columns by Category</h3>
-                    
-                    <div class="accordion">
-                        <?php foreach ($results['categories'] as $category => $data): ?>
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <h4>
-                                    <?php echo getCategoryBadge($category); ?> 
-                                    <span class="ml-2">(<?php echo $data['count']; ?> columns)</span>
-                                </h4>
-                                <span class="accordion-icon"><i class="fas fa-chevron-down"></i></span>
-                            </div>
-                            <div class="accordion-content">
-                                <p><strong>Purpose:</strong> <?php echo $data['purpose']; ?></p>
-                                <div class="column-tags">
-                                    <?php foreach ($data['columns'] as $columnName): ?>
-                                    <span class="column-tag"><?php echo htmlspecialchars($columnName); ?></span>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-                        </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-                
-                <!-- Export Options -->
-                <div class="form-buttons mt-4">
-                    <button type="button" class="btn btn-secondary" onclick="printAnalysis()">
-                        <i class="fas fa-print"></i> Print Analysis
+                    </select>
+                    <button type="submit" name="analyze_table" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Analyze
                     </button>
                 </div>
-            <?php endif; ?>
+            </div>
+        </form>
+        
+        <?php if (!empty($results) && !isset($results['error'])): ?>
+            <div class="admin-table-header">
+                <h3 class="admin-table-title">
+                    Analysis Results for '<?php echo htmlspecialchars($results['table_name']); ?>'
+                </h3>
+                <div class="admin-table-actions">
+                    <span class="badge bg-primary">Total Columns: <?php echo $results['column_count']; ?></span>
+                </div>
+            </div>
             
+            <!-- Category Summary -->
+            <div class="detail-section">
+                <h3 class="detail-section-title">Column Categories</h3>
+                <div class="stats-grid">
+                    <?php foreach ($results['categories'] as $category => $data): ?>
+                    <div class="stat-item">
+                        <div class="stat-label"><?php echo getCategoryBadge($category); ?></div>
+                        <div class="stat-value"><?php echo $data['count']; ?> columns</div>
+                        <div class="stat-meta"><?php echo $data['purpose']; ?></div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+
+            <!-- Detailed Column List -->
+            <div class="admin-table">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Column Name</th>
+                            <th>Data Type</th>
+                            <th>Nullable</th>
+                            <th>Default</th>
+                            <th>Extra</th>
+                            <th>Category</th>
+                            <th>Purpose</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($results['columns'] as $column): ?>
+                        <tr>
+                            <td><strong><?php echo htmlspecialchars($column['COLUMN_NAME']); ?></strong></td>
+                            <td><?php echo htmlspecialchars($column['COLUMN_TYPE']); ?></td>
+                            <td><?php echo $column['IS_NULLABLE'] === 'YES' ? 'Yes' : 'No'; ?></td>
+                            <td><?php echo $column['COLUMN_DEFAULT'] !== null ? htmlspecialchars($column['COLUMN_DEFAULT']) : 'NULL'; ?></td>
+                            <td><?php echo htmlspecialchars($column['EXTRA']); ?></td>
+                            <td><?php echo getCategoryBadge($column['category']); ?></td>
+                            <td><?php echo htmlspecialchars($column['purpose']); ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Category Breakdown -->
+            <div class="admin-form-container">
+                <h3 class="admin-form-title">Columns by Category</h3>
+                
+                <div class="accordion">
+                    <?php foreach ($results['categories'] as $category => $data): ?>
+                    <div class="accordion-item">
+                        <div class="accordion-header">
+                            <h4>
+                                <?php echo getCategoryBadge($category); ?> 
+                                <span class="ml-2">(<?php echo $data['count']; ?> columns)</span>
+                            </h4>
+                            <span class="accordion-icon"><i class="fas fa-chevron-down"></i></span>
+                        </div>
+                        <div class="accordion-content">
+                            <p><strong>Purpose:</strong> <?php echo $data['purpose']; ?></p>
+                            <div class="column-tags">
+                                <?php foreach ($data['columns'] as $columnName): ?>
+                                <span class="column-tag"><?php echo htmlspecialchars($columnName); ?></span>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            
+            <!-- Export Options -->
+            <div class="form-buttons mt-4">
+                <button type="button" class="btn btn-secondary" onclick="printAnalysis()">
+                    <i class="fas fa-print"></i> Print Analysis
+                </button>
+            </div>
         <?php endif; ?>
     </div>
 </div>
@@ -467,10 +466,6 @@ function getCategoryBadge($category) {
     font-family: monospace;
 }
 
-.admin-card.active {
-    border: 2px solid var(--accent);
-}
-
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -506,6 +501,18 @@ function getCategoryBadge($category) {
 .mt-4 {
     margin-top: 20px;
 }
+
+/* Enhanced select styles */
+select.form-control {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1em;
+    padding-right: 2.5rem;
+}
 </style>
 
 <script>
@@ -527,6 +534,14 @@ document.addEventListener('DOMContentLoaded', function() {
             item.classList.add('active');
         });
     }, 500);
+    
+    // Initialize select2 for enhanced dropdown if available
+    if (typeof $.fn.select2 !== 'undefined') {
+        $('#table_name').select2({
+            placeholder: "Select a table",
+            width: '100%'
+        });
+    }
 });
 
 // Print analysis function
