@@ -289,7 +289,6 @@ body {
 .character-portrait {
   width: 120px;
   height: 120px;
-  border-radius: 50%;
   overflow: hidden;
   border: 3px solid var(--accent);
   box-shadow: var(--shadow-accent);
@@ -814,6 +813,8 @@ body {
 
 .stats-section {
   margin-bottom: var(--spacing-lg);
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .stat-row {
@@ -882,7 +883,6 @@ body {
 .character-list-avatar img {
   width: 60px;
   height: 60px;
-  border-radius: 50%;
   border: 2px solid var(--border-color);
   transition: transform var(--transition-fast);
 }

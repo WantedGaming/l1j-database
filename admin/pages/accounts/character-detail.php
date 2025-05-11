@@ -68,8 +68,6 @@ include '../../includes/admin-header.php';
         <span class="separator">/</span>
         <a href="account-list.php">Accounts</a>
         <span class="separator">/</span>
-        <a href="account-detail.php?name=<?php echo urlencode($accountName); ?>"><?php echo htmlspecialchars($accountName); ?></a>
-        <span class="separator">/</span>
         <span class="current"><?php echo htmlspecialchars($charData['char_name']); ?></span>
     </div>
 
@@ -448,163 +446,40 @@ include '../../includes/admin-header.php';
         <!-- Detailed Statistics Section -->
         <div class="section">
             <div class="section-header">
-                <h2><i class="fas fa-chart-bar"></i> Detailed Statistics</h2>
+                <h2><i class="fas fa-chart-bar"></i> Premium Benefits</h2>
             </div>
             
             <div class="card stats-card">
                 <div class="card-body">
-                    <div class="stats-grid">
-                        <div class="stats-section">
-                            <h3 class="section-title">Character Info</h3>
-                            <div class="stat-row">
-                                <div class="stat-label">Name</div>
-                                <div class="stat-value"><?php echo htmlspecialchars($charData['char_name']); ?></div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">Level</div>
-                                <div class="stat-value"><?php echo $charData['level']; ?> (Max: <?php echo $charData['HighLevel']; ?>)</div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">Class</div>
-                                <div class="stat-value"><?php echo getClassName($charData['Class'], $charData['gender']); ?></div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">Gender</div>
-                                <div class="stat-value"><?php echo $charData['gender'] == 0 ? 'Male' : 'Female'; ?></div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">Title</div>
-                                <div class="stat-value"><?php echo htmlspecialchars($charData['Title']); ?></div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">Account</div>
-                                <div class="stat-value">
-                                    <a href="account-detail.php?name=<?php echo urlencode($accountName); ?>">
-                                        <?php echo htmlspecialchars($accountName); ?>
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">Created</div>
-                                <div class="stat-value"><?php echo $charData['BirthDay'] ? date('M d, Y', intval($charData['BirthDay'])) : 'Unknown'; ?></div>
+                    <div class="stats-section">
+                        <div class="stat-row">
+                            <div class="stat-label">Bonus Status</div>
+                            <div class="stat-value"><?php echo $charData['BonusStatus'] ? 'Active' : 'Inactive'; ?></div>
+                        </div>
+                        <div class="stat-row">
+                            <div class="stat-label">Elixir Status</div>
+                            <div class="stat-value"><?php echo $charData['ElixirStatus'] ? 'Active' : 'Inactive'; ?></div>
+                        </div>
+                        <div class="stat-row">
+                            <div class="stat-label">Ein Point</div>
+                            <div class="stat-value"><?php echo $charData['EinPoint']; ?></div>
+                        </div>
+                        <div class="stat-row">
+                            <div class="stat-label">Tam End Time</div>
+                            <div class="stat-value">
+                                <?php echo $charData['TamEndTime'] ? date('M d, Y H:i', strtotime($charData['TamEndTime'])) : 'N/A'; ?>
                             </div>
                         </div>
-                        
-                        <div class="stats-section">
-                            <h3 class="section-title">Base Attributes</h3>
-                            <div class="stat-row">
-                                <div class="stat-label">Strength (STR)</div>
-                                <div class="stat-value"><?php echo $charData['Str']; ?> (Base: <?php echo $charData['BaseStr']; ?>)</div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">Dexterity (DEX)</div>
-                                <div class="stat-value"><?php echo $charData['Dex']; ?> (Base: <?php echo $charData['BaseDex']; ?>)</div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">Constitution (CON)</div>
-                                <div class="stat-value"><?php echo $charData['Con']; ?> (Base: <?php echo $charData['BaseCon']; ?>)</div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">Intelligence (INT)</div>
-                                <div class="stat-value"><?php echo $charData['Intel']; ?> (Base: <?php echo $charData['BaseIntel']; ?>)</div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">Wisdom (WIS)</div>
-                                <div class="stat-value"><?php echo $charData['Wis']; ?> (Base: <?php echo $charData['BaseWis']; ?>)</div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">Charisma (CHA)</div>
-                                <div class="stat-value"><?php echo $charData['Cha']; ?> (Base: <?php echo $charData['BaseCha']; ?>)</div>
+                        <div class="stat-row">
+                            <div class="stat-label">TOPAZ Time</div>
+                            <div class="stat-value">
+                                <?php echo $charData['TOPAZTime'] ? date('M d, Y H:i', strtotime($charData['TOPAZTime'])) : 'N/A'; ?>
                             </div>
                         </div>
-                        
-                        <div class="stats-section">
-                            <h3 class="section-title">Combat Stats</h3>
-                            <div class="stat-row">
-                                <div class="stat-label">HP</div>
-                                <div class="stat-value"><?php echo $charData['CurHp']; ?> / <?php echo $charData['MaxHp']; ?></div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">MP</div>
-                                <div class="stat-value"><?php echo $charData['CurMp']; ?> / <?php echo $charData['MaxMp']; ?></div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">AC</div>
-                                <div class="stat-value"><?php echo $charData['Ac']; ?></div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">Experience</div>
-                                <div class="stat-value"><?php echo number_format($charData['Exp']); ?></div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">Alignment</div>
-                                <div class="stat-value"><?php echo $charData['Alignment']; ?></div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">Food</div>
-                                <div class="stat-value"><?php echo $charData['Food']; ?></div>
-                            </div>
-                        </div>
-                        
-                        <div class="stats-section">
-                            <h3 class="section-title">PvP Statistics</h3>
-                            <div class="stat-row">
-                                <div class="stat-label">PvP Kills</div>
-                                <div class="stat-value"><?php echo $charData['PC_Kill']; ?></div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">PvP Deaths</div>
-                                <div class="stat-value"><?php echo $charData['PC_Death']; ?></div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">Kill/Death Ratio</div>
-                                <div class="stat-value"><?php echo $pvpRatio; ?></div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">PK Count</div>
-                                <div class="stat-value"><?php echo $charData['PKcount']; ?></div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">Karma</div>
-                                <div class="stat-value"><?php echo $charData['Karma']; ?></div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">Hell Time</div>
-                                <div class="stat-value"><?php echo $charData['HellTime']; ?> minutes</div>
-                            </div>
-                        </div>
-                        
-                        <div class="stats-section">
-                            <h3 class="section-title">Premium Benefits</h3>
-                            <div class="stat-row">
-                                <div class="stat-label">Bonus Status</div>
-                                <div class="stat-value"><?php echo $charData['BonusStatus'] ? 'Active' : 'Inactive'; ?></div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">Elixir Status</div>
-                                <div class="stat-value"><?php echo $charData['ElixirStatus'] ? 'Active' : 'Inactive'; ?></div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">Ein Point</div>
-                                <div class="stat-value"><?php echo $charData['EinPoint']; ?></div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">Tam End Time</div>
-                                <div class="stat-value">
-                                    <?php echo $charData['TamEndTime'] ? date('M d, Y H:i', strtotime($charData['TamEndTime'])) : 'N/A'; ?>
-                                </div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">TOPAZ Time</div>
-                                <div class="stat-value">
-                                    <?php echo $charData['TOPAZTime'] ? date('M d, Y H:i', strtotime($charData['TOPAZTime'])) : 'N/A'; ?>
-                                </div>
-                            </div>
-                            <div class="stat-row">
-                                <div class="stat-label">Ein Grace Time</div>
-                                <div class="stat-value">
-                                    <?php echo $charData['EinhasadGraceTime'] ? date('M d, Y H:i', strtotime($charData['EinhasadGraceTime'])) : 'N/A'; ?>
-                                </div>
+                        <div class="stat-row">
+                            <div class="stat-label">Ein Grace Time</div>
+                            <div class="stat-value">
+                                <?php echo $charData['EinhasadGraceTime'] ? date('M d, Y H:i', strtotime($charData['EinhasadGraceTime'])) : 'N/A'; ?>
                             </div>
                         </div>
                     </div>
@@ -634,9 +509,6 @@ include '../../includes/admin-header.php';
                             <div class="character-list-avatar">
                                 <img src="<?php echo $websiteBaseUrl; ?>assets/img/placeholders/class/header/<?php echo $altChar['Class']; ?>_<?php echo $altChar['gender']; ?>.png" 
                                      alt="<?php echo getClassName($altChar['Class'], $altChar['gender']); ?>">
-                                <div class="character-level-indicator">
-                                    <?php echo $altChar['level']; ?>
-                                </div>
                             </div>
                             
                             <div class="character-list-info">
