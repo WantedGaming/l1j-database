@@ -264,12 +264,288 @@
     opacity: 0.7;
 }
 
-/* Additional info for attributes */
-.additional-info {
-    margin-top: 5px;
+/* Equipment and Inventory Styles - UPDATED */
+.inventory-tab-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    padding: var(--card-padding);
+}
+
+.equipment-card,
+.inventory-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--secondary);
+    border-radius: var(--inner-border-radius);
+    padding: var(--card-header-padding);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.inventory-count {
+    font-size: 14px;
+    color: var(--text-muted);
+    background: rgba(10, 10, 10, 0.3);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+/* Updated Equipment Layout */
+.equipment-slots {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    position: relative;
+    background: rgba(10, 10, 10, 0.3);
+    border-radius: var(--inner-border-radius);
+    min-height: 600px;
+    margin-top: 15px;
+    overflow: hidden;
+}
+
+.character-paper-doll {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 0;
+}
+
+.paper-doll-silhouette {
+    height: 90%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.4;
+}
+
+.paper-doll-silhouette img {
+    max-height: 100%;
+    max-width: 100%;
+}
+
+/* New Equipment Grid Layout - Positioned over background */
+.equipment-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 15px;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+    height: 100%;
+}
+
+.equipment-section {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(4, 1fr);
+    gap: 10px;
+    padding: 15px;
+    background: rgba(10, 10, 10, 0.6);
+    border-radius: var(--inner-border-radius);
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.equipment-section-title {
+    position: absolute;
+    top: -8px;
+    left: 10px;
+    background: var(--secondary);
+    padding: 0 5px;
     font-size: 12px;
     color: var(--text-muted);
+    border-radius: 4px;
+    z-index: 2;
+}
+
+.equipment-slot {
+    aspect-ratio: 1;
+    background: rgba(10, 10, 10, 0.7);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 100%; /* Creates a perfect square */
+    overflow: hidden; /* Ensure content doesn't overflow */
+}
+
+.equipment-slot.locked {
+    background: rgba(10, 10, 10, 0.3);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.equipment-slot.locked::after {
+    content: '\f023'; /* Lock icon from Font Awesome */
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.slot-level-req {
+    position: absolute;
+    bottom: 2px;
+    left: 2px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #ffc107;
+    font-size: 12px;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.empty-slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: var(--text-muted);
+    font-size: 32px; /* Bigger icon */
+    opacity: 0.5;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Updated Inventory Grid */
+.inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-top: 15px;
+    flex-grow: 1;
+    position: relative;
+    padding: 15px;
+    background: rgba(10, 10, 10, 0.3);
+    border-radius: var(--inner-border-radius);
+}
+
+.inventory-slot {
+    position: relative;
+    background: rgba(10, 10, 10, 0.7);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 0;
+    padding-bottom: 100%; /* Creates a perfect square regardless of width */
+}
+
+.inventory-slot.empty {
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    background: rgba(10, 10, 10, 0.3);
+}
+
+/* Item styling - Enlarged */
+.item-icon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px; /* Small internal padding */
+}
+
+.item-icon img {
+    max-width: 85%;
+    max-height: 85%;
+    object-fit: contain;
+    min-width: 32px; /* Larger minimum size */
+    min-height: 32px;
+}
+
+.item-count {
+    position: absolute;
+    bottom: 3px;
+    right: 3px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    font-size: 12px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    min-width: 20px;
     text-align: center;
+}
+
+.item-enchant {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    background: rgba(249, 75, 31, 0.9);
+    color: white;
+    font-size: 12px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+/* Enhanced tooltips for items */
+.tooltip .tooltip-text {
+    width: 220px;
+    font-size: 13px;
+    line-height: 1.5;
+    z-index: 100;
+    text-align: left;
+    padding: 10px;
+}
+
+/* When hovering over a equipment slot, provide visual feedback */
+.equipment-slot:hover, .inventory-slot:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(249, 75, 31, 0.5);
+    transform: scale(1.05);
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+/* Equipment Slot Summary */
+.equipment-summary {
+    margin-top: 15px;
+    padding: 12px;
+    background: rgba(10, 10, 10, 0.3);
+    border-radius: var(--inner-border-radius);
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.equipment-summary .tooltip {
+    padding: 5px 10px;
+    background: rgba(10, 10, 10, 0.5);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.equipment-summary .tooltip i {
+    color: var(--accent);
+    margin-right: 5px;
 }
 
 /* Detail columns layout */
@@ -289,17 +565,6 @@
     display: flex;
     flex-direction: column;
     border: 1px solid rgba(255, 255, 255, 0.03);
-}
-
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.card-header .admin-card-title {
-    margin-bottom: 0;
 }
 
 .character-list-scroll {
@@ -525,20 +790,20 @@
 
 .tooltip .tooltip-text {
     visibility: hidden;
-    width: 200px;
+    width: 220px;
     background-color: rgba(0, 0, 0, 0.9);
     color: #fff;
-    text-align: center;
+    text-align: left;
     border-radius: 6px;
-    padding: 5px;
+    padding: 10px;
     position: absolute;
-    z-index: 1;
+    z-index: 100;
     bottom: 125%;
     left: 50%;
-    margin-left: -100px;
+    margin-left: -110px;
     opacity: 0;
     transition: opacity 0.3s;
-    font-size: 12px;
+    font-size: 13px;
     pointer-events: none;
     border: 1px solid var(--accent);
 }
@@ -546,6 +811,84 @@
 .tooltip:hover .tooltip-text {
     visibility: visible;
     opacity: 1;
+}
+
+/* Equipment unlocking indicators */
+.slot-unlocked-info {
+    position: absolute;
+    bottom: 3px;
+    right: 3px;
+    background: rgba(249, 75, 31, 0.8);
+    color: #fff;
+    font-size: 11px;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+/* Equipment slots available counter */
+.equipment-section-counter {
+    position: absolute;
+    top: -8px;
+    right: 10px;
+    background: var(--accent);
+    color: #fff;
+    padding: 1px 5px;
+    font-size: 11px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+/* Specific targeting for equipment icons to make them larger than inventory icons */
+.equipment-slots .item-icon img {
+    max-width: 90%;
+    max-height: 90%;
+    transform: scale(1.2); /* Make equipment icons 20% larger */
+}
+
+/* Make empty slot icons in equipment area larger */
+.equipment-slots .empty-slot i {
+    font-size: 36px;
+    transform: scale(1.2);
+}
+.inventory-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.pagination-button {
+    background: var(--secondary);
+    color: var(--text);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: var(--hover-transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pagination-button:hover {
+    background: var(--accent);
+    color: #fff;
+}
+
+.pagination-button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-button.disabled:hover {
+    background: var(--secondary);
+    color: var(--text);
+}
+
+.pagination-info {
+    font-size: 14px;
+    color: var(--text-muted);
 }
 
 /* Responsive adjustments */
@@ -561,6 +904,10 @@
     .character-activity-info {
         width: 100%;
         margin-top: 15px;
+    }
+    
+    .inventory-tab-container {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -598,5 +945,9 @@
     
     .map-preview {
         grid-column: 1;
+    }
+    
+    .inventory-grid {
+        grid-template-columns: repeat(4, 1fr);
     }
 }

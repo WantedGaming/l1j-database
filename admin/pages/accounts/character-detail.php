@@ -11,6 +11,9 @@ require_once '../../includes/account-functions.php';
 $currentAdminPage = 'accounts';
 $pageTitle = 'Character Details';
 
+// Define website base URL (root URL) from admin base URL
+$websiteBaseUrl = preg_replace('/\/admin(\/.*)?$/', '/', $adminBaseUrl);
+
 // Get character ID from URL
 $charId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if (!$charId) {
@@ -76,7 +79,7 @@ include '../../includes/admin-header.php';
         <div class="character-header">
             <div class="character-title-container">
                 <div class="character-title-section">
-                    <img src="<?php echo getClassImagePath($charData['Class'], $charData['gender']); ?>" 
+                    <img src="<?php echo $websiteBaseUrl; ?>assets/img/placeholders/class/header/<?php echo $charData['Class']; ?>_<?php echo $charData['gender']; ?>.png" 
                          class="character-avatar"
                          alt="<?php echo getClassName($charData['Class'], $charData['gender']); ?>">
                     <div class="character-meta-info">
@@ -636,13 +639,508 @@ include '../../includes/admin-header.php';
             </div>
         </div>
         
-        <!-- Tab Content: Inventory, Skills, History -->
+        <!-- Tab Content: Inventory - UPDATED -->
         <div class="tab-content" id="inventory-tab">
-            <div class="detail-columns">
-                <div class="stats-combined-card" style="grid-column: span 3; text-align: center; padding: 30px;">
-                    <i class="fas fa-box-open" style="font-size: 48px; color: var(--accent); margin-bottom: 20px;"></i>
-                    <h3>Inventory Feature Coming Soon</h3>
-                    <p>This functionality will be available in the next update.</p>
+            <!-- New inventory layout with side-by-side cards -->
+            <div class="inventory-tab-container">
+                <!-- Equipment Card -->
+                <div class="equipment-card">
+                    <div class="card-header">
+                        <h3 class="admin-card-title">Equipment</h3>
+                        <div class="badge">
+                            <i class="fas fa-info-circle"></i> Slot Information
+                        </div>
+                    </div>
+                    
+                    <?php
+                    // Get character equipment from the character_items table
+                    // Join with armor, weapon, and etcitem tables to get the icon IDs
+                    $equipmentSql = "
+                        SELECT ci.*, 
+                               COALESCE(a.iconId, w.iconId, e.iconId) AS iconId,
+                               COALESCE(a.desc_en, w.desc_en, e.desc_en, ci.item_name) AS item_display_name,
+                               COALESCE(a.type, w.type, e.item_type) AS item_type
+                        FROM character_items ci
+                        LEFT JOIN armor a ON ci.item_id = a.item_id
+                        LEFT JOIN weapon w ON ci.item_id = w.item_id
+                        LEFT JOIN etcitem e ON ci.item_id = e.item_id
+                        WHERE ci.char_id = $charId AND ci.is_equipped = 1";
+                    
+                    $equipmentResult = $conn->query($equipmentSql);
+                    $equippedItems = [];
+                    
+                    if ($equipmentResult && $equipmentResult->num_rows > 0) {
+                        while ($item = $equipmentResult->fetch_assoc()) {
+                            $equippedItems[] = $item;
+                        }
+                    }
+                    
+                    // Get character's additional slot values
+                    $ringAddSlots = (int)$charData['RingAddSlot'];
+                    $earringAddSlots = (int)$charData['EarringAddSlot'];
+                    $badgeAddSlots = (int)$charData['BadgeAddSlot'];
+                    $shoulderAddSlots = (int)$charData['ShoulderAddSlot'];
+                    $characterLevel = (int)$charData['level'];
+                    ?>
+                    
+                    <div class="equipment-slots">
+                        <div class="character-paper-doll">
+                            <div class="paper-doll-silhouette">
+                                <img src="<?php echo $websiteBaseUrl; ?>assets/img/placeholders/class/<?php echo $charData['Class']; ?>_<?php echo $charData['gender']; ?>.png" alt="Character Silhouette">
+                            </div>
+                        </div>
+                        
+                        <div class="equipment-grid">
+                            <?php
+                            // Helper function to determine slot status based on character level and additional slots
+                            function getSlotStatus($type, $level, $levelReq, $addSlots, $slotIndex) {
+                                // Default slots that are always open
+                                if ($levelReq === 0) {
+                                    return 'open';
+                                }
+                                
+                                // Check for level-based unlocking
+                                if ($level >= $levelReq) {
+                                    return 'open';
+                                }
+                                
+                                // Check for additional slots based on type
+                                if ($type === 'RING' && $slotIndex <= $addSlots) {
+                                    return 'open';
+                                } else if ($type === 'EARRING' && $slotIndex <= $addSlots) {
+                                    return 'open';
+                                } else if ($type === 'SHOULDER' && $slotIndex <= $addSlots) {
+                                    return 'open';
+                                } else if ($type === 'SENTENCE' && $slotIndex <= $addSlots) { // Badge
+                                    return 'open';
+                                }
+                                
+                                // Slot is locked
+                                return 'locked';
+                            }
+                            
+                            // Helper function to determine if a slot should match an item
+                            function itemMatchesSlot($item, $slotTypes) {
+                                if (empty($item['item_type'])) {
+                                    return false;
+                                }
+                                
+                                $itemType = strtoupper($item['item_type']);
+                                $slotTypeArray = explode(',', $slotTypes);
+                                
+                                foreach ($slotTypeArray as $slotType) {
+                                    $slotType = trim($slotType);
+                                    if ($itemType == $slotType || stripos($itemType, $slotType) !== false) {
+                                        return true;
+                                    }
+                                }
+                                
+                                // Special case for weapons
+                                if ($slotTypes == 'WEAPON' && stripos($item['item_display_name'], 'weapon') !== false) {
+                                    return true;
+                                }
+                                
+                                return false;
+                            }
+                            
+                            // Equipment slot definitions organized according to character-detail-equipment-card.txt
+                            // All unlock levels and requirements now based on character data
+                            $equipmentSections = [
+                                'left-top' => [
+                                    'title' => 'Left Top',
+                                    'slots' => [
+                                        'earring1' => ['name' => 'Earring', 'icon' => 'earring', 'type' => 'EARRING', 'levelReq' => 0, 'index' => 1],
+                                        'earring2' => ['name' => 'Earring', 'icon' => 'earring', 'type' => 'EARRING', 'levelReq' => 101, 'index' => 2],
+                                        'insignia' => ['name' => 'Insignia', 'icon' => 'certificate', 'type' => 'INSIGNIA', 'levelReq' => 60, 'index' => 1],
+                                        'gloves' => ['name' => 'Gloves', 'icon' => 'mitten', 'type' => 'GLOVE', 'levelReq' => 0, 'index' => 1]
+                                    ]
+                                ],
+                                'middle-top' => [
+                                    'title' => 'Middle Top',
+                                    'slots' => [
+                                        'helmet' => ['name' => 'Helmet', 'icon' => 'hard-hat', 'type' => 'HELMET', 'levelReq' => 0, 'index' => 1],
+                                        'pendant' => ['name' => 'Pendant', 'icon' => 'gem', 'type' => 'PENDANT', 'levelReq' => 0, 'index' => 1],
+                                        'amulet' => ['name' => 'Amulet', 'icon' => 'medal', 'type' => 'AMULET', 'levelReq' => 0, 'index' => 1],
+                                        'empty' => ['name' => 'Empty', 'icon' => 'square', 'type' => '', 'levelReq' => 999, 'index' => 0]
+                                    ]
+                                ],
+                                'right-top' => [
+                                    'title' => 'Right Top',
+                                    'slots' => [
+                                        'earring3' => ['name' => 'Earring', 'icon' => 'earring', 'type' => 'EARRING', 'levelReq' => 60, 'index' => 3],
+                                        'earring4' => ['name' => 'Earring', 'icon' => 'earring', 'type' => 'EARRING', 'levelReq' => 103, 'index' => 4],
+                                        'shoulder' => ['name' => 'Pauldrons', 'icon' => 'shield-alt', 'type' => 'SHOULDER', 'levelReq' => 60, 'index' => 1],
+                                        'cloak' => ['name' => 'Cloak', 'icon' => 'tshirt', 'type' => 'CLOAK', 'levelReq' => 0, 'index' => 1]
+                                    ]
+                                ],
+                                'left-middle' => [
+                                    'title' => 'Middle Left',
+                                    'slots' => [
+                                        'weapon' => ['name' => 'Weapon', 'icon' => 'sword', 'type' => 'WEAPON', 'levelReq' => 0, 'index' => 1],
+                                        'empty1' => ['name' => 'Empty', 'icon' => 'square', 'type' => '', 'levelReq' => 999, 'index' => 0],
+                                        'empty2' => ['name' => 'Empty', 'icon' => 'square', 'type' => '', 'levelReq' => 999, 'index' => 0],
+                                        'empty3' => ['name' => 'Empty', 'icon' => 'square', 'type' => '', 'levelReq' => 999, 'index' => 0]
+                                    ]
+                                ],
+                                'middle-middle' => [
+                                    'title' => 'Middle Middle',
+                                    'slots' => [
+                                        'tshirt' => ['name' => 'T-shirt', 'icon' => 'tshirt', 'type' => 'T_SHIRT', 'levelReq' => 0, 'index' => 1],
+                                        'armor' => ['name' => 'Armor', 'icon' => 'shield-alt', 'type' => 'ARMOR', 'levelReq' => 0, 'index' => 1],
+                                        'empty1' => ['name' => 'Empty', 'icon' => 'square', 'type' => '', 'levelReq' => 999, 'index' => 0],
+                                        'empty2' => ['name' => 'Empty', 'icon' => 'square', 'type' => '', 'levelReq' => 999, 'index' => 0]
+                                    ]
+                                ],
+                                'right-middle' => [
+                                    'title' => 'Middle Right',
+                                    'slots' => [
+                                        'shield' => ['name' => 'Shield/Guarder', 'icon' => 'shield-alt', 'type' => 'SHIELD,GARDER', 'levelReq' => 0, 'index' => 1],
+                                        'empty1' => ['name' => 'Empty', 'icon' => 'square', 'type' => '', 'levelReq' => 999, 'index' => 0],
+                                        'empty2' => ['name' => 'Empty', 'icon' => 'square', 'type' => '', 'levelReq' => 999, 'index' => 0],
+                                        'empty3' => ['name' => 'Empty', 'icon' => 'square', 'type' => '', 'levelReq' => 999, 'index' => 0]
+                                    ]
+                                ],
+                                'left-bottom' => [
+                                    'title' => 'Bottom Left',
+                                    'slots' => [
+                                        'ring1' => ['name' => 'Ring', 'icon' => 'ring', 'type' => 'RING', 'levelReq' => 0, 'index' => 1],
+                                        'ring2' => ['name' => 'Ring', 'icon' => 'ring', 'type' => 'RING', 'levelReq' => 60, 'index' => 2],
+                                        'ring3' => ['name' => 'Ring', 'icon' => 'ring', 'type' => 'RING', 'levelReq' => 95, 'index' => 3],
+                                        'rune' => ['name' => 'Rune', 'icon' => 'gem', 'type' => 'RON', 'levelReq' => 0, 'index' => 1]
+                                    ]
+                                ],
+                                'middle-bottom' => [
+                                    'title' => 'Bottom Middle',
+                                    'slots' => [
+                                        'belt' => ['name' => 'Belt', 'icon' => 'stream', 'type' => 'BELT', 'levelReq' => 0, 'index' => 1],
+                                        'gaiters' => ['name' => 'Gaiters', 'icon' => 'socks', 'type' => 'PAIR', 'levelReq' => 0, 'index' => 1],
+                                        'boots' => ['name' => 'Boots', 'icon' => 'boot', 'type' => 'BOOTS', 'levelReq' => 0, 'index' => 1],
+                                        'empty' => ['name' => 'Empty', 'icon' => 'square', 'type' => '', 'levelReq' => 999, 'index' => 0]
+                                    ]
+                                ],
+                                'right-bottom' => [
+                                    'title' => 'Bottom Right',
+                                    'slots' => [
+                                        'ring4' => ['name' => 'Ring', 'icon' => 'ring', 'type' => 'RING', 'levelReq' => 0, 'index' => 4],
+                                        'ring5' => ['name' => 'Ring', 'icon' => 'ring', 'type' => 'RING', 'levelReq' => 60, 'index' => 5],
+                                        'ring6' => ['name' => 'Ring', 'icon' => 'ring', 'type' => 'RING', 'levelReq' => 100, 'index' => 6],
+                                        'badge' => ['name' => 'Badge', 'icon' => 'certificate', 'type' => 'SENTENCE', 'levelReq' => 0, 'index' => 1]
+                                    ]
+                                ]
+                            ];
+                            
+                            // Count unlocked slots by type for informational counters
+                            $unlockedSlots = [
+                                'RING' => 0,
+                                'EARRING' => 0,
+                                'SHOULDER' => 0,
+                                'SENTENCE' => 0  // Badge
+                            ];
+                            
+                            // Display equipment sections
+                            foreach ($equipmentSections as $sectionKey => $section) {
+                                echo '<div class="equipment-section" id="' . $sectionKey . '">';
+                                // Removed the section title for cleaner UI
+                                
+                                // Count unlocked slots for this section
+                                $sectionUnlockedSlots = 0;
+                                $sectionTypeSlots = [
+                                    'RING' => 0,
+                                    'EARRING' => 0,
+                                    'SHOULDER' => 0,
+                                    'SENTENCE' => 0  // Badge
+                                ];
+                                
+                                foreach ($section['slots'] as $slotKey => $slotInfo) {
+                                    // Determine slot type for additional slot calculation
+                                    $slotBaseType = explode(',', $slotInfo['type'])[0];
+                                    $addSlots = 0;
+                                    
+                                    switch ($slotBaseType) {
+                                        case 'RING':
+                                            $addSlots = $ringAddSlots;
+                                            break;
+                                        case 'EARRING':
+                                            $addSlots = $earringAddSlots;
+                                            break;
+                                        case 'SHOULDER':
+                                            $addSlots = $shoulderAddSlots;
+                                            break;
+                                        case 'SENTENCE': // Badge
+                                            $addSlots = $badgeAddSlots;
+                                            break;
+                                    }
+                                    
+                                    // Get slot status based on character level and additional slots
+                                    $slotStatus = getSlotStatus($slotBaseType, $characterLevel, $slotInfo['levelReq'], $addSlots, $slotInfo['index']);
+                                    
+                                    // Count unlocked slots for this section
+                                    if ($slotStatus === 'open' && !empty($slotInfo['type'])) {
+                                        $sectionUnlockedSlots++;
+                                        
+                                        // Count by type
+                                        if (isset($sectionTypeSlots[$slotBaseType])) {
+                                            $sectionTypeSlots[$slotBaseType]++;
+                                            $unlockedSlots[$slotBaseType]++;
+                                        }
+                                    }
+                                    
+                                    $slotClass = 'equipment-slot';
+                                    if ($slotStatus === 'locked') {
+                                        $slotClass .= ' locked';
+                                    }
+                                    
+                                    echo '<div class="' . $slotClass . '" data-slot="' . $slotKey . '" data-type="' . $slotInfo['type'] . '">';
+                                    
+                                    // Find item for this slot if the slot is open
+                                    if ($slotStatus === 'open' && !empty($slotInfo['type'])) {
+                                        $itemInSlot = null;
+                                        foreach ($equippedItems as $item) {
+                                            if (itemMatchesSlot($item, $slotInfo['type'])) {
+                                                $itemInSlot = $item;
+                                                break;
+                                            }
+                                        }
+                                        
+                                        if ($itemInSlot) {
+                                            // Show equipped item
+                                            echo '<div class="item-icon tooltip" data-item-id="' . $itemInSlot['item_id'] . '">';
+                                            echo '<img src="' . $websiteBaseUrl . 'assets/img/icons/icons/' . $itemInSlot['iconId'] . '.png" onerror="this.src=\'' . $websiteBaseUrl . 'assets/img/placeholders/noiconid.png\'" alt="' . htmlspecialchars($itemInSlot['item_display_name']) . '">';
+                                            if ($itemInSlot['enchantlvl'] > 0) {
+                                                echo '<div class="item-enchant">+' . $itemInSlot['enchantlvl'] . '</div>';
+                                            }
+                                            if ($itemInSlot['count'] > 1) {
+                                                echo '<div class="item-count">' . $itemInSlot['count'] . '</div>';
+                                            }
+                                            echo '<span class="tooltip-text">';
+                                            echo '<strong>' . htmlspecialchars($itemInSlot['item_display_name']) . '</strong><br>';
+                                            if ($itemInSlot['enchantlvl'] > 0) {
+                                                echo 'Enchant: +' . $itemInSlot['enchantlvl'] . '<br>';
+                                            }
+                                            if ($itemInSlot['attr_enchantlvl'] > 0) {
+                                                echo 'Attribute: +' . $itemInSlot['attr_enchantlvl'] . '<br>';
+                                            }
+                                            if ($itemInSlot['special_enchant'] > 0) {
+                                                echo 'Special: +' . $itemInSlot['special_enchant'] . '<br>';
+                                            }
+                                            if ($itemInSlot['durability'] > 0) {
+                                                echo 'Durability: ' . $itemInSlot['durability'] . '%<br>';
+                                            }
+                                            echo 'Item Type: ' . $itemInSlot['item_type'] . '<br>';
+                                            echo 'Item ID: ' . $itemInSlot['item_id'];
+                                            echo '</span>';
+                                            echo '</div>';
+                                        } else {
+                                            // Show empty slot
+                                            echo '<div class="empty-slot tooltip">';
+                                            echo '<i class="fas fa-' . $slotInfo['icon'] . '" style="font-size: 32px;"></i>';
+                                            echo '<span class="tooltip-text">Empty ' . $slotInfo['name'] . ' Slot</span>';
+                                            echo '</div>';
+                                        }
+                                        
+                                        // Add unlocked via add-slot indicator if applicable
+                                        if (in_array($slotBaseType, ['RING', 'EARRING', 'SHOULDER', 'SENTENCE']) && 
+                                            $slotInfo['levelReq'] > 0 && $characterLevel < $slotInfo['levelReq']) {
+                                            echo '<div class="slot-unlocked-info">+' . $slotInfo['index'] . '</div>';
+                                        }
+                                        
+                                    } else if ($slotStatus === 'locked') {
+                                        // Show locked slot
+                                        echo '<div class="empty-slot tooltip">';
+                                        if (!empty($slotInfo['icon']) && $slotInfo['icon'] != 'square') {
+                                            echo '<i class="fas fa-' . $slotInfo['icon'] . '" style="font-size: 32px; opacity: 0.3;"></i>';
+                                        }
+                                        
+                                        $tooltipText = 'Locked ' . $slotInfo['name'] . ' Slot';
+                                        if (!empty($slotInfo['levelReq']) && $slotInfo['levelReq'] < 999) {
+                                            echo '<div class="slot-level-req">Lv. ' . $slotInfo['levelReq'] . '+</div>';
+                                            $tooltipText .= ' (Unlocks at Level ' . $slotInfo['levelReq'] . ')';
+                                        }
+                                        
+                                        echo '<span class="tooltip-text">' . $tooltipText . '</span>';
+                                        echo '</div>';
+                                    } else {
+                                        // Empty placeholder slot
+                                        echo '<div class="empty-slot"></div>';
+                                    }
+                                    
+                                    echo '</div>'; // Close equipment-slot
+                                }
+                                
+                                // Add section counter for unlocked slots if there are any special slots in this section
+                                $hasSpecialSlots = false;
+                                $specialSlotInfo = '';
+                                
+                                foreach ($sectionTypeSlots as $type => $count) {
+                                    if ($count > 0) {
+                                        $hasSpecialSlots = true;
+                                        $slotTypeName = $type === 'SENTENCE' ? 'Badge' : ucfirst(strtolower($type));
+                                        $specialSlotInfo .= $slotTypeName . ': ' . $count . ' ';
+                                    }
+                                }
+                                
+                                if ($hasSpecialSlots) {
+                                    echo '<span class="equipment-section-counter" title="' . trim($specialSlotInfo) . '">';
+                                    echo $sectionUnlockedSlots . ' slots';
+                                    echo '</span>';
+                                }
+                                
+                                echo '</div>'; // Close equipment-section
+                            }
+                            ?>
+                        </div>
+                    </div>
+                    
+                    <!-- Equipment Slot Summary -->
+                    <div class="equipment-summary">
+                        <div class="tooltip">
+                            <span><i class="fas fa-ring"></i> Rings: <?php echo $unlockedSlots['RING']; ?> unlocked</span>
+                            <span class="tooltip-text">
+                                Default: 2 slots<br>
+                                Level 60+: +2 slots<br>
+                                Level 95/100+: +2 slots<br>
+                                Add Slots: +<?php echo $ringAddSlots; ?> slot(s)
+                            </span>
+                        </div>
+                        <div class="tooltip">
+                            <span><i class="fas fa-earring"></i> Earrings: <?php echo $unlockedSlots['EARRING']; ?> unlocked</span>
+                            <span class="tooltip-text">
+                                Default: 1 slot<br>
+                                Level 60+: +1 slot<br>
+                                Level 101/103+: +2 slots<br>
+                                Add Slots: +<?php echo $earringAddSlots; ?> slot(s)
+                            </span>
+                        </div>
+                        <div class="tooltip">
+                            <span><i class="fas fa-shield-alt"></i> Shoulders: <?php echo $unlockedSlots['SHOULDER']; ?> unlocked</span>
+                            <span class="tooltip-text">
+                                Level 60+: 1 slot<br>
+                                Add Slots: +<?php echo $shoulderAddSlots; ?> slot(s)
+                            </span>
+                        </div>
+                        <div class="tooltip">
+                            <span><i class="fas fa-certificate"></i> Badges: <?php echo $unlockedSlots['SENTENCE']; ?> unlocked</span>
+                            <span class="tooltip-text">
+                                Default: 1 slot<br>
+                                Add Slots: +<?php echo $badgeAddSlots; ?> slot(s)
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Inventory Card -->
+                <div class="inventory-card">
+                    <div class="card-header">
+                        <h3 class="admin-card-title">Inventory</h3>
+                        <span class="inventory-count">
+                            <?php
+                            // Get inventory count
+                            $inventorySql = "SELECT COUNT(*) as total FROM character_items WHERE char_id = $charId AND is_equipped = 0";
+                            $inventoryResult = $conn->query($inventorySql);
+                            $inventoryCount = 0;
+                            if ($inventoryResult && $inventoryResult->num_rows > 0) {
+                                $inventoryData = $inventoryResult->fetch_assoc();
+                                $inventoryCount = $inventoryData['total'];
+                            }
+                            echo $inventoryCount . ' items';
+                            ?>
+                        </span>
+                    </div>
+                    
+                    <div class="inventory-grid" id="inventory-grid">
+                        <?php
+                        // Get inventory items with icon information
+                        $inventorySql = "
+                            SELECT ci.*, 
+                                   COALESCE(a.iconId, w.iconId, e.iconId) AS iconId,
+                                   COALESCE(a.desc_en, w.desc_en, e.desc_en, ci.item_name) AS item_display_name,
+                                   COALESCE(a.type, w.type, e.item_type) AS item_type
+                            FROM character_items ci
+                            LEFT JOIN armor a ON ci.item_id = a.item_id
+                            LEFT JOIN weapon w ON ci.item_id = w.item_id
+                            LEFT JOIN etcitem e ON ci.item_id = e.item_id
+                            WHERE ci.char_id = $charId AND ci.is_equipped = 0 
+                            ORDER BY ci.item_id
+                            LIMIT 0, 24"; // Show 24 items per page (4 rows x 6 columns)
+                        $inventoryResult = $conn->query($inventorySql);
+                        
+                        $allItems = array();
+                        if ($inventoryResult && $inventoryResult->num_rows > 0) {
+                            while ($item = $inventoryResult->fetch_assoc()) {
+                                $allItems[] = $item;
+                            }
+                        }
+                        
+                        // Display the first page of items
+                        $itemsOnPage = count($allItems);
+                        foreach ($allItems as $item) {
+                            echo '<div class="inventory-slot tooltip">';
+                            echo '<div class="item-icon" data-item-id="' . $item['item_id'] . '">';
+                            echo '<img src="' . $websiteBaseUrl . 'assets/img/icons/icons/' . $item['iconId'] . '.png" onerror="this.src=\'' . $websiteBaseUrl . 'assets/img/placeholders/noiconid.png\'" alt="' . htmlspecialchars($item['item_display_name']) . '">';
+                            if ($item['count'] > 1) {
+                                echo '<div class="item-count">' . $item['count'] . '</div>';
+                            }
+                            if ($item['enchantlvl'] > 0) {
+                                echo '<div class="item-enchant">+' . $item['enchantlvl'] . '</div>';
+                            }
+                            echo '<span class="tooltip-text">';
+                            echo '<strong>' . htmlspecialchars($item['item_display_name']) . '</strong><br>';
+                            echo 'Quantity: ' . $item['count'] . '<br>';
+                            if ($item['enchantlvl'] > 0) {
+                                echo 'Enchant: +' . $item['enchantlvl'] . '<br>';
+                            }
+                            if ($item['attr_enchantlvl'] > 0) {
+                                echo 'Attribute: +' . $item['attr_enchantlvl'] . '<br>';
+                            }
+                            if ($item['special_enchant'] > 0) {
+                                echo 'Special: +' . $item['special_enchant'] . '<br>';
+                            }
+                            if ($item['durability'] > 0) {
+                                echo 'Durability: ' . $item['durability'] . '%<br>';
+                            }
+                            if ($item['remaining_time'] > 0) {
+                                echo 'Time Remaining: ' . formatTimeRemaining($item['remaining_time']) . '<br>';
+                            }
+                            echo 'Item Type: ' . $item['item_type'] . '<br>';
+                            echo 'Item ID: ' . $item['item_id'];
+                            echo '</span>';
+                            echo '</div>';
+                            echo '</div>';
+                        }
+                        
+                        // Add empty slots to fill the grid - always 24 slots total
+                        $emptySlots = 24 - $itemsOnPage;
+                        for ($i = 0; $i < $emptySlots; $i++) {
+                            echo '<div class="inventory-slot empty"></div>';
+                        }
+                        
+                        // Helper function for time formatting
+                        function formatTimeRemaining($seconds) {
+                            if ($seconds < 60) {
+                                return $seconds . ' seconds';
+                            } elseif ($seconds < 3600) {
+                                return floor($seconds / 60) . ' minutes';
+                            } elseif ($seconds < 86400) {
+                                return floor($seconds / 3600) . ' hours';
+                            } else {
+                                return floor($seconds / 86400) . ' days';
+                            }
+                        }
+                        ?>
+                    </div>
+                    
+                    <!-- Pagination controls -->
+                    <div class="inventory-pagination">
+                        <button class="pagination-button" id="prev-page" <?php echo $inventoryCount <= 24 ? 'disabled' : ''; ?>>
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </button>
+                        <span class="pagination-info">Page <span id="current-page">1</span> of <?php echo ceil($inventoryCount / 24); ?></span>
+                        <button class="pagination-button" id="next-page" <?php echo $inventoryCount <= 24 ? 'disabled' : ''; ?>>
+                            Next <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <input type="hidden" id="total-items" value="<?php echo $inventoryCount; ?>">
+                        <input type="hidden" id="items-per-page" value="24">
+                    </div>
                 </div>
             </div>
         </div>
