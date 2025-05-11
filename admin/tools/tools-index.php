@@ -129,6 +129,372 @@ uasort($tools, function($a, $b) use ($essentialTools) {
 include '../includes/admin-header.php';
 ?>
 
+<style>
+/* Base Variables - Updated to match the site's color scheme */
+:root {
+    --text: #ffffff;
+    --background: #030303;
+    --primary: #080808;
+    --secondary: #0a0a0a;
+    --accent: #f94b1f;
+    --accent-hover: #ff6b40;
+    --text-muted: #a0a0a0;
+    --success: #28a745;
+    --info: #17a2b8;
+    --warning: #ffc107;
+    --danger: #dc3545;
+    --border-radius: 8px;
+}
+
+/* Form Layout */
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+}
+
+.col-md-6 {
+    flex: 0 0 50%;
+    max-width: 50%;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+.col-md-4 {
+    flex: 0 0 33.333333%;
+    max-width: 33.333333%;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+.col-md-2 {
+    flex: 0 0 16.666667%;
+    max-width: 16.666667%;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+.col-md-12 {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+.form-buttons-bottom {
+    display: flex;
+    align-items: flex-end;
+}
+
+.form-text {
+    color: #999;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+/* Admin Hero Section */
+.admin-hero {
+    background-color: var(--primary);
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.admin-hero:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+}
+
+.hero-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 30px;
+    flex-wrap: wrap;
+}
+
+.admin-hero-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+    position: relative;
+    color: var(--text);
+}
+
+.admin-hero-title::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -8px;
+    width: 50px;
+    height: 3px;
+    background-color: var(--accent);
+    border-radius: 3px;
+}
+
+.admin-hero-subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin: 15px 0 0 0;
+    max-width: 600px;
+}
+
+.hero-actions {
+    margin-top: 10px;
+}
+
+/* Form Container */
+.admin-form-container {
+    background-color: var(--primary);
+    border-radius: var(--border-radius);
+    margin-bottom: 25px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.admin-form-title {
+    padding: 18px 25px;
+    font-size: 18px;
+    font-weight: 600;
+    background-color: var(--secondary);
+    border-bottom: 1px solid #1a1a1a;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.form-control {
+    display: block;
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--text);
+    background-color: var(--secondary);
+    border: 1px solid #333;
+    border-radius: var(--border-radius);
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--accent);
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(249, 75, 31, 0.2);
+}
+
+.form-buttons {
+    padding: 10px 0;
+    text-align: right;
+}
+
+/* Button Styles */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.5;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-radius: var(--border-radius);
+    transition: all 0.3s ease;
+}
+
+.btn-icon {
+    margin-right: 8px;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: var(--accent);
+    border-color: var(--accent);
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: var(--accent-hover);
+    border-color: var(--accent-hover);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    color: var(--text);
+    background-color: var(--secondary);
+    border-color: #333;
+}
+
+.btn-secondary:hover, .btn-secondary:focus {
+    background-color: #1a1a1a;
+    border-color: #444;
+    transform: translateY(-1px);
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 4px;
+}
+
+/* Alert Styles */
+.alert {
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.alert-icon {
+    margin-right: 15px;
+    font-size: 18px;
+}
+
+.alert-info {
+    background-color: rgba(23, 162, 184, 0.15);
+    border-left: 4px solid var(--info);
+}
+
+.alert-danger {
+    background-color: rgba(220, 53, 69, 0.15);
+    border-left: 4px solid var(--danger);
+}
+
+/* Tools Index Specific Styles */
+.admin-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.tool-card {
+    background-color: var(--primary);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+}
+
+.tool-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.tool-card-header {
+    padding: 15px;
+    background-color: var(--secondary);
+    border-bottom: 1px solid var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.tool-card-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(249, 75, 31, 0.1);
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.tool-card-icon img {
+    max-width: 32px;
+    max-height: 32px;
+}
+
+.tool-card-icon i {
+    color: var(--accent);
+    font-size: 24px;
+}
+
+.tool-card-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.tool-card-body {
+    padding: 15px;
+    flex-grow: 1;
+}
+
+.tool-card-desc {
+    margin: 0;
+    color: #bbb;
+    line-height: 1.5;
+}
+
+.section-content {
+    padding: 0 25px 20px;
+}
+
+.section-subtitle {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 20px 0 15px;
+    color: var(--text);
+}
+
+.feature-list {
+    padding-left: 20px;
+    margin-bottom: 20px;
+    color: var(--text-muted);
+}
+
+.feature-list li {
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.feature-list li strong {
+    color: var(--text);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+    .admin-tools-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .hero-actions {
+        margin-top: 15px;
+        align-self: flex-start;
+    }
+}
+
+@media (max-width: 576px) {
+    .admin-tools-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
 <div class="container">
     <!-- Admin Hero Section -->
     <div class="admin-hero">
@@ -144,90 +510,6 @@ include '../includes/admin-header.php';
             </div>
         </div>
     </div>
-    
-    <!-- Custom CSS for 3 cards per row and custom icons -->
-    <style>
-        .admin-tools-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        @media (max-width: 992px) {
-            .admin-tools-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        
-        @media (max-width: 576px) {
-            .admin-tools-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .tool-card {
-            background-color: var(--primary);
-            border-radius: 8px;
-            overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .tool-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        }
-        
-        .tool-card-header {
-            padding: 15px;
-            background-color: var(--secondary);
-            border-bottom: 1px solid var(--accent);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .tool-card-icon {
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: rgba(249, 75, 31, 0.1);
-            border-radius: 8px;
-            flex-shrink: 0;
-        }
-        
-        .tool-card-icon img {
-            max-width: 32px;
-            max-height: 32px;
-        }
-        
-        .tool-card-icon i {
-            color: var(--accent);
-            font-size: 24px;
-        }
-        
-        .tool-card-title {
-            margin: 0;
-            font-size: 18px;
-            font-weight: 600;
-        }
-        
-        .tool-card-body {
-            padding: 15px;
-            flex-grow: 1;
-        }
-        
-        .tool-card-desc {
-            margin: 0;
-            color: #bbb;
-            line-height: 1.5;
-        }
-    </style>
     
     <!-- Tools Grid -->
     <div class="admin-tools-grid">
@@ -260,9 +542,9 @@ include '../includes/admin-header.php';
     <!-- Additional Tools Information -->
     <div class="admin-form-container">
         <h3 class="admin-form-title">Working with Database Tools</h3>
-        <p>The tools provided here will help you manage and maintain your Lineage II database effectively.</p>
-        
         <div class="section-content">
+            <p>The tools provided here will help you manage and maintain your Lineage II database effectively.</p>
+            
             <h4 class="section-subtitle">Available Tools</h4>
             <ul class="feature-list">
                 <li><strong>Database Backup & Restore</strong> - Create selective backups of your database and restore when needed</li>
@@ -270,9 +552,7 @@ include '../includes/admin-header.php';
                 <li><strong>Column Relationship Finder</strong> - Identify similarly named columns (e.g., item_id and itemId) across tables</li>
                 <li><strong>Database Analyzer</strong> - Analyze table structures and column categorization</li>
             </ul>
-        </div>
-        
-        <div class="section-content">
+            
             <h4 class="section-subtitle">Usage Guidelines</h4>
             <ul class="feature-list">
                 <li>Always create a backup before making significant changes to the database</li>

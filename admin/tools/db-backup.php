@@ -294,8 +294,355 @@ function restoreBackup($conn, $backupPath) {
 }
 ?>
 
-<!-- Add CSS for improved table groups styling -->
 <style>
+/* Base Variables - Updated to match the site's color scheme */
+:root {
+    --text: #ffffff;
+    --background: #030303;
+    --primary: #080808;
+    --secondary: #0a0a0a;
+    --accent: #f94b1f;
+    --accent-hover: #ff6b40;
+    --text-muted: #a0a0a0;
+    --success: #28a745;
+    --info: #17a2b8;
+    --warning: #ffc107;
+    --danger: #dc3545;
+    --border-radius: 8px;
+}
+
+/* Form Layout */
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+}
+
+.col-md-6 {
+    flex: 0 0 50%;
+    max-width: 50%;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+.col-md-4 {
+    flex: 0 0 33.333333%;
+    max-width: 33.333333%;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+.col-md-2 {
+    flex: 0 0 16.666667%;
+    max-width: 16.666667%;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+.col-md-12 {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+.form-buttons-bottom {
+    display: flex;
+    align-items: flex-end;
+}
+
+.form-text {
+    color: #999;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+/* Admin Hero Section */
+.admin-hero {
+    background-color: var(--primary);
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.admin-hero:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+}
+
+.hero-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 30px;
+    flex-wrap: wrap;
+}
+
+.admin-hero-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+    position: relative;
+    color: var(--text);
+}
+
+.admin-hero-title::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -8px;
+    width: 50px;
+    height: 3px;
+    background-color: var(--accent);
+    border-radius: 3px;
+}
+
+.admin-hero-subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin: 15px 0 0 0;
+    max-width: 600px;
+}
+
+.hero-actions {
+    margin-top: 10px;
+}
+
+/* Form Container */
+.admin-form-container {
+    background-color: var(--primary);
+    border-radius: var(--border-radius);
+    margin-bottom: 25px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.admin-form-title {
+    padding: 18px 25px;
+    font-size: 18px;
+    font-weight: 600;
+    background-color: var(--secondary);
+    border-bottom: 1px solid #1a1a1a;
+}
+
+.search-form {
+    padding: 25px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.form-control {
+    display: block;
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--text);
+    background-color: var(--secondary);
+    border: 1px solid #333;
+    border-radius: var(--border-radius);
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--accent);
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(249, 75, 31, 0.2);
+}
+
+.form-buttons {
+    padding: 10px 0;
+    text-align: right;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    padding: 0 25px;
+}
+
+/* Button Styles */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.5;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-radius: var(--border-radius);
+    transition: all 0.3s ease;
+}
+
+.btn-icon {
+    margin-right: 8px;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: var(--accent);
+    border-color: var(--accent);
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: var(--accent-hover);
+    border-color: var(--accent-hover);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    color: var(--text);
+    background-color: var(--secondary);
+    border-color: #333;
+}
+
+.btn-secondary:hover, .btn-secondary:focus {
+    background-color: #1a1a1a;
+    border-color: #444;
+    transform: translateY(-1px);
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 4px;
+}
+
+.btn-danger {
+    color: #fff;
+    background-color: var(--danger);
+    border-color: var(--danger);
+}
+
+.btn-danger:hover, .btn-danger:focus {
+    background-color: #c82333;
+    border-color: #bd2130;
+    transform: translateY(-1px);
+}
+
+/* Alert Styles */
+.alert {
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.alert-icon {
+    margin-right: 15px;
+    font-size: 18px;
+}
+
+.alert-info {
+    background-color: rgba(23, 162, 184, 0.15);
+    border-left: 4px solid var(--info);
+}
+
+.alert-danger {
+    background-color: rgba(220, 53, 69, 0.15);
+    border-left: 4px solid var(--danger);
+}
+
+.alert-success {
+    background-color: rgba(40, 167, 69, 0.15);
+    border-left: 4px solid var(--success);
+}
+
+.alert-warning {
+    background-color: rgba(255, 193, 7, 0.15);
+    border-left: 4px solid var(--warning);
+}
+
+/* Results Container */
+.results-container {
+    margin-top: 30px;
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Enhanced Table Layout */
+.table-responsive {
+    overflow-x: auto;
+    margin: 0 25px 25px 25px;
+}
+
+.admin-table {
+    padding: 0 25px 25px 25px;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    background-color: var(--primary);
+}
+
+.data-table thead th {
+    background-color: var(--secondary);
+    color: var(--text);
+    font-weight: 600;
+    text-align: left;
+    padding: 16px;
+    font-size: 14px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    transition: background-color 0.3s;
+    border-bottom: 2px solid #1a1a1a;
+}
+
+.data-table tbody tr {
+    transition: all 0.3s ease;
+}
+
+.data-table tbody tr:nth-child(odd) {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.data-table tbody tr:hover {
+    background-color: rgba(249, 75, 31, 0.05);
+    transform: translateX(5px);
+}
+
+.data-table td {
+    padding: 14px 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.table-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.inline-form {
+    display: inline-block;
+}
+
+/* Table Group Styles for DB Backup */
 .table-group {
     margin-bottom: 10px;
     border: 1px solid var(--secondary);
@@ -385,7 +732,36 @@ function restoreBackup($conn, $backupPath) {
     font-size: 0.8em;
     font-weight: normal;
 }
-</style>
+
+.checkbox-group {
+    margin-bottom: 15px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .hero-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .hero-actions {
+        margin-top: 15px;
+        align-self: flex-start;
+    }
+    
+    .col-md-6, .col-md-4, .col-md-2 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+    
+    .form-buttons-bottom {
+        margin-top: 15px;
+    }
+    
+    .table-responsive {
+        margin: 0 15px 15px 15px;
+    }
+}
 </style>
 
 <div class="container">
@@ -471,7 +847,7 @@ function restoreBackup($conn, $backupPath) {
         <div class="admin-form-title">Existing Backups</div>
         
         <?php if (empty($backups)): ?>
-        <p>No backups found.</p>
+        <p style="padding: 20px 25px;">No backups found.</p>
         <?php else: ?>
         <div class="admin-table">
             <table class="data-table">
