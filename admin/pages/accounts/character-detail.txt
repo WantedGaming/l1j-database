@@ -1,0 +1,41 @@
+Character-Detail.PHP
+
+"account_name", "char_name", "level" should be on the hero section with a image preview showing us class and gender according to the database. Class and gender are determined by the column "Class" + "gender"
+
+Row 1 - This row should show characters stats, use the entire width of the row to display these stats. Each [] brackets should be on one card. We got 9 all together.
+["MaxHp"/"CurHp"], ["MaxMp"/"CurHp"], ["AC"], ["BaseStr"/"Str"], ["BaseCon"/"Con"], ["BaseDex"/"Dex"], ["BaseCha"/"Cha"], ["BaseIntel"/"Intel"], ["BaseWis"/"Wis"]
+
+Row 2 - This row, needs to be split into 3 columns equal in height.
+- Column 1 "Characters" - this will display all other characters this account has by Name, Class, Level (search by "account_name").  When the characters name is clicked it should show the characters detail page.
+- Column 2 - this column should be split into two section.
+Section 1 "Details" - this will shows the following details
+ - "Class"
+ - "gender"
+ - "BirthDay"
+ - "Alignement"
+ - "BonusStatus"
+ - "ElixirStatus"
+ - "AccessLevel"
+ - "OnlineStatus"
+ - "HellTime"
+ - "Karma"
+Section 2 "Clan" - show clan related data
+ - "ClanID"
+ - "Clanname"
+ - "ClanRank"
+ - "ClanContribution"
+ - "ClanWeekContribution"
+ - "pledgeJoinDate"
+ - "pledgeRankDate"
+ - "Title"
+- Column 3 - this column should also be split into two section.
+Section 1 "Activity" - this will show the following details
+- "lastLogoutTime"
+- "TamEndTime"
+- "TOPAZTime"
+- "EinhasadGraceTime"
+- "EinPoint"
+- "SurvivalTime"
+Section 2 - "Last Logout" - this will show us the map the user was on when they logout.
+- "MapID" this is main column we need to find what map he was on.  Use this column to search for in mapid.sql file.
+- "LocX" + "LocY" should be shown as tooltip over the map image. 
