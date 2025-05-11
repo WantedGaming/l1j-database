@@ -1,7 +1,7 @@
 <?php
 /**
- * Character Detail Page
- * Displays comprehensive character information with improved UI
+ * Enhanced Character Detail Page - No Tabs Version
+ * New implementation with improved UX/UI displaying all content in a single page
  */
 
 require_once '../../../includes/db_connect.php';
@@ -11,13 +11,13 @@ require_once '../../includes/account-functions.php';
 $currentAdminPage = 'accounts';
 $pageTitle = 'Character Details';
 
-// Define website base URL (root URL) from admin base URL
+// Define website base URL from admin base URL
 $websiteBaseUrl = preg_replace('/\/admin(\/.*)?$/', '/', $adminBaseUrl);
 
 // Get character ID from URL
 $charId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if (!$charId) {
-    echo "Invalid character ID";
+    header("Location: account-list.php");
     exit;
 }
 
@@ -26,7 +26,7 @@ $sql = "SELECT * FROM characters WHERE objid = $charId";
 $result = $conn->query($sql);
 
 if (!$result || $result->num_rows === 0) {
-    echo "Character not found";
+    header("Location: account-list.php?error=character-not-found");
     exit;
 }
 
@@ -47,9 +47,12 @@ if (!empty($charData['MapID'])) {
     }
 }
 
-// Function to calculate progress percentages
-function calculateProgress($current, $max) {
-    return ($max > 0) ? ($current / $max * 100) : 0;
+// Get character's PVP ratio
+$pvpRatio = 0;
+if ($charData['PC_Death'] > 0) {
+    $pvpRatio = round($charData['PC_Kill'] / $charData['PC_Death'], 2);
+} else {
+    $pvpRatio = $charData['PC_Kill'] > 0 ? $charData['PC_Kill'] : 0;
 }
 
 // Include admin header
@@ -58,433 +61,628 @@ include '../../includes/admin-header.php';
 
 <link rel="stylesheet" href="<?php echo $adminBaseUrl; ?>assets/css/character-detail.css">
 
-<div class="container">
-    <div class="admin-hero">
-        <div class="hero-header">
-            <div class="admin-hero-content">
-                <h1 class="admin-hero-title">Character Profile</h1>
-                <div class="hero-actions">
-                    <a href="account-list.php" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Back to Accounts
-                    </a>
-                    <a href="account-detail.php?name=<?php echo urlencode($accountName); ?>" class="btn btn-primary">
-                        <i class="fas fa-user"></i> View Account
-                    </a>
-                </div>
-            </div>
-        </div>
+<div class="page-container">
+    <!-- Breadcrumb navigation -->
+    <div class="breadcrumb">
+        <a href="<?php echo $adminBaseUrl; ?>">Dashboard</a>
+        <span class="separator">/</span>
+        <a href="account-list.php">Accounts</a>
+        <span class="separator">/</span>
+        <a href="account-detail.php?name=<?php echo urlencode($accountName); ?>"><?php echo htmlspecialchars($accountName); ?></a>
+        <span class="separator">/</span>
+        <span class="current"><?php echo htmlspecialchars($charData['char_name']); ?></span>
     </div>
 
-    <div class="character-main-card">
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Character Header -->
         <div class="character-header">
-            <div class="character-title-container">
-                <div class="character-title-section">
-                    <img src="<?php echo $websiteBaseUrl; ?>assets/img/placeholders/class/header/<?php echo $charData['Class']; ?>_<?php echo $charData['gender']; ?>.png" 
-                         class="character-avatar"
-                         alt="<?php echo getClassName($charData['Class'], $charData['gender']); ?>">
-                    <div class="character-meta-info">
-                        <h1 class="admin-hero-title"><?php echo htmlspecialchars($charData['char_name']); ?></h1>
-                        <div class="account-info-badge">
-                            <span class="account-access">Account: <?php echo htmlspecialchars($charData['account_name']); ?></span>
-                            <span class="account-status active">Lv. <?php echo $charData['level']; ?> (Max: <?php echo $charData['HighLevel']; ?>)</span>
-                            <span class="account-status active"><?php echo getClassName($charData['Class'], $charData['gender']); ?></span>
-                            <?php if($charData['Title']): ?>
-                            <span class="text-accent">"<?php echo htmlspecialchars($charData['Title']); ?>"</span>
-                            <?php endif; ?>
-                        </div>
+            <div class="character-header-left">
+                <div class="character-portrait-container">
+                    <div class="character-portrait">
+                        <img src="<?php echo $websiteBaseUrl; ?>assets/img/placeholders/class/<?php echo $charData['Class']; ?>_<?php echo $charData['gender']; ?>.png" 
+                            alt="<?php echo getClassName($charData['Class'], $charData['gender']); ?>">
                         
-                        <!-- Admin action buttons -->
-                        <div class="action-buttons">
-                            <button class="btn-action" onclick="openEditModal('<?php echo $charId; ?>')">
-                                <i class="fas fa-edit"></i> Edit
-                            </button>
-                            <button class="btn-action">
-                                <i class="fas fa-envelope"></i> Message
-                            </button>
-                            <button class="btn-action">
-                                <i class="fas fa-ban"></i> Ban
-                            </button>
+                        <div class="character-level">
+                            <span><?php echo $charData['level']; ?></span>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Activity information in header -->
-                <div class="character-activity-info">
-                    <div class="activity-row">
-                        <div class="activity-item">
-                            <div class="activity-label">Last Logout:</div>
-                            <div class="activity-value"><?php echo $charData['lastLogoutTime'] ? formatTimeUSA($charData['lastLogoutTime']) : 'N/A'; ?></div>
-                        </div>
-                        <div class="activity-item">
-                            <div class="activity-label">Last Login:</div>
-                            <div class="activity-value"><?php echo $charData['lastLoginTime'] ? formatTimeUSA($charData['lastLoginTime']) : 'N/A'; ?></div>
-                        </div>
-                        <div class="activity-item">
-                            <div class="activity-label">Online Status:</div>
-                            <div class="activity-value"><?php echo $charData['OnlineStatus'] ? '<span class="status-online">Online</span>' : '<span class="status-offline">Offline</span>'; ?></div>
-                        </div>
-                    </div>
-                    <div class="activity-row">
-                        <div class="activity-item tooltip">
-                            <div class="activity-label">Tam End Time:</div>
-                            <div class="activity-value"><?php echo $charData['TamEndTime'] ? formatTimeUSA($charData['TamEndTime']) : 'N/A'; ?></div>
-                            <span class="tooltip-text">Special buff duration remaining for this character</span>
-                        </div>
-                        <div class="activity-item tooltip">
-                            <div class="activity-label">TOPAZ Time:</div>
-                            <div class="activity-value"><?php echo $charData['TOPAZTime'] ? formatTimeUSA($charData['TOPAZTime']) : 'N/A'; ?></div>
-                            <span class="tooltip-text">Premium currency boost remaining</span>
-                        </div>
-                        <div class="activity-item tooltip">
-                            <div class="activity-label">Ein Grace Time:</div>
-                            <div class="activity-value"><?php echo $charData['EinhasadGraceTime'] ? formatTimeUSA($charData['EinhasadGraceTime']) : 'N/A'; ?></div>
-                            <span class="tooltip-text">Divine protection remaining</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Tab Navigation -->
-        <div class="character-tabs">
-            <div class="character-tab active" data-tab="stats">Statistics</div>
-            <div class="character-tab" data-tab="details">Character Details</div>
-            <div class="character-tab" data-tab="account">Account Characters</div>
-            <div class="character-tab" data-tab="clan">Clan Information</div>
-            <div class="character-tab" data-tab="location">Location</div>
-            <div class="character-tab" data-tab="inventory">Inventory</div>
-            <div class="character-tab" data-tab="skills">Skills</div>
-            <div class="character-tab" data-tab="history">History</div>
-        </div>
-        
-        <!-- Tab Content: Stats -->
-        <div class="tab-content active" id="stats-tab">
-            <!-- Row 1: Character Stats -->
-            <div class="attributes-grid">
-                <!-- Row 1: Level, HP, MP, AC, PVP, Karma -->
-                <div class="attribute-card">
-                    <div class="account-info-label">Level</div>
-                    <div class="attribute-value">
-                        <?php echo $charData['level']; ?> <small>(Max: <?php echo $charData['HighLevel']; ?>)</small>
-                    </div>
-                </div>
-                
-                <div class="attribute-card">
-                    <div class="account-info-label">HP</div>
-                    <div class="attribute-value">
-                        <?php echo $charData['CurHp']; ?> / <?php echo $charData['MaxHp']; ?>
-                    </div>
-                </div>
-                
-                <div class="attribute-card">
-                    <div class="account-info-label">MP</div>
-                    <div class="attribute-value">
-                        <?php echo $charData['CurMp']; ?> / <?php echo $charData['MaxMp']; ?>
-                    </div>
-                </div>
-                
-                <div class="attribute-card">
-                    <div class="account-info-label">AC</div>
-                    <div class="attribute-value">
-                        <?php echo $charData['Ac']; ?>
-                    </div>
-                </div>
-                
-                <div class="attribute-card">
-                    <div class="account-info-label">PvP</div>
-                    <div class="attribute-value">
-                        K: <?php echo $charData['PC_Kill']; ?> / D: <?php echo $charData['PC_Death']; ?>
-                    </div>
-                    <div class="additional-info">
-                        KDR: <?php echo ($charData['PC_Death'] > 0) ? round($charData['PC_Kill'] / $charData['PC_Death'], 2) : $charData['PC_Kill']; ?>
-                    </div>
-                </div>
-                
-                <div class="attribute-card">
-                    <div class="account-info-label">Karma</div>
-                    <div class="attribute-value">
-                        <?php echo $charData['Karma']; ?>
-                        <?php if($charData['Karma'] < 0): ?>
-                        <span class="badge">PK</span>
-                        <?php endif; ?>
-                    </div>
-                </div>
-                
-                <!-- Row 2: Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma -->
-                <div class="attribute-card">
-                    <div class="account-info-label">Strength</div>
-                    <div class="attribute-value">
-                        <?php echo $charData['Str']; ?> <small>(<?php echo $charData['BaseStr']; ?>)</small>
-                    </div>
-                </div>
-                
-                <div class="attribute-card">
-                    <div class="account-info-label">Dexterity</div>
-                    <div class="attribute-value">
-                        <?php echo $charData['Dex']; ?> <small>(<?php echo $charData['BaseDex']; ?>)</small>
-                    </div>
-                </div>
-                
-                <div class="attribute-card">
-                    <div class="account-info-label">Constitution</div>
-                    <div class="attribute-value">
-                        <?php echo $charData['Con']; ?> <small>(<?php echo $charData['BaseCon']; ?>)</small>
-                    </div>
-                </div>
-                
-                <div class="attribute-card">
-                    <div class="account-info-label">Intelligence</div>
-                    <div class="attribute-value">
-                        <?php echo $charData['Intel']; ?> <small>(<?php echo $charData['BaseIntel']; ?>)</small>
-                    </div>
-                </div>
-                
-                <div class="attribute-card">
-                    <div class="account-info-label">Wisdom</div>
-                    <div class="attribute-value">
-                        <?php echo $charData['Wis']; ?> <small>(<?php echo $charData['BaseWis']; ?>)</small>
-                    </div>
-                </div>
-                
-                <div class="attribute-card">
-                    <div class="account-info-label">Charisma</div>
-                    <div class="attribute-value">
-                        <?php echo $charData['Cha']; ?> <small>(<?php echo $charData['BaseCha']; ?>)</small>
+                    
+                    <div class="character-status-indicator <?php echo $charData['OnlineStatus'] ? 'online' : 'offline'; ?>">
+                        <?php echo $charData['OnlineStatus'] ? 'Online' : 'Offline'; ?>
                     </div>
                 </div>
             </div>
             
-            <!-- Combat Statistics -->
-            <div class="detail-columns">
-                <div class="stats-combined-card">
-                    <div class="card-header">
-                        <h3 class="admin-card-title">Combat Statistics</h3>
+            <div class="character-header-center">
+                <h1 class="character-name"><?php echo htmlspecialchars($charData['char_name']); ?></h1>
+                
+                <div class="character-meta">
+                    <div class="character-meta-item">
+                        <i class="fas fa-user"></i>
+                        <span><?php echo htmlspecialchars($accountName); ?></span>
                     </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">PvP Kills</div>
-                        <div class="account-info-value"><?php echo $charData['PC_Kill']; ?></div>
+                    
+                    <div class="character-meta-item">
+                        <i class="fas fa-hat-wizard"></i>
+                        <span><?php echo getClassName($charData['Class'], $charData['gender']); ?></span>
                     </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">PvP Deaths</div>
-                        <div class="account-info-value"><?php echo $charData['PC_Death']; ?></div>
+                    
+                    <?php if(!empty($charData['Clanname'])): ?>
+                    <div class="character-meta-item">
+                        <i class="fas fa-users"></i>
+                        <span><?php echo htmlspecialchars($charData['Clanname']); ?></span>
                     </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Kill/Death Ratio</div>
-                        <div class="account-info-value">
-                            <?php echo ($charData['PC_Death'] > 0) ? round($charData['PC_Kill'] / $charData['PC_Death'], 2) : $charData['PC_Kill']; ?>
-                        </div>
+                    <?php endif; ?>
+                    
+                    <?php if(!empty($charData['Title'])): ?>
+                    <div class="character-meta-item title">
+                        <i class="fas fa-crown"></i>
+                        <span><?php echo htmlspecialchars($charData['Title']); ?></span>
                     </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">PK Count</div>
-                        <div class="account-info-value"><?php echo $charData['PKcount']; ?></div>
+                    <?php endif; ?>
+                </div>
+                
+                <div class="character-stats-summary">
+                    <div class="stat-pill">
+                        <span class="stat-label">Level</span>
+                        <span class="stat-value"><?php echo $charData['level']; ?>/<?php echo $charData['HighLevel']; ?></span>
                     </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Karma</div>
-                        <div class="account-info-value"><?php echo $charData['Karma']; ?></div>
+                    
+                    <div class="stat-pill">
+                        <span class="stat-label">HP</span>
+                        <span class="stat-value"><?php echo $charData['CurHp']; ?>/<?php echo $charData['MaxHp']; ?></span>
                     </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Hell Time</div>
-                        <div class="account-info-value"><?php echo $charData['HellTime']; ?></div>
+                    
+                    <div class="stat-pill">
+                        <span class="stat-label">MP</span>
+                        <span class="stat-value"><?php echo $charData['CurMp']; ?>/<?php echo $charData['MaxMp']; ?></span>
+                    </div>
+                    
+                    <div class="stat-pill">
+                        <span class="stat-label">PvP</span>
+                        <span class="stat-value"><?php echo $charData['PC_Kill']; ?>:<?php echo $charData['PC_Death']; ?></span>
+                    </div>
+                    
+                    <div class="stat-pill <?php echo $charData['Karma'] < 0 ? 'negative' : ''; ?>">
+                        <span class="stat-label">Karma</span>
+                        <span class="stat-value"><?php echo $charData['Karma']; ?></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="character-header-right">
+                <div class="last-activity">
+                    <div class="activity-item">
+                        <span class="activity-label">Last Login</span>
+                        <span class="activity-time"><?php echo $charData['lastLoginTime'] ? date('M d, Y H:i', strtotime($charData['lastLoginTime'])) : 'Never'; ?></span>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <span class="activity-label">Last Logout</span>
+                        <span class="activity-time"><?php echo $charData['lastLogoutTime'] ? date('M d, Y H:i', strtotime($charData['lastLogoutTime'])) : 'Never'; ?></span>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <span class="activity-label">Character Created</span>
+                        <span class="activity-time"><?php echo $charData['BirthDay'] ? date('M d, Y', intval($charData['BirthDay'])) : 'Unknown'; ?></span>
                     </div>
                 </div>
                 
-                <div class="stats-combined-card">
-                    <div class="card-header">
-                        <h3 class="admin-card-title">Game Bonuses</h3>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Bonus Status</div>
-                        <div class="account-info-value"><?php echo $charData['BonusStatus']; ?></div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Elixir Status</div>
-                        <div class="account-info-value"><?php echo $charData['ElixirStatus']; ?></div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Ein Point</div>
-                        <div class="account-info-value"><?php echo $charData['EinPoint']; ?></div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Tam End Time</div>
-                        <div class="account-info-value">
-                            <?php echo $charData['TamEndTime'] ? formatTimeUSA($charData['TamEndTime']) : 'N/A'; ?>
-                        </div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">TOPAZ Time</div>
-                        <div class="account-info-value">
-                            <?php echo $charData['TOPAZTime'] ? formatTimeUSA($charData['TOPAZTime']) : 'N/A'; ?>
-                        </div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Ein Grace Time</div>
-                        <div class="account-info-value">
-                            <?php echo $charData['EinhasadGraceTime'] ? formatTimeUSA($charData['EinhasadGraceTime']) : 'N/A'; ?>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="stats-combined-card">
-                    <div class="card-header">
-                        <h3 class="admin-card-title">Account Info</h3>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Account</div>
-                        <div class="account-info-value">
-                            <a href="account-detail.php?name=<?php echo urlencode($accountName); ?>">
-                                <?php echo htmlspecialchars($charData['account_name']); ?>
+                <div class="admin-actions">
+                    <button class="admin-action-btn primary" onclick="openModal('editCharacterModal')">
+                        <i class="fas fa-edit"></i> Edit Character
+                    </button>
+                    
+                    <div class="admin-action-dropdown">
+                        <button class="admin-action-btn secondary dropdown-toggle">
+                            <i class="fas fa-ellipsis-v"></i> More Actions
+                        </button>
+                        <div class="dropdown-menu">
+                            <a href="#" onclick="openModal('sendMessageModal')">
+                                <i class="fas fa-envelope"></i> Send Message
+                            </a>
+                            <a href="#" onclick="openModal('teleportModal')">
+                                <i class="fas fa-map-marker-alt"></i> Teleport Character
+                            </a>
+                            <a href="#" onclick="openModal('itemsModal')">
+                                <i class="fas fa-gift"></i> Send Items
+                            </a>
+                            <a href="#" class="danger" onclick="openModal('restrictionModal')">
+                                <i class="fas fa-ban"></i> Apply Restriction
                             </a>
                         </div>
                     </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Character Count</div>
-                        <div class="account-info-value"><?php echo count($altCharacters); ?></div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Access Level</div>
-                        <div class="account-info-value"><?php echo getAccessLevelName($charData['AccessLevel']); ?></div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Character Created</div>
-                        <div class="account-info-value">
-                            <?php echo $charData['BirthDay'] ? date('Y-m-d', $charData['BirthDay']) : 'Unknown'; ?>
-                        </div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Last Login</div>
-                        <div class="account-info-value">
-                            <?php echo $charData['lastLoginTime'] ? formatTimeUSA($charData['lastLoginTime']) : 'N/A'; ?>
-                        </div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Last Logout</div>
-                        <div class="account-info-value">
-                            <?php echo $charData['lastLogoutTime'] ? formatTimeUSA($charData['lastLogoutTime']) : 'N/A'; ?>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
-        
-        <!-- Tab Content: Character Details -->
-        <div class="tab-content" id="details-tab">
-            <div class="detail-columns">
-                <div class="stats-combined-card">
-                    <div class="card-header">
-                        <h3 class="admin-card-title">Character Profile</h3>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Class</div>
-                        <div class="account-info-value"><?php echo getClassName($charData['Class'], $charData['gender']); ?></div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Gender</div>
-                        <div class="account-info-value"><?php echo $charData['gender'] == 0 ? 'Male' : 'Female'; ?></div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Birthday</div>
-                        <div class="account-info-value">
-                            <?php echo $charData['BirthDay'] ? date('Y-m-d', $charData['BirthDay']) : 'Unknown'; ?>
-                        </div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Alignment</div>
-                        <div class="account-info-value"><?php echo $charData['Alignment']; ?></div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Title</div>
-                        <div class="account-info-value"><?php echo htmlspecialchars($charData['Title']); ?></div>
-                    </div>
-                </div>
-                
-                <div class="stats-combined-card">
-                    <div class="card-header">
-                        <h3 class="admin-card-title">Stats Breakdown</h3>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Base Strength</div>
-                        <div class="account-info-value"><?php echo $charData['BaseStr']; ?></div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Base Constitution</div>
-                        <div class="account-info-value"><?php echo $charData['BaseCon']; ?></div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Base Dexterity</div>
-                        <div class="account-info-value"><?php echo $charData['BaseDex']; ?></div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Base Charisma</div>
-                        <div class="account-info-value"><?php echo $charData['BaseCha']; ?></div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Base Intelligence</div>
-                        <div class="account-info-value"><?php echo $charData['BaseIntel']; ?></div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Base Wisdom</div>
-                        <div class="account-info-value"><?php echo $charData['BaseWis']; ?></div>
-                    </div>
-                </div>
-                
-                <div class="stats-combined-card">
-                    <div class="card-header">
-                        <h3 class="admin-card-title">Game Statistics</h3>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Current Level</div>
-                        <div class="account-info-value"><?php echo $charData['level']; ?></div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Highest Level</div>
-                        <div class="account-info-value"><?php echo $charData['HighLevel']; ?></div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Experience</div>
-                        <div class="account-info-value"><?php echo $charData['Exp']; ?></div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Alignment</div>
-                        <div class="account-info-value"><?php echo $charData['Alignment']; ?></div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Food</div>
-                        <div class="account-info-value"><?php echo $charData['Food']; ?></div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="account-info-label">Survival Time</div>
-                        <div class="account-info-value">
-                            <?php echo $charData['SurvivalTime'] ? formatTimeUSA($charData['SurvivalTime']) : 'N/A'; ?>
-                        </div>
-                    </div>
-                </div>
+
+        <!-- Character Overview Section -->
+        <div class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-user-circle"></i> Character Overview</h2>
             </div>
-        </div>
-        
-        <!-- Tab Content: Account Characters -->
-        <div class="tab-content" id="account-tab">
-            <div class="detail-columns">
-                <div class="character-list-card" style="grid-column: span 3;">
+            
+            <div class="content-grid">
+                <!-- Main Character Info -->
+                <div class="card character-overview">
                     <div class="card-header">
-                        <h3 class="admin-card-title">Account Characters (<?php echo count($altCharacters); ?>)</h3>
-                        <a href="account-detail.php?name=<?php echo urlencode($accountName); ?>" class="btn-action">
-                            <i class="fas fa-user"></i> View Account
-                        </a>
+                        <h3 class="card-title">Character Information</h3>
                     </div>
-                    <div class="character-list-scroll">
-                        <?php foreach($altCharacters as $altChar): ?>
-                        <div class="compact-character-item <?php echo ($altChar['objid'] == $charId) ? 'current' : ''; ?>">
-                            <div class="compact-character-info">
-                                <div class="character-name">
-                                    <a href="character-detail.php?id=<?php echo $altChar['objid']; ?>">
-                                        <?php echo htmlspecialchars($altChar['char_name']); ?>
-                                        <?php if($altChar['objid'] == $charId): ?>
-                                        <span class="badge">Current</span>
+                    <div class="card-body">
+                        <div class="character-progress-bars">
+                            <div class="progress-item">
+                                <div class="progress-label">
+                                    <span>Level Progress</span>
+                                    <span class="progress-value"><?php echo $charData['level']; ?>/<?php echo $charData['HighLevel']; ?></span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: <?php echo ($charData['level'] / $charData['HighLevel']) * 100; ?>%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="progress-item">
+                                <div class="progress-label">
+                                    <span>HP</span>
+                                    <span class="progress-value"><?php echo $charData['CurHp']; ?>/<?php echo $charData['MaxHp']; ?></span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill hp" style="width: <?php echo ($charData['CurHp'] / $charData['MaxHp']) * 100; ?>%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="progress-item">
+                                <div class="progress-label">
+                                    <span>MP</span>
+                                    <span class="progress-value"><?php echo $charData['CurMp']; ?>/<?php echo $charData['MaxMp']; ?></span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill mp" style="width: <?php echo ($charData['CurMp'] / $charData['MaxMp']) * 100; ?>%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="progress-item">
+                                <div class="progress-label">
+                                    <span>PvP Ratio</span>
+                                    <span class="progress-value"><?php echo $pvpRatio; ?> K/D</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill pvp" style="width: <?php echo min($pvpRatio * 25, 100); ?>%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="character-attributes">
+                            <h3 class="section-title">Attributes</h3>
+                            <div class="attributes-grid">
+                                <div class="attribute-item">
+                                    <div class="attribute-icon str">STR</div>
+                                    <div class="attribute-details">
+                                        <div class="attribute-value"><?php echo $charData['Str']; ?></div>
+                                        <div class="attribute-base">(<?php echo $charData['BaseStr']; ?>)</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="attribute-item">
+                                    <div class="attribute-icon dex">DEX</div>
+                                    <div class="attribute-details">
+                                        <div class="attribute-value"><?php echo $charData['Dex']; ?></div>
+                                        <div class="attribute-base">(<?php echo $charData['BaseDex']; ?>)</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="attribute-item">
+                                    <div class="attribute-icon con">CON</div>
+                                    <div class="attribute-details">
+                                        <div class="attribute-value"><?php echo $charData['Con']; ?></div>
+                                        <div class="attribute-base">(<?php echo $charData['BaseCon']; ?>)</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="attribute-item">
+                                    <div class="attribute-icon int">INT</div>
+                                    <div class="attribute-details">
+                                        <div class="attribute-value"><?php echo $charData['Intel']; ?></div>
+                                        <div class="attribute-base">(<?php echo $charData['BaseIntel']; ?>)</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="attribute-item">
+                                    <div class="attribute-icon wis">WIS</div>
+                                    <div class="attribute-details">
+                                        <div class="attribute-value"><?php echo $charData['Wis']; ?></div>
+                                        <div class="attribute-base">(<?php echo $charData['BaseWis']; ?>)</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="attribute-item">
+                                    <div class="attribute-icon cha">CHA</div>
+                                    <div class="attribute-details">
+                                        <div class="attribute-value"><?php echo $charData['Cha']; ?></div>
+                                        <div class="attribute-base">(<?php echo $charData['BaseCha']; ?>)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Character Buffs -->
+                <div class="card buffs-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Active Buffs & Bonuses</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="buffs-grid">
+                            <div class="buff-item">
+                                <div class="buff-icon">
+                                    <i class="fas fa-hourglass-half"></i>
+                                </div>
+                                <div class="buff-details">
+                                    <div class="buff-name">Tam Buff</div>
+                                    <div class="buff-time">
+                                        <?php if ($charData['TamEndTime'] && strtotime($charData['TamEndTime']) > time()): ?>
+                                            <?php echo formatTimeRemaining(strtotime($charData['TamEndTime']) - time()); ?> remaining
+                                        <?php else: ?>
+                                            Not active
                                         <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="buff-item">
+                                <div class="buff-icon">
+                                    <i class="fas fa-gem"></i>
+                                </div>
+                                <div class="buff-details">
+                                    <div class="buff-name">TOPAZ Time</div>
+                                    <div class="buff-time">
+                                        <?php if ($charData['TOPAZTime'] && strtotime($charData['TOPAZTime']) > time()): ?>
+                                            <?php echo formatTimeRemaining(strtotime($charData['TOPAZTime']) - time()); ?> remaining
+                                        <?php else: ?>
+                                            Not active
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="buff-item">
+                                <div class="buff-icon">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div class="buff-details">
+                                    <div class="buff-name">Einhasad's Grace</div>
+                                    <div class="buff-time">
+                                        <?php if ($charData['EinhasadGraceTime'] && strtotime($charData['EinhasadGraceTime']) > time()): ?>
+                                            <?php echo formatTimeRemaining(strtotime($charData['EinhasadGraceTime']) - time()); ?> remaining
+                                        <?php else: ?>
+                                            Not active
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="buff-item">
+                                <div class="buff-icon">
+                                    <i class="fas fa-wine-glass-alt"></i>
+                                </div>
+                                <div class="buff-details">
+                                    <div class="buff-name">Elixir Status</div>
+                                    <div class="buff-status">
+                                        <?php echo $charData['ElixirStatus'] ? 'Active' : 'Not active'; ?>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="buff-item">
+                                <div class="buff-icon">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <div class="buff-details">
+                                    <div class="buff-name">Bonus Status</div>
+                                    <div class="buff-status">
+                                        <?php echo $charData['BonusStatus'] ? 'Active' : 'Not active'; ?>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="buff-item">
+                                <div class="buff-icon">
+                                    <i class="fas fa-pray"></i>
+                                </div>
+                                <div class="buff-details">
+                                    <div class="buff-name">Ein Points</div>
+                                    <div class="buff-value">
+                                        <?php echo $charData['EinPoint']; ?> points
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- PVP Stats -->
+                <div class="card pvp-stats-card">
+                    <div class="card-header">
+                        <h3 class="card-title">PvP Statistics</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="pvp-stats-container">
+                            <div class="pvp-stat-item">
+                                <div class="pvp-stat-value"><?php echo $charData['PC_Kill']; ?></div>
+                                <div class="pvp-stat-label">Kills</div>
+                            </div>
+                            
+                            <div class="pvp-stat-item">
+                                <div class="pvp-stat-value"><?php echo $charData['PC_Death']; ?></div>
+                                <div class="pvp-stat-label">Deaths</div>
+                            </div>
+                            
+                            <div class="pvp-stat-item">
+                                <div class="pvp-stat-value"><?php echo $pvpRatio; ?></div>
+                                <div class="pvp-stat-label">K/D Ratio</div>
+                            </div>
+                            
+                            <div class="pvp-stat-item">
+                                <div class="pvp-stat-value"><?php echo $charData['PKcount']; ?></div>
+                                <div class="pvp-stat-label">PK Count</div>
+                            </div>
+                            
+                            <div class="pvp-stat-item">
+                                <div class="pvp-stat-value"><?php echo $charData['Karma']; ?></div>
+                                <div class="pvp-stat-label">Karma</div>
+                            </div>
+                        </div>
+                        
+                        <?php if($charData['HellTime'] > 0): ?>
+                        <div class="hell-time">
+                            <i class="fas fa-fire"></i>
+                            <span>Hell Time: <?php echo $charData['HellTime']; ?> minutes</span>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Detailed Statistics Section -->
+        <div class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-chart-bar"></i> Detailed Statistics</h2>
+            </div>
+            
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="stats-grid">
+                        <div class="stats-section">
+                            <h3 class="section-title">Character Info</h3>
+                            <div class="stat-row">
+                                <div class="stat-label">Name</div>
+                                <div class="stat-value"><?php echo htmlspecialchars($charData['char_name']); ?></div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">Level</div>
+                                <div class="stat-value"><?php echo $charData['level']; ?> (Max: <?php echo $charData['HighLevel']; ?>)</div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">Class</div>
+                                <div class="stat-value"><?php echo getClassName($charData['Class'], $charData['gender']); ?></div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">Gender</div>
+                                <div class="stat-value"><?php echo $charData['gender'] == 0 ? 'Male' : 'Female'; ?></div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">Title</div>
+                                <div class="stat-value"><?php echo htmlspecialchars($charData['Title']); ?></div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">Account</div>
+                                <div class="stat-value">
+                                    <a href="account-detail.php?name=<?php echo urlencode($accountName); ?>">
+                                        <?php echo htmlspecialchars($accountName); ?>
                                     </a>
                                 </div>
-                                <div class="character-class"><?php echo getClassName($altChar['Class'], $altChar['gender']); ?></div>
-                                <div class="text-right">Lv. <?php echo $altChar['level']; ?></div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">Created</div>
+                                <div class="stat-value"><?php echo $charData['BirthDay'] ? date('M d, Y', intval($charData['BirthDay'])) : 'Unknown'; ?></div>
+                            </div>
+                        </div>
+                        
+                        <div class="stats-section">
+                            <h3 class="section-title">Base Attributes</h3>
+                            <div class="stat-row">
+                                <div class="stat-label">Strength (STR)</div>
+                                <div class="stat-value"><?php echo $charData['Str']; ?> (Base: <?php echo $charData['BaseStr']; ?>)</div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">Dexterity (DEX)</div>
+                                <div class="stat-value"><?php echo $charData['Dex']; ?> (Base: <?php echo $charData['BaseDex']; ?>)</div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">Constitution (CON)</div>
+                                <div class="stat-value"><?php echo $charData['Con']; ?> (Base: <?php echo $charData['BaseCon']; ?>)</div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">Intelligence (INT)</div>
+                                <div class="stat-value"><?php echo $charData['Intel']; ?> (Base: <?php echo $charData['BaseIntel']; ?>)</div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">Wisdom (WIS)</div>
+                                <div class="stat-value"><?php echo $charData['Wis']; ?> (Base: <?php echo $charData['BaseWis']; ?>)</div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">Charisma (CHA)</div>
+                                <div class="stat-value"><?php echo $charData['Cha']; ?> (Base: <?php echo $charData['BaseCha']; ?>)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stats-section">
+                            <h3 class="section-title">Combat Stats</h3>
+                            <div class="stat-row">
+                                <div class="stat-label">HP</div>
+                                <div class="stat-value"><?php echo $charData['CurHp']; ?> / <?php echo $charData['MaxHp']; ?></div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">MP</div>
+                                <div class="stat-value"><?php echo $charData['CurMp']; ?> / <?php echo $charData['MaxMp']; ?></div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">AC</div>
+                                <div class="stat-value"><?php echo $charData['Ac']; ?></div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">Experience</div>
+                                <div class="stat-value"><?php echo number_format($charData['Exp']); ?></div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">Alignment</div>
+                                <div class="stat-value"><?php echo $charData['Alignment']; ?></div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">Food</div>
+                                <div class="stat-value"><?php echo $charData['Food']; ?></div>
+                            </div>
+                        </div>
+                        
+                        <div class="stats-section">
+                            <h3 class="section-title">PvP Statistics</h3>
+                            <div class="stat-row">
+                                <div class="stat-label">PvP Kills</div>
+                                <div class="stat-value"><?php echo $charData['PC_Kill']; ?></div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">PvP Deaths</div>
+                                <div class="stat-value"><?php echo $charData['PC_Death']; ?></div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">Kill/Death Ratio</div>
+                                <div class="stat-value"><?php echo $pvpRatio; ?></div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">PK Count</div>
+                                <div class="stat-value"><?php echo $charData['PKcount']; ?></div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">Karma</div>
+                                <div class="stat-value"><?php echo $charData['Karma']; ?></div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">Hell Time</div>
+                                <div class="stat-value"><?php echo $charData['HellTime']; ?> minutes</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stats-section">
+                            <h3 class="section-title">Premium Benefits</h3>
+                            <div class="stat-row">
+                                <div class="stat-label">Bonus Status</div>
+                                <div class="stat-value"><?php echo $charData['BonusStatus'] ? 'Active' : 'Inactive'; ?></div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">Elixir Status</div>
+                                <div class="stat-value"><?php echo $charData['ElixirStatus'] ? 'Active' : 'Inactive'; ?></div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">Ein Point</div>
+                                <div class="stat-value"><?php echo $charData['EinPoint']; ?></div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">Tam End Time</div>
+                                <div class="stat-value">
+                                    <?php echo $charData['TamEndTime'] ? date('M d, Y H:i', strtotime($charData['TamEndTime'])) : 'N/A'; ?>
+                                </div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">TOPAZ Time</div>
+                                <div class="stat-value">
+                                    <?php echo $charData['TOPAZTime'] ? date('M d, Y H:i', strtotime($charData['TOPAZTime'])) : 'N/A'; ?>
+                                </div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">Ein Grace Time</div>
+                                <div class="stat-value">
+                                    <?php echo $charData['EinhasadGraceTime'] ? date('M d, Y H:i', strtotime($charData['EinhasadGraceTime'])) : 'N/A'; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Account Characters Section -->
+        <div class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-users"></i> Account Characters</h2>
+            </div>
+            
+            <div class="card account-chars-card">
+                <div class="card-header">
+                    <h3 class="card-title">Other Characters on This Account</h3>
+                    <div class="card-actions">
+                        <a href="account-detail.php?name=<?php echo urlencode($accountName); ?>" class="btn-outline">
+                            <i class="fas fa-user"></i> View Account Details
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="account-characters-list">
+                        <?php foreach($altCharacters as $altChar): ?>
+                        <div class="character-list-item <?php echo ($altChar['objid'] == $charId) ? 'current' : ''; ?>">
+                            <div class="character-list-avatar">
+                                <img src="<?php echo $websiteBaseUrl; ?>assets/img/placeholders/class/header/<?php echo $altChar['Class']; ?>_<?php echo $altChar['gender']; ?>.png" 
+                                     alt="<?php echo getClassName($altChar['Class'], $altChar['gender']); ?>">
+                                <div class="character-level-indicator">
+                                    <?php echo $altChar['level']; ?>
+                                </div>
+                            </div>
+                            
+                            <div class="character-list-info">
+                                <div class="character-list-name">
+                                    <?php echo htmlspecialchars($altChar['char_name']); ?>
+                                    <?php if ($altChar['objid'] == $charId): ?>
+                                    <span class="current-char-badge">Current</span>
+                                    <?php endif; ?>
+                                </div>
+                                
+                                <div class="character-list-class">
+                                    <?php echo getClassName($altChar['Class'], $altChar['gender']); ?>
+                                </div>
+                                
+                                <div class="character-list-clan">
+                                    <?php echo !empty($altChar['Clanname']) ? htmlspecialchars($altChar['Clanname']) : 'No Clan'; ?>
+                                </div>
+                            </div>
+                            
+                            <div class="character-list-stats">
+                                <div class="list-stat">
+                                    <span class="list-stat-label">Level</span>
+                                    <span class="list-stat-value"><?php echo $altChar['level']; ?></span>
+                                </div>
+                                
+                                <div class="list-stat">
+                                    <span class="list-stat-label">PVP</span>
+                                    <span class="list-stat-value"><?php echo $altChar['PC_Kill']; ?>/<?php echo $altChar['PC_Death']; ?></span>
+                                </div>
+                                
+                                <div class="list-stat">
+                                    <span class="list-stat-label">Status</span>
+                                    <span class="list-stat-value status-badge <?php echo $altChar['OnlineStatus'] ? 'online' : 'offline'; ?>">
+                                        <?php echo $altChar['OnlineStatus'] ? 'Online' : 'Offline'; ?>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="character-list-actions">
+                                <?php if ($altChar['objid'] != $charId): ?>
+                                <a href="character-detail.php?id=<?php echo $altChar['objid']; ?>" class="btn-outline-small">
+                                    View
+                                </a>
+                                <?php else: ?>
+                                <span class="current-indicator">Current</span>
+                                <?php endif; ?>
                             </div>
                         </div>
                         <?php endforeach; ?>
@@ -493,726 +691,375 @@ include '../../includes/admin-header.php';
             </div>
         </div>
         
-        <!-- Tab Content: Clan Information -->
-        <div class="tab-content" id="clan-tab">
-            <div class="detail-columns">
-                <div class="stats-combined-card" style="grid-column: span 3;">
-                    <div class="card-header">
-                        <h3 class="admin-card-title">Clan Information</h3>
-                    </div>
-                    
-                    <?php if($charData['ClanID']): ?>
-                    <div class="detail-columns" style="padding: 0;">
-                        <div class="stats-combined-card">
-                            <div class="stat-item">
-                                <div class="account-info-label">Clan ID</div>
-                                <div class="account-info-value"><?php echo $charData['ClanID']; ?></div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="account-info-label">Clan Name</div>
-                                <div class="account-info-value"><?php echo htmlspecialchars($charData['Clanname']); ?></div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="account-info-label">Title</div>
-                                <div class="account-info-value"><?php echo htmlspecialchars($charData['Title']); ?></div>
-                            </div>
-                        </div>
-                        
-                        <div class="stats-combined-card">
-                            <div class="stat-item">
-                                <div class="account-info-label">Clan Rank</div>
-                                <div class="account-info-value"><?php echo $charData['ClanRank']; ?></div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="account-info-label">Pledge Join Date</div>
-                                <div class="account-info-value">
-                                    <?php echo $charData['pledgeJoinDate'] ? date('Y-m-d', $charData['pledgeJoinDate']) : 'N/A'; ?>
-                                </div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="account-info-label">Pledge Rank Date</div>
-                                <div class="account-info-value">
-                                    <?php echo $charData['pledgeRankDate'] ? date('Y-m-d', $charData['pledgeRankDate']) : 'N/A'; ?>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="stats-combined-card">
-                            <div class="stat-item">
-                                <div class="account-info-label">Clan Contribution</div>
-                                <div class="account-info-value"><?php echo $charData['ClanContribution']; ?></div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="account-info-label">Weekly Contribution</div>
-                                <div class="account-info-value"><?php echo $charData['ClanWeekContribution']; ?></div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="account-info-label">Contribution Ratio</div>
-                                <div class="account-info-value">
-                                    <?php 
-                                    // Just a placeholder calculation
-                                    echo $charData['ClanWeekContribution'] ? 
-                                         round($charData['ClanContribution'] / $charData['ClanWeekContribution'], 2) : 
-                                         $charData['ClanContribution']; 
-                                    ?>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="action-buttons" style="justify-content: center; margin-top: 25px;">
-                        <button class="btn-action">
-                            <i class="fas fa-users"></i> View Clan Members
-                        </button>
-                        <button class="btn-action">
-                            <i class="fas fa-castle"></i> View Clan Castle
-                        </button>
-                        <button class="btn-action">
-                            <i class="fas fa-scroll"></i> Clan History
-                        </button>
-                    </div>
-                    <?php else: ?>
-                    <div class="stat-item">
-                        <div class="account-info-value" style="text-align: center; width: 100%; padding: 20px 0;">
-                            This character is not in a clan.
-                        </div>
-                    </div>
-                    <?php endif; ?>
-                </div>
+        <!-- Clan Information Section -->
+        <div class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-shield-alt"></i> Clan Information</h2>
             </div>
-        </div>
-        
-        <!-- Tab Content: Location -->
-        <div class="tab-content" id="location-tab">
-            <div class="detail-columns">
-                <div class="map-preview" style="grid-column: span 3;">
+            
+            <?php if ($charData['ClanID']): ?>
+            <div class="content-grid two-columns">
+                <!-- Clan Information -->
+                <div class="card clan-details-card">
                     <div class="card-header">
-                        <h3 class="admin-card-title">Last Logout Location</h3>
+                        <h3 class="card-title">Clan Details</h3>
                     </div>
-                    
-                    <div class="map-visual" style="height: 400px;">
-                        <div class="map-coordinates">
-                            Map <?php echo $charData['MapID']; ?>: <?php echo $mapName; ?><br>
-                            X: <?php echo $charData['LocX']; ?>, Y: <?php echo $charData['LocY']; ?>
-                        </div>
-                    </div>
-                    
-                    <div class="detail-columns" style="padding: 15px 0 0 0;">
-                        <div class="stats-combined-card">
-                            <div class="stat-item">
-                                <div class="account-info-label">Map ID</div>
-                                <div class="account-info-value"><?php echo $charData['MapID']; ?></div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="account-info-label">Location Name</div>
-                                <div class="account-info-value"><?php echo $mapName; ?></div>
-                            </div>
-                        </div>
-                        
-                        <div class="stats-combined-card">
-                            <div class="stat-item">
-                                <div class="account-info-label">X Coordinate</div>
-                                <div class="account-info-value"><?php echo $charData['LocX']; ?></div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="account-info-label">Y Coordinate</div>
-                                <div class="account-info-value"><?php echo $charData['LocY']; ?></div>
-                            </div>
-                        </div>
-                        
-                        <div class="stats-combined-card">
-                            <div class="stat-item">
-                                <div class="account-info-label">Survival Time</div>
-                                <div class="account-info-value">
-                                    <?php echo $charData['SurvivalTime'] ? formatTimeUSA($charData['SurvivalTime']) : 'N/A'; ?>
+                    <div class="card-body">
+                        <div class="clan-info">
+                            <div class="clan-banner">
+                                <div class="clan-emblem">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div class="clan-name-container">
+                                    <h3 class="clan-name"><?php echo htmlspecialchars($charData['Clanname']); ?></h3>
+                                    <div class="clan-id">ID: <?php echo $charData['ClanID']; ?></div>
                                 </div>
                             </div>
-                            <div class="stat-item">
-                                <div class="account-info-label">Last Logout</div>
-                                <div class="account-info-value">
-                                    <?php echo $charData['lastLogoutTime'] ? formatTimeUSA($charData['lastLogoutTime']) : 'N/A'; ?>
+                            
+                            <div class="clan-stats-grid">
+                                <div class="clan-stat-item">
+                                    <div class="clan-stat-label">Character Rank</div>
+                                    <div class="clan-stat-value"><?php echo getClanRankName($charData['ClanRank']); ?></div>
+                                </div>
+                                
+                                <div class="clan-stat-item">
+                                    <div class="clan-stat-label">Joined On</div>
+                                    <div class="clan-stat-value">
+                                        <?php echo $charData['pledgeJoinDate'] ? date('M d, Y', intval($charData['pledgeJoinDate'])) : 'Unknown'; ?>
+                                    </div>
+                                </div>
+                                
+                                <div class="clan-stat-item">
+                                    <div class="clan-stat-label">Rank Since</div>
+                                    <div class="clan-stat-value">
+                                        <?php echo $charData['pledgeRankDate'] ? date('M d, Y', intval($charData['pledgeRankDate'])) : 'Unknown'; ?>
+                                    </div>
+                                </div>
+                                
+                                <div class="clan-stat-item">
+                                    <div class="clan-stat-label">Contribution</div>
+                                    <div class="clan-stat-value"><?php echo number_format($charData['ClanContribution']); ?></div>
+                                </div>
+                                
+                                <div class="clan-stat-item">
+                                    <div class="clan-stat-label">Weekly Contribution</div>
+                                    <div class="clan-stat-value"><?php echo number_format($charData['ClanWeekContribution']); ?></div>
+                                </div>
+                                
+                                <div class="clan-stat-item">
+                                    <div class="clan-stat-label">Clan Title</div>
+                                    <div class="clan-stat-value"><?php echo htmlspecialchars($charData['Title'] ?: 'None'); ?></div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Tab Content: Inventory - UPDATED -->
-        <div class="tab-content" id="inventory-tab">
-            <!-- New inventory layout with side-by-side cards -->
-            <div class="inventory-tab-container">
-                <!-- Equipment Card -->
-                <div class="equipment-card">
-                    <div class="card-header">
-                        <h3 class="admin-card-title">Equipment</h3>
-                        <div class="badge">
-                            <i class="fas fa-info-circle"></i> Slot Information
-                        </div>
-                    </div>
-                    
-                    <?php
-                    // Get character equipment from the character_items table
-                    // Join with armor, weapon, and etcitem tables to get the icon IDs
-                    $equipmentSql = "
-                        SELECT ci.*, 
-                               COALESCE(a.iconId, w.iconId, e.iconId) AS iconId,
-                               COALESCE(a.desc_en, w.desc_en, e.desc_en, ci.item_name) AS item_display_name,
-                               COALESCE(a.type, w.type, e.item_type) AS item_type
-                        FROM character_items ci
-                        LEFT JOIN armor a ON ci.item_id = a.item_id
-                        LEFT JOIN weapon w ON ci.item_id = w.item_id
-                        LEFT JOIN etcitem e ON ci.item_id = e.item_id
-                        WHERE ci.char_id = $charId AND ci.is_equipped = 1";
-                    
-                    $equipmentResult = $conn->query($equipmentSql);
-                    $equippedItems = [];
-                    
-                    if ($equipmentResult && $equipmentResult->num_rows > 0) {
-                        while ($item = $equipmentResult->fetch_assoc()) {
-                            $equippedItems[] = $item;
-                        }
-                    }
-                    
-                    // Get character's additional slot values
-                    $ringAddSlots = (int)$charData['RingAddSlot'];
-                    $earringAddSlots = (int)$charData['EarringAddSlot'];
-                    $badgeAddSlots = (int)$charData['BadgeAddSlot'];
-                    $shoulderAddSlots = (int)$charData['ShoulderAddSlot'];
-                    $characterLevel = (int)$charData['level'];
-                    ?>
-                    
-                    <div class="equipment-slots">
-                        <div class="character-paper-doll">
-                            <div class="paper-doll-silhouette">
-                                <img src="<?php echo $websiteBaseUrl; ?>assets/img/placeholders/class/<?php echo $charData['Class']; ?>_<?php echo $charData['gender']; ?>.png" alt="Character Silhouette">
+                            
+                            <div class="clan-actions">
+                                <button class="btn-outline">
+                                    <i class="fas fa-users"></i> View Members
+                                </button>
+                                
+                                <button class="btn-outline">
+                                    <i class="fas fa-scroll"></i> Clan History
+                                </button>
+                                
+                                <button class="btn-outline">
+                                    <i class="fas fa-crown"></i> Clan Hierarchy
+                                </button>
                             </div>
-                        </div>
-                        
-                        <div class="equipment-grid">
-                            <?php
-                            // Helper function to determine slot status based on character level and additional slots
-                            function getSlotStatus($type, $level, $levelReq, $addSlots, $slotIndex) {
-                                // Default slots that are always open
-                                if ($levelReq === 0) {
-                                    return 'open';
-                                }
-                                
-                                // Check for level-based unlocking
-                                if ($level >= $levelReq) {
-                                    return 'open';
-                                }
-                                
-                                // Check for additional slots based on type
-                                if ($type === 'RING' && $slotIndex <= $addSlots) {
-                                    return 'open';
-                                } else if ($type === 'EARRING' && $slotIndex <= $addSlots) {
-                                    return 'open';
-                                } else if ($type === 'SHOULDER' && $slotIndex <= $addSlots) {
-                                    return 'open';
-                                } else if ($type === 'SENTENCE' && $slotIndex <= $addSlots) { // Badge
-                                    return 'open';
-                                }
-                                
-                                // Slot is locked
-                                return 'locked';
-                            }
-                            
-                            // Helper function to determine if a slot should match an item
-                            function itemMatchesSlot($item, $slotTypes) {
-                                if (empty($item['item_type'])) {
-                                    return false;
-                                }
-                                
-                                $itemType = strtoupper($item['item_type']);
-                                $slotTypeArray = explode(',', $slotTypes);
-                                
-                                foreach ($slotTypeArray as $slotType) {
-                                    $slotType = trim($slotType);
-                                    if ($itemType == $slotType || stripos($itemType, $slotType) !== false) {
-                                        return true;
-                                    }
-                                }
-                                
-                                // Special case for weapons
-                                if ($slotTypes == 'WEAPON' && stripos($item['item_display_name'], 'weapon') !== false) {
-                                    return true;
-                                }
-                                
-                                return false;
-                            }
-                            
-                            // Equipment slot definitions organized according to character-detail-equipment-card.txt
-                            // All unlock levels and requirements now based on character data
-                            $equipmentSections = [
-                                'left-top' => [
-                                    'title' => 'Left Top',
-                                    'slots' => [
-                                        'earring1' => ['name' => 'Earring', 'icon' => 'earring', 'type' => 'EARRING', 'levelReq' => 0, 'index' => 1],
-                                        'earring2' => ['name' => 'Earring', 'icon' => 'earring', 'type' => 'EARRING', 'levelReq' => 101, 'index' => 2],
-                                        'insignia' => ['name' => 'Insignia', 'icon' => 'certificate', 'type' => 'INSIGNIA', 'levelReq' => 60, 'index' => 1],
-                                        'gloves' => ['name' => 'Gloves', 'icon' => 'mitten', 'type' => 'GLOVE', 'levelReq' => 0, 'index' => 1]
-                                    ]
-                                ],
-                                'middle-top' => [
-                                    'title' => 'Middle Top',
-                                    'slots' => [
-                                        'helmet' => ['name' => 'Helmet', 'icon' => 'hard-hat', 'type' => 'HELMET', 'levelReq' => 0, 'index' => 1],
-                                        'pendant' => ['name' => 'Pendant', 'icon' => 'gem', 'type' => 'PENDANT', 'levelReq' => 0, 'index' => 1],
-                                        'amulet' => ['name' => 'Amulet', 'icon' => 'medal', 'type' => 'AMULET', 'levelReq' => 0, 'index' => 1],
-                                        'empty' => ['name' => 'Empty', 'icon' => 'square', 'type' => '', 'levelReq' => 999, 'index' => 0]
-                                    ]
-                                ],
-                                'right-top' => [
-                                    'title' => 'Right Top',
-                                    'slots' => [
-                                        'earring3' => ['name' => 'Earring', 'icon' => 'earring', 'type' => 'EARRING', 'levelReq' => 60, 'index' => 3],
-                                        'earring4' => ['name' => 'Earring', 'icon' => 'earring', 'type' => 'EARRING', 'levelReq' => 103, 'index' => 4],
-                                        'shoulder' => ['name' => 'Pauldrons', 'icon' => 'shield-alt', 'type' => 'SHOULDER', 'levelReq' => 60, 'index' => 1],
-                                        'cloak' => ['name' => 'Cloak', 'icon' => 'tshirt', 'type' => 'CLOAK', 'levelReq' => 0, 'index' => 1]
-                                    ]
-                                ],
-                                'left-middle' => [
-                                    'title' => 'Middle Left',
-                                    'slots' => [
-                                        'weapon' => ['name' => 'Weapon', 'icon' => 'sword', 'type' => 'WEAPON', 'levelReq' => 0, 'index' => 1],
-                                        'empty1' => ['name' => 'Empty', 'icon' => 'square', 'type' => '', 'levelReq' => 999, 'index' => 0],
-                                        'empty2' => ['name' => 'Empty', 'icon' => 'square', 'type' => '', 'levelReq' => 999, 'index' => 0],
-                                        'empty3' => ['name' => 'Empty', 'icon' => 'square', 'type' => '', 'levelReq' => 999, 'index' => 0]
-                                    ]
-                                ],
-                                'middle-middle' => [
-                                    'title' => 'Middle Middle',
-                                    'slots' => [
-                                        'tshirt' => ['name' => 'T-shirt', 'icon' => 'tshirt', 'type' => 'T_SHIRT', 'levelReq' => 0, 'index' => 1],
-                                        'armor' => ['name' => 'Armor', 'icon' => 'shield-alt', 'type' => 'ARMOR', 'levelReq' => 0, 'index' => 1],
-                                        'empty1' => ['name' => 'Empty', 'icon' => 'square', 'type' => '', 'levelReq' => 999, 'index' => 0],
-                                        'empty2' => ['name' => 'Empty', 'icon' => 'square', 'type' => '', 'levelReq' => 999, 'index' => 0]
-                                    ]
-                                ],
-                                'right-middle' => [
-                                    'title' => 'Middle Right',
-                                    'slots' => [
-                                        'shield' => ['name' => 'Shield/Guarder', 'icon' => 'shield-alt', 'type' => 'SHIELD,GARDER', 'levelReq' => 0, 'index' => 1],
-                                        'empty1' => ['name' => 'Empty', 'icon' => 'square', 'type' => '', 'levelReq' => 999, 'index' => 0],
-                                        'empty2' => ['name' => 'Empty', 'icon' => 'square', 'type' => '', 'levelReq' => 999, 'index' => 0],
-                                        'empty3' => ['name' => 'Empty', 'icon' => 'square', 'type' => '', 'levelReq' => 999, 'index' => 0]
-                                    ]
-                                ],
-                                'left-bottom' => [
-                                    'title' => 'Bottom Left',
-                                    'slots' => [
-                                        'ring1' => ['name' => 'Ring', 'icon' => 'ring', 'type' => 'RING', 'levelReq' => 0, 'index' => 1],
-                                        'ring2' => ['name' => 'Ring', 'icon' => 'ring', 'type' => 'RING', 'levelReq' => 60, 'index' => 2],
-                                        'ring3' => ['name' => 'Ring', 'icon' => 'ring', 'type' => 'RING', 'levelReq' => 95, 'index' => 3],
-                                        'rune' => ['name' => 'Rune', 'icon' => 'gem', 'type' => 'RON', 'levelReq' => 0, 'index' => 1]
-                                    ]
-                                ],
-                                'middle-bottom' => [
-                                    'title' => 'Bottom Middle',
-                                    'slots' => [
-                                        'belt' => ['name' => 'Belt', 'icon' => 'stream', 'type' => 'BELT', 'levelReq' => 0, 'index' => 1],
-                                        'gaiters' => ['name' => 'Gaiters', 'icon' => 'socks', 'type' => 'PAIR', 'levelReq' => 0, 'index' => 1],
-                                        'boots' => ['name' => 'Boots', 'icon' => 'boot', 'type' => 'BOOTS', 'levelReq' => 0, 'index' => 1],
-                                        'empty' => ['name' => 'Empty', 'icon' => 'square', 'type' => '', 'levelReq' => 999, 'index' => 0]
-                                    ]
-                                ],
-                                'right-bottom' => [
-                                    'title' => 'Bottom Right',
-                                    'slots' => [
-                                        'ring4' => ['name' => 'Ring', 'icon' => 'ring', 'type' => 'RING', 'levelReq' => 0, 'index' => 4],
-                                        'ring5' => ['name' => 'Ring', 'icon' => 'ring', 'type' => 'RING', 'levelReq' => 60, 'index' => 5],
-                                        'ring6' => ['name' => 'Ring', 'icon' => 'ring', 'type' => 'RING', 'levelReq' => 100, 'index' => 6],
-                                        'badge' => ['name' => 'Badge', 'icon' => 'certificate', 'type' => 'SENTENCE', 'levelReq' => 0, 'index' => 1]
-                                    ]
-                                ]
-                            ];
-                            
-                            // Count unlocked slots by type for informational counters
-                            $unlockedSlots = [
-                                'RING' => 0,
-                                'EARRING' => 0,
-                                'SHOULDER' => 0,
-                                'SENTENCE' => 0  // Badge
-                            ];
-                            
-                            // Display equipment sections
-                            foreach ($equipmentSections as $sectionKey => $section) {
-                                echo '<div class="equipment-section" id="' . $sectionKey . '">';
-                                // Removed the section title for cleaner UI
-                                
-                                // Count unlocked slots for this section
-                                $sectionUnlockedSlots = 0;
-                                $sectionTypeSlots = [
-                                    'RING' => 0,
-                                    'EARRING' => 0,
-                                    'SHOULDER' => 0,
-                                    'SENTENCE' => 0  // Badge
-                                ];
-                                
-                                foreach ($section['slots'] as $slotKey => $slotInfo) {
-                                    // Determine slot type for additional slot calculation
-                                    $slotBaseType = explode(',', $slotInfo['type'])[0];
-                                    $addSlots = 0;
-                                    
-                                    switch ($slotBaseType) {
-                                        case 'RING':
-                                            $addSlots = $ringAddSlots;
-                                            break;
-                                        case 'EARRING':
-                                            $addSlots = $earringAddSlots;
-                                            break;
-                                        case 'SHOULDER':
-                                            $addSlots = $shoulderAddSlots;
-                                            break;
-                                        case 'SENTENCE': // Badge
-                                            $addSlots = $badgeAddSlots;
-                                            break;
-                                    }
-                                    
-                                    // Get slot status based on character level and additional slots
-                                    $slotStatus = getSlotStatus($slotBaseType, $characterLevel, $slotInfo['levelReq'], $addSlots, $slotInfo['index']);
-                                    
-                                    // Count unlocked slots for this section
-                                    if ($slotStatus === 'open' && !empty($slotInfo['type'])) {
-                                        $sectionUnlockedSlots++;
-                                        
-                                        // Count by type
-                                        if (isset($sectionTypeSlots[$slotBaseType])) {
-                                            $sectionTypeSlots[$slotBaseType]++;
-                                            $unlockedSlots[$slotBaseType]++;
-                                        }
-                                    }
-                                    
-                                    $slotClass = 'equipment-slot';
-                                    if ($slotStatus === 'locked') {
-                                        $slotClass .= ' locked';
-                                    }
-                                    
-                                    echo '<div class="' . $slotClass . '" data-slot="' . $slotKey . '" data-type="' . $slotInfo['type'] . '">';
-                                    
-                                    // Find item for this slot if the slot is open
-                                    if ($slotStatus === 'open' && !empty($slotInfo['type'])) {
-                                        $itemInSlot = null;
-                                        foreach ($equippedItems as $item) {
-                                            if (itemMatchesSlot($item, $slotInfo['type'])) {
-                                                $itemInSlot = $item;
-                                                break;
-                                            }
-                                        }
-                                        
-                                        if ($itemInSlot) {
-                                            // Show equipped item
-                                            echo '<div class="item-icon tooltip" data-item-id="' . $itemInSlot['item_id'] . '">';
-                                            echo '<img src="' . $websiteBaseUrl . 'assets/img/icons/icons/' . $itemInSlot['iconId'] . '.png" onerror="this.src=\'' . $websiteBaseUrl . 'assets/img/placeholders/noiconid.png\'" alt="' . htmlspecialchars($itemInSlot['item_display_name']) . '">';
-                                            if ($itemInSlot['enchantlvl'] > 0) {
-                                                echo '<div class="item-enchant">+' . $itemInSlot['enchantlvl'] . '</div>';
-                                            }
-                                            if ($itemInSlot['count'] > 1) {
-                                                echo '<div class="item-count">' . $itemInSlot['count'] . '</div>';
-                                            }
-                                            echo '<span class="tooltip-text">';
-                                            echo '<strong>' . htmlspecialchars($itemInSlot['item_display_name']) . '</strong><br>';
-                                            if ($itemInSlot['enchantlvl'] > 0) {
-                                                echo 'Enchant: +' . $itemInSlot['enchantlvl'] . '<br>';
-                                            }
-                                            if ($itemInSlot['attr_enchantlvl'] > 0) {
-                                                echo 'Attribute: +' . $itemInSlot['attr_enchantlvl'] . '<br>';
-                                            }
-                                            if ($itemInSlot['special_enchant'] > 0) {
-                                                echo 'Special: +' . $itemInSlot['special_enchant'] . '<br>';
-                                            }
-                                            if ($itemInSlot['durability'] > 0) {
-                                                echo 'Durability: ' . $itemInSlot['durability'] . '%<br>';
-                                            }
-                                            echo 'Item Type: ' . $itemInSlot['item_type'] . '<br>';
-                                            echo 'Item ID: ' . $itemInSlot['item_id'];
-                                            echo '</span>';
-                                            echo '</div>';
-                                        } else {
-                                            // Show empty slot
-                                            echo '<div class="empty-slot tooltip">';
-                                            echo '<i class="fas fa-' . $slotInfo['icon'] . '" style="font-size: 32px;"></i>';
-                                            echo '<span class="tooltip-text">Empty ' . $slotInfo['name'] . ' Slot</span>';
-                                            echo '</div>';
-                                        }
-                                        
-                                        // Add unlocked via add-slot indicator if applicable
-                                        if (in_array($slotBaseType, ['RING', 'EARRING', 'SHOULDER', 'SENTENCE']) && 
-                                            $slotInfo['levelReq'] > 0 && $characterLevel < $slotInfo['levelReq']) {
-                                            echo '<div class="slot-unlocked-info">+' . $slotInfo['index'] . '</div>';
-                                        }
-                                        
-                                    } else if ($slotStatus === 'locked') {
-                                        // Show locked slot
-                                        echo '<div class="empty-slot tooltip">';
-                                        if (!empty($slotInfo['icon']) && $slotInfo['icon'] != 'square') {
-                                            echo '<i class="fas fa-' . $slotInfo['icon'] . '" style="font-size: 32px; opacity: 0.3;"></i>';
-                                        }
-                                        
-                                        $tooltipText = 'Locked ' . $slotInfo['name'] . ' Slot';
-                                        if (!empty($slotInfo['levelReq']) && $slotInfo['levelReq'] < 999) {
-                                            echo '<div class="slot-level-req">Lv. ' . $slotInfo['levelReq'] . '+</div>';
-                                            $tooltipText .= ' (Unlocks at Level ' . $slotInfo['levelReq'] . ')';
-                                        }
-                                        
-                                        echo '<span class="tooltip-text">' . $tooltipText . '</span>';
-                                        echo '</div>';
-                                    } else {
-                                        // Empty placeholder slot
-                                        echo '<div class="empty-slot"></div>';
-                                    }
-                                    
-                                    echo '</div>'; // Close equipment-slot
-                                }
-                                
-                                // Add section counter for unlocked slots if there are any special slots in this section
-                                $hasSpecialSlots = false;
-                                $specialSlotInfo = '';
-                                
-                                foreach ($sectionTypeSlots as $type => $count) {
-                                    if ($count > 0) {
-                                        $hasSpecialSlots = true;
-                                        $slotTypeName = $type === 'SENTENCE' ? 'Badge' : ucfirst(strtolower($type));
-                                        $specialSlotInfo .= $slotTypeName . ': ' . $count . ' ';
-                                    }
-                                }
-                                
-                                if ($hasSpecialSlots) {
-                                    echo '<span class="equipment-section-counter" title="' . trim($specialSlotInfo) . '">';
-                                    echo $sectionUnlockedSlots . ' slots';
-                                    echo '</span>';
-                                }
-                                
-                                echo '</div>'; // Close equipment-section
-                            }
-                            ?>
-                        </div>
-                    </div>
-                    
-                    <!-- Equipment Slot Summary -->
-                    <div class="equipment-summary">
-                        <div class="tooltip">
-                            <span><i class="fas fa-ring"></i> Rings: <?php echo $unlockedSlots['RING']; ?> unlocked</span>
-                            <span class="tooltip-text">
-                                Default: 2 slots<br>
-                                Level 60+: +2 slots<br>
-                                Level 95/100+: +2 slots<br>
-                                Add Slots: +<?php echo $ringAddSlots; ?> slot(s)
-                            </span>
-                        </div>
-                        <div class="tooltip">
-                            <span><i class="fas fa-earring"></i> Earrings: <?php echo $unlockedSlots['EARRING']; ?> unlocked</span>
-                            <span class="tooltip-text">
-                                Default: 1 slot<br>
-                                Level 60+: +1 slot<br>
-                                Level 101/103+: +2 slots<br>
-                                Add Slots: +<?php echo $earringAddSlots; ?> slot(s)
-                            </span>
-                        </div>
-                        <div class="tooltip">
-                            <span><i class="fas fa-shield-alt"></i> Shoulders: <?php echo $unlockedSlots['SHOULDER']; ?> unlocked</span>
-                            <span class="tooltip-text">
-                                Level 60+: 1 slot<br>
-                                Add Slots: +<?php echo $shoulderAddSlots; ?> slot(s)
-                            </span>
-                        </div>
-                        <div class="tooltip">
-                            <span><i class="fas fa-certificate"></i> Badges: <?php echo $unlockedSlots['SENTENCE']; ?> unlocked</span>
-                            <span class="tooltip-text">
-                                Default: 1 slot<br>
-                                Add Slots: +<?php echo $badgeAddSlots; ?> slot(s)
-                            </span>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Inventory Card -->
-                <div class="inventory-card">
+                <!-- Clan Contribution -->
+                <div class="card clan-contribution-card">
                     <div class="card-header">
-                        <h3 class="admin-card-title">Inventory</h3>
-                        <span class="inventory-count">
-                            <?php
-                            // Get inventory count
-                            $inventorySql = "SELECT COUNT(*) as total FROM character_items WHERE char_id = $charId AND is_equipped = 0";
-                            $inventoryResult = $conn->query($inventorySql);
-                            $inventoryCount = 0;
-                            if ($inventoryResult && $inventoryResult->num_rows > 0) {
-                                $inventoryData = $inventoryResult->fetch_assoc();
-                                $inventoryCount = $inventoryData['total'];
-                            }
-                            echo $inventoryCount . ' items';
-                            ?>
-                        </span>
+                        <h3 class="card-title">Contribution Analysis</h3>
                     </div>
-                    
-                    <div class="inventory-grid" id="inventory-grid">
-                        <?php
-                        // Get inventory items with icon information
-                        $inventorySql = "
-                            SELECT ci.*, 
-                                   COALESCE(a.iconId, w.iconId, e.iconId) AS iconId,
-                                   COALESCE(a.desc_en, w.desc_en, e.desc_en, ci.item_name) AS item_display_name,
-                                   COALESCE(a.type, w.type, e.item_type) AS item_type
-                            FROM character_items ci
-                            LEFT JOIN armor a ON ci.item_id = a.item_id
-                            LEFT JOIN weapon w ON ci.item_id = w.item_id
-                            LEFT JOIN etcitem e ON ci.item_id = e.item_id
-                            WHERE ci.char_id = $charId AND ci.is_equipped = 0 
-                            ORDER BY ci.item_id
-                            LIMIT 0, 24"; // Show 24 items per page (4 rows x 6 columns)
-                        $inventoryResult = $conn->query($inventorySql);
+                    <div class="card-body">
+                        <div class="contribution-chart">
+                            <div class="chart-placeholder">
+                                <i class="fas fa-chart-bar"></i>
+                                <span>Contribution chart will be displayed here</span>
+                            </div>
+                        </div>
                         
-                        $allItems = array();
-                        if ($inventoryResult && $inventoryResult->num_rows > 0) {
-                            while ($item = $inventoryResult->fetch_assoc()) {
-                                $allItems[] = $item;
-                            }
-                        }
-                        
-                        // Display the first page of items
-                        $itemsOnPage = count($allItems);
-                        foreach ($allItems as $item) {
-                            echo '<div class="inventory-slot tooltip">';
-                            echo '<div class="item-icon" data-item-id="' . $item['item_id'] . '">';
-                            echo '<img src="' . $websiteBaseUrl . 'assets/img/icons/icons/' . $item['iconId'] . '.png" onerror="this.src=\'' . $websiteBaseUrl . 'assets/img/placeholders/noiconid.png\'" alt="' . htmlspecialchars($item['item_display_name']) . '">';
-                            if ($item['count'] > 1) {
-                                echo '<div class="item-count">' . $item['count'] . '</div>';
-                            }
-                            if ($item['enchantlvl'] > 0) {
-                                echo '<div class="item-enchant">+' . $item['enchantlvl'] . '</div>';
-                            }
-                            echo '<span class="tooltip-text">';
-                            echo '<strong>' . htmlspecialchars($item['item_display_name']) . '</strong><br>';
-                            echo 'Quantity: ' . $item['count'] . '<br>';
-                            if ($item['enchantlvl'] > 0) {
-                                echo 'Enchant: +' . $item['enchantlvl'] . '<br>';
-                            }
-                            if ($item['attr_enchantlvl'] > 0) {
-                                echo 'Attribute: +' . $item['attr_enchantlvl'] . '<br>';
-                            }
-                            if ($item['special_enchant'] > 0) {
-                                echo 'Special: +' . $item['special_enchant'] . '<br>';
-                            }
-                            if ($item['durability'] > 0) {
-                                echo 'Durability: ' . $item['durability'] . '%<br>';
-                            }
-                            if ($item['remaining_time'] > 0) {
-                                echo 'Time Remaining: ' . formatTimeRemaining($item['remaining_time']) . '<br>';
-                            }
-                            echo 'Item Type: ' . $item['item_type'] . '<br>';
-                            echo 'Item ID: ' . $item['item_id'];
-                            echo '</span>';
-                            echo '</div>';
-                            echo '</div>';
-                        }
-                        
-                        // Add empty slots to fill the grid - always 24 slots total
-                        $emptySlots = 24 - $itemsOnPage;
-                        for ($i = 0; $i < $emptySlots; $i++) {
-                            echo '<div class="inventory-slot empty"></div>';
-                        }
-                        
-                        // Helper function for time formatting
-                        function formatTimeRemaining($seconds) {
-                            if ($seconds < 60) {
-                                return $seconds . ' seconds';
-                            } elseif ($seconds < 3600) {
-                                return floor($seconds / 60) . ' minutes';
-                            } elseif ($seconds < 86400) {
-                                return floor($seconds / 3600) . ' hours';
-                            } else {
-                                return floor($seconds / 86400) . ' days';
-                            }
-                        }
-                        ?>
-                    </div>
-                    
-                    <!-- Pagination controls -->
-                    <div class="inventory-pagination">
-                        <button class="pagination-button" id="prev-page" <?php echo $inventoryCount <= 24 ? 'disabled' : ''; ?>>
-                            <i class="fas fa-chevron-left"></i> Previous
-                        </button>
-                        <span class="pagination-info">Page <span id="current-page">1</span> of <?php echo ceil($inventoryCount / 24); ?></span>
-                        <button class="pagination-button" id="next-page" <?php echo $inventoryCount <= 24 ? 'disabled' : ''; ?>>
-                            Next <i class="fas fa-chevron-right"></i>
-                        </button>
-                        <input type="hidden" id="total-items" value="<?php echo $inventoryCount; ?>">
-                        <input type="hidden" id="items-per-page" value="24">
+                        <div class="contribution-stats">
+                            <div class="contribution-stat">
+                                <div class="contribution-stat-label">Weekly Average</div>
+                                <div class="contribution-stat-value">
+                                    <?php 
+                                    // Calculate estimated weekly average if data is available
+                                    if ($charData['pledgeJoinDate'] && $charData['ClanContribution'] > 0) {
+                                        $weeksInClan = max(1, floor((time() - $charData['pledgeJoinDate']) / 604800));
+                                        $weeklyAvg = round($charData['ClanContribution'] / $weeksInClan);
+                                        echo number_format($weeklyAvg);
+                                    } else {
+                                        echo 'N/A';
+                                    }
+                                    ?>
+                                </div>
+                            </div>
+                            
+                            <div class="contribution-stat">
+                                <div class="contribution-stat-label">Current Week</div>
+                                <div class="contribution-stat-value"><?php echo number_format($charData['ClanWeekContribution']); ?></div>
+                            </div>
+                            
+                            <div class="contribution-stat">
+                                <div class="contribution-stat-label">All-Time</div>
+                                <div class="contribution-stat-value"><?php echo number_format($charData['ClanContribution']); ?></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="tab-content" id="skills-tab">
-            <div class="detail-columns">
-                <div class="stats-combined-card" style="grid-column: span 3; text-align: center; padding: 30px;">
-                    <i class="fas fa-magic" style="font-size: 48px; color: var(--accent); margin-bottom: 20px;"></i>
-                    <h3>Skills Feature Coming Soon</h3>
-                    <p>This functionality will be available in the next update.</p>
+            <?php else: ?>
+            <div class="clan-empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-users"></i>
                 </div>
+                <h3>No Clan Affiliation</h3>
+                <p>This character is not a member of any clan.</p>
             </div>
+            <?php endif; ?>
         </div>
         
-        <div class="tab-content" id="history-tab">
-            <div class="detail-columns">
-                <div class="stats-combined-card" style="grid-column: span 3; text-align: center; padding: 30px;">
-                    <i class="fas fa-history" style="font-size: 48px; color: var(--accent); margin-bottom: 20px;"></i>
-                    <h3>History Feature Coming Soon</h3>
-                    <p>This functionality will be available in the next update.</p>
+        <!-- Location Information Section -->
+        <div class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-map-marker-alt"></i> Location Information</h2>
+            </div>
+            
+            <div class="card location-card">
+                <div class="card-body">
+                    <div class="location-info">
+                        <div class="location-map">
+                            <div class="map-container">
+                                <div class="map-overlay">
+                                    <div class="map-placeholder">
+                                        <i class="fas fa-map-marked-alt"></i>
+                                    </div>
+                                    
+                                    <div class="map-marker" style="left: <?php echo min(95, max(5, ($charData['LocX'] / 32768) * 100)); ?>%; top: <?php echo min(95, max(5, ($charData['LocY'] / 32768) * 100)); ?>%;">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="location-coordinates">
+                                <div class="coordinate-display">
+                                    <div class="coordinate-label">X:</div>
+                                    <div class="coordinate-value"><?php echo $charData['LocX']; ?></div>
+                                </div>
+                                
+                                <div class="coordinate-display">
+                                    <div class="coordinate-label">Y:</div>
+                                    <div class="coordinate-value"><?php echo $charData['LocY']; ?></div>
+                                </div>
+                                
+                                <div class="coordinate-display">
+                                    <div class="coordinate-label">Map:</div>
+                                    <div class="coordinate-value"><?php echo $charData['MapID']; ?></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="location-details">
+                            <div class="location-name">
+                                <h3><?php echo $mapName; ?></h3>
+                                <div class="map-id">Map ID: <?php echo $charData['MapID']; ?></div>
+                            </div>
+                            
+                            <div class="location-stats">
+                                <div class="stat-row">
+                                    <div class="stat-label">Last Login</div>
+                                    <div class="stat-value"><?php echo $charData['lastLoginTime'] ? date('M d, Y H:i', strtotime($charData['lastLoginTime'])) : 'Never'; ?></div>
+                                </div>
+                                
+                                <div class="stat-row">
+                                    <div class="stat-label">Last Logout</div>
+                                    <div class="stat-value"><?php echo $charData['lastLogoutTime'] ? date('M d, Y H:i', strtotime($charData['lastLogoutTime'])) : 'Never'; ?></div>
+                                </div>
+                                
+                                <div class="stat-row">
+                                    <div class="stat-label">Online Status</div>
+                                    <div class="stat-value">
+                                        <span class="status-badge <?php echo $charData['OnlineStatus'] ? 'online' : 'offline'; ?>">
+                                            <?php echo $charData['OnlineStatus'] ? 'Online' : 'Offline'; ?>
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="stat-row">
+                                    <div class="stat-label">Survival Time</div>
+                                    <div class="stat-value"><?php echo formatTimeDisplay($charData['SurvivalTime']); ?></div>
+                                </div>
+                            </div>
+                            
+                            <div class="teleport-actions">
+                                <button class="btn-primary" onclick="openModal('teleportModal')">
+                                    <i class="fas fa-map-marker-alt"></i> Teleport Character
+                                </button>
+                                
+                                <button class="btn-outline">
+                                    <i class="fas fa-history"></i> Location History
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Character Edit Modal (Placeholder) -->
-<div id="editModal" class="modal" style="display: none;">
+<!-- Modal Templates -->
+<!-- Edit Character Modal -->
+<div id="editCharacterModal" class="modal">
     <div class="modal-content">
-        <h2>Edit Character</h2>
-        <p>Edit functionality will be implemented in the next update.</p>
-        <button onclick="closeModal()">Close</button>
+        <div class="modal-header">
+            <h2>Edit Character</h2>
+            <button class="modal-close" onclick="closeModal('editCharacterModal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>Edit functionality will be implemented in the next update.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('editCharacterModal')">Cancel</button>
+            <button class="btn-primary" disabled>Save Changes</button>
+        </div>
     </div>
 </div>
 
-<script>
-// Tab navigation functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const tabs = document.querySelectorAll('.character-tab');
-    
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            // Remove active class from all tabs
-            document.querySelectorAll('.character-tab').forEach(t => {
-                t.classList.remove('active');
-            });
-            
-            // Remove active class from all tab contents
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            
-            // Add active class to clicked tab
-            this.classList.add('active');
-            
-            // Show corresponding tab content
-            const tabContent = document.getElementById(this.dataset.tab + '-tab');
-            if (tabContent) {
-                tabContent.classList.add('active');
-            }
-        });
-    });
-    
-    // Modal functions
-    window.openEditModal = function(charId) {
-        document.getElementById('editModal').style.display = 'block';
-    };
-    
-    window.closeModal = function() {
-        document.getElementById('editModal').style.display = 'none';
-    };
-});
-</script>
+<!-- Send Message Modal -->
+<div id="sendMessageModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Send Message to Character</h2>
+            <button class="modal-close" onclick="closeModal('sendMessageModal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>Message functionality will be implemented in the next update.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('sendMessageModal')">Cancel</button>
+            <button class="btn-primary" disabled>Send Message</button>
+        </div>
+    </div>
+</div>
 
-<?php include '../../includes/admin-footer.php'; ?>
+<!-- Teleport Modal -->
+<div id="teleportModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Teleport Character</h2>
+            <button class="modal-close" onclick="closeModal('teleportModal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>Teleport functionality will be implemented in the next update.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('teleportModal')">Cancel</button>
+            <button class="btn-primary" disabled>Teleport</button>
+        </div>
+    </div>
+</div>
+
+<!-- Items Modal -->
+<div id="itemsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Send Items to Character</h2>
+            <button class="modal-close" onclick="closeModal('itemsModal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>Item sending functionality will be implemented in the next update.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('itemsModal')">Cancel</button>
+            <button class="btn-primary" disabled>Send Items</button>
+        </div>
+    </div>
+</div>
+
+<!-- Restriction Modal -->
+<div id="restrictionModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Apply Restriction</h2>
+            <button class="modal-close" onclick="closeModal('restrictionModal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>Restriction functionality will be implemented in the next update.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('restrictionModal')">Cancel</button>
+            <button class="btn-primary danger" disabled>Apply Restriction</button>
+        </div>
+    </div>
+</div>
+
+<script src="<?php echo $adminBaseUrl; ?>assets/js/character-detail.js"></script>
+
+<?php
+// Helper functions for formatting time
+function formatTimeRemaining($seconds) {
+    if ($seconds < 60) {
+        return $seconds . ' seconds';
+    } elseif ($seconds < 3600) {
+        return floor($seconds / 60) . ' minutes';
+    } elseif ($seconds < 86400) {
+        return floor($seconds / 3600) . ' hours';
+    } else {
+        return floor($seconds / 86400) . ' days';
+    }
+}
+
+function formatTimeDisplay($seconds) {
+    if (!$seconds) return 'N/A';
+    
+    // If it's a datetime string, convert to timestamp
+    if (is_string($seconds) && !is_numeric($seconds)) {
+        $seconds = strtotime($seconds);
+        if ($seconds === false) return 'N/A';
+        
+        // Calculate time difference from now
+        $seconds = time() - $seconds;
+    }
+    
+    $days = floor($seconds / 86400);
+    $hours = floor(($seconds % 86400) / 3600);
+    $minutes = floor(($seconds % 3600) / 60);
+    
+    $output = '';
+    if ($days > 0) $output .= $days . ' days ';
+    if ($hours > 0) $output .= $hours . ' hours ';
+    if ($minutes > 0) $output .= $minutes . ' minutes';
+    
+    return trim($output) ?: '0 minutes';
+}
+
+function getClanRankName($rankId) {
+    $ranks = [
+        0 => 'None',
+        1 => 'Academy Member',
+        2 => 'Member',
+        3 => 'Elite',
+        4 => 'General',
+        5 => 'Clan Leader'
+    ];
+    
+    return isset($ranks[$rankId]) ? $ranks[$rankId] : 'Unknown';
+}
+
+include '../../includes/admin-footer.php';
+?>

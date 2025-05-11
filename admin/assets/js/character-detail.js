@@ -1,212 +1,112 @@
 /**
- * Character Detail Page JavaScript
- * Provides interactive functionality for the character detail page
+ * Enhanced Character Detail Page JavaScript
+ * Handles interactive functionality for the redesigned character detail page
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize tooltips if any exist
-    initTooltips();
+    console.log('DOM fully loaded');
     
-    // Initialize tab navigation
-    initTabNavigation();
-    
-    // Initialize attribute cards
-    initAttributeCards();
+    // Initialize dropdown menus
+    initDropdowns();
     
     // Initialize modal dialogs
     initModals();
     
-    // Character list item highlighting
-    initCharacterList();
+    // Initialize attribute animations
+    initAttributeAnimations();
     
-    // Initialize equipment and inventory interactions
-    initInventoryInteractions();
+    // Initialize stat hover effects
+    initStatHoverEffects();
     
-    // Initialize inventory pagination
-    initInventoryPagination();
+    // Initialize placeholder charts
+    initPlaceholderCharts();
+    
+    // Initialize map functionality with a slight delay
+    setTimeout(initMapInteraction, 500);
 });
-
-/**
- * Initialize tooltip functionality
- */
-function initTooltips() {
-    // Already implemented in CSS with pure CSS tooltips
-    console.log("Tooltips initialized");
-    
-    // Add mobile touch support for tooltips
-    const tooltipElements = document.querySelectorAll('.tooltip');
-    tooltipElements.forEach(tooltip => {
-        tooltip.addEventListener('touchstart', function(e) {
-            // Find all tooltip texts and hide them
-            document.querySelectorAll('.tooltip-text-visible').forEach(tt => {
-                tt.classList.remove('tooltip-text-visible');
-            });
-            
-            // Show this tooltip text
-            const tooltipText = this.querySelector('.tooltip-text');
-            if (tooltipText) {
-                tooltipText.classList.add('tooltip-text-visible');
-                e.preventDefault(); // Prevent normal touch event
-                
-                // Hide after 3 seconds
-                setTimeout(() => {
-                    tooltipText.classList.remove('tooltip-text-visible');
-                }, 3000);
-            }
-        });
-    });
-}
 
 /**
  * Initialize tab navigation
  */
-function initTabNavigation() {
-    const tabs = document.querySelectorAll('.character-tab');
+function initTabs() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
     
-    // Set first tab as active by default
-    if (!document.querySelector('.character-tab.active') && tabs.length > 0) {
-        tabs[0].classList.add('active');
-        const firstTabId = tabs[0].getAttribute('data-tab');
-        const firstTabContent = document.getElementById(firstTabId + '-tab');
-        if (firstTabContent) {
-            firstTabContent.classList.add('active');
-        }
-    }
-    
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            // Remove active class from all tabs
-            document.querySelectorAll('.character-tab').forEach(t => {
-                t.classList.remove('active');
-            });
+    // Add click event to each tab button
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove active class from all buttons and contents
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
             
-            // Add active class to clicked tab
-            this.classList.add('active');
-            
-            // Hide all tab content
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
+            // Add active class to clicked button
+            button.classList.add('active');
             
             // Show corresponding tab content
-            const tabId = this.getAttribute('data-tab');
-            const tabContent = document.getElementById(tabId + '-tab');
+            const tabId = button.getAttribute('data-tab');
+            const tabContent = document.getElementById(`${tabId}-tab`);
+            
             if (tabContent) {
                 tabContent.classList.add('active');
-                
-                // Trigger any lazy-loaded content
-                loadTabContent(tabId);
-                
-                // Update URL hash for bookmarking
-                window.location.hash = tabId;
+                console.log(`Activated tab: ${tabId}`);
+            } else {
+                console.error(`Tab content not found: ${tabId}-tab`);
             }
+            
+            // Store active tab in local storage for persistence
+            localStorage.setItem('activeCharacterTab', tabId);
         });
     });
     
-    // Check for hash in URL to activate specific tab
-    const hash = window.location.hash.substring(1);
-    if (hash) {
-        const tabToActivate = document.querySelector(`.character-tab[data-tab="${hash}"]`);
-        if (tabToActivate) {
-            tabToActivate.click();
-        }
-    }
-}
-
-/**
- * Load tab-specific content if needed
- */
-function loadTabContent(tabId) {
-    console.log(`Loading content for tab: ${tabId}`);
-    
-    // Handle inventory tab specifically
-    if (tabId === 'inventory') {
-        handleInventoryTabLoad();
-    }
-}
-
-/**
- * Handle inventory tab loading with improved visuals
- */
-function handleInventoryTabLoad() {
-    const inventoryGrid = document.getElementById('inventory-grid');
-    const equipmentSlots = document.querySelector('.equipment-slots');
-    
-    if (inventoryGrid) {
-        // Check if images need loading
-        const images = inventoryGrid.querySelectorAll('img');
-        let imagesLoaded = 0;
-        const totalImages = images.length;
-        
-        // Add loading state class to inventory
-        inventoryGrid.classList.add('loading');
-        
-        if (equipmentSlots) {
-            equipmentSlots.classList.add('loading');
-        }
-        
-        // If no images, remove loading immediately
-        if (totalImages === 0) {
-            inventoryGrid.classList.remove('loading');
-            if (equipmentSlots) equipmentSlots.classList.remove('loading');
-            return;
-        }
-        
-        // Listen for all images to load or error
-        images.forEach(img => {
-            // Already loaded images
-            if (img.complete) {
-                imagesLoaded++;
-                if (imagesLoaded === totalImages) {
-                    inventoryGrid.classList.remove('loading');
-                    if (equipmentSlots) equipmentSlots.classList.remove('loading');
-                }
+    // Check if there's a stored active tab
+    const activeTab = localStorage.getItem('activeCharacterTab');
+    if (activeTab) {
+        const storedTabButton = document.querySelector(`.tab-button[data-tab="${activeTab}"]`);
+        if (storedTabButton) {
+            storedTabButton.click();
+        } else {
+            // If stored tab doesn't exist, default to first tab
+            if (tabButtons.length > 0) {
+                tabButtons[0].click();
             }
-            
-            // Images still loading
-            img.addEventListener('load', () => {
-                imagesLoaded++;
-                if (imagesLoaded === totalImages) {
-                    inventoryGrid.classList.remove('loading');
-                    if (equipmentSlots) equipmentSlots.classList.remove('loading');
-                }
-            });
-            
-            // Handle errors too
-            img.addEventListener('error', () => {
-                imagesLoaded++;
-                if (imagesLoaded === totalImages) {
-                    inventoryGrid.classList.remove('loading');
-                    if (equipmentSlots) equipmentSlots.classList.remove('loading');
-                }
-            });
-        });
-        
-        // Fallback - hide loading after 2 seconds regardless
-        setTimeout(() => {
-            inventoryGrid.classList.remove('loading');
-            if (equipmentSlots) equipmentSlots.classList.remove('loading');
-        }, 2000);
+        }
+    } else {
+        // Default to first tab if no stored preference
+        if (tabButtons.length > 0) {
+            tabButtons[0].click();
+        }
     }
-    
-    // Make sure we equalize inventory and equipment card heights
-    equalizeHeights();
 }
 
 /**
- * Initialize attribute cards
+ * Initialize dropdown menus
  */
-function initAttributeCards() {
-    const attributeCards = document.querySelectorAll('.attribute-card');
+function initDropdowns() {
+    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
     
-    attributeCards.forEach(card => {
-        // Add subtle animation on hover
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-3px)';
+    dropdownToggles.forEach(toggle => {
+        toggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            
+            // Get parent dropdown container
+            const dropdown = toggle.closest('.admin-action-dropdown');
+            
+            // Toggle active class
+            dropdown.classList.toggle('active');
+            
+            // Close other open dropdowns
+            document.querySelectorAll('.admin-action-dropdown.active').forEach(open => {
+                if (open !== dropdown) {
+                    open.classList.remove('active');
+                }
+            });
         });
-        
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
+    });
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.admin-action-dropdown.active').forEach(dropdown => {
+            dropdown.classList.remove('active');
         });
     });
 }
@@ -215,341 +115,365 @@ function initAttributeCards() {
  * Initialize modal dialogs
  */
 function initModals() {
-    // Edit character modal
-    window.openEditModal = function(charId) {
-        console.log(`Opening edit modal for character ID: ${charId}`);
-        const modal = document.getElementById('editModal');
+    // Global function to open modal by ID
+    window.openModal = function(modalId) {
+        const modal = document.getElementById(modalId);
         if (modal) {
-            modal.style.display = 'block';
-            
-            // Add escape key listener
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    closeModal();
-                }
-            });
-            
-            // Close when clicking outside modal
-            window.addEventListener('click', function(e) {
-                if (e.target === modal) {
-                    closeModal();
-                }
-            });
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
         }
     };
     
-    window.closeModal = function() {
-        const modal = document.getElementById('editModal');
+    // Global function to close modal by ID
+    window.closeModal = function(modalId) {
+        const modal = document.getElementById(modalId);
         if (modal) {
-            modal.style.display = 'none';
+            modal.classList.remove('active');
+            document.body.style.overflow = ''; // Restore scrolling
         }
     };
-}
-
-/**
- * Initialize character list interactions
- */
-function initCharacterList() {
-    const characterItems = document.querySelectorAll('.compact-character-item');
     
-    characterItems.forEach(item => {
-        item.addEventListener('mouseenter', function() {
-            this.style.borderLeftWidth = '3px';
-        });
-        
-        item.addEventListener('mouseleave', function() {
-            if (!this.classList.contains('current')) {
-                this.style.borderLeftWidth = '1px';
-            }
-        });
-    });
-}
-
-/**
- * Initialize equipment and inventory interactions
- */
-function initInventoryInteractions() {
-    // Equipment slots
-    const equipmentSlots = document.querySelectorAll('.equipment-slot');
-    equipmentSlots.forEach(slot => {
-        // Add hover effect
-        slot.addEventListener('mouseenter', function() {
-            if (!this.classList.contains('locked')) {
-                this.style.transform = 'scale(1.05)';
-                this.style.zIndex = '10';
-            }
-        });
-        
-        slot.addEventListener('mouseleave', function() {
-            this.style.transform = '';
-            this.style.zIndex = '';
-        });
-        
-        // Add click action for future functionality
-        slot.addEventListener('click', function() {
-            if (!this.classList.contains('locked')) {
-                const slotType = this.getAttribute('data-type');
-                const slotName = this.getAttribute('data-slot');
-                console.log(`Clicked on slot: ${slotName} (${slotType})`);
-                // Future: Show equipment options or item details
+    // Close modal when clicking outside content
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal(modal.id);
             }
         });
     });
     
-    // Inventory slots
-    const inventorySlots = document.querySelectorAll('.inventory-slot:not(.empty)');
-    inventorySlots.forEach(slot => {
-        // Add hover effect
-        slot.addEventListener('mouseenter', function() {
-            this.style.transform = 'scale(1.05)';
-            this.style.zIndex = '10';
-        });
-        
-        slot.addEventListener('mouseleave', function() {
-            this.style.transform = '';
-            this.style.zIndex = '';
-        });
-        
-        // Add click action for future functionality
-        slot.addEventListener('click', function() {
-            const itemId = this.querySelector('.item-icon')?.getAttribute('data-item-id');
-            if (itemId) {
-                console.log(`Clicked on inventory item: ${itemId}`);
-                // Future: Show item details or action menu
+    // Close modal with Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const activeModal = document.querySelector('.modal.active');
+            if (activeModal) {
+                closeModal(activeModal.id);
             }
+        }
+    });
+}
+
+/**
+ * Initialize animations for attribute items
+ */
+function initAttributeAnimations() {
+    const attributeItems = document.querySelectorAll('.attribute-item');
+    
+    attributeItems.forEach(item => {
+        item.addEventListener('mouseenter', () => {
+            animateAttributeValue(item);
         });
     });
 }
 
 /**
- * Utility function to format numbers with commas
+ * Animate attribute value with a counting effect
+ */
+function animateAttributeValue(attributeItem) {
+    const valueElement = attributeItem.querySelector('.attribute-value');
+    
+    // Skip if already animated
+    if (valueElement.dataset.animated === 'true') {
+        return;
+    }
+    
+    // Get the final value
+    const finalValue = parseInt(valueElement.textContent, 10);
+    if (isNaN(finalValue)) return;
+    
+    // Mark as animated
+    valueElement.dataset.animated = 'true';
+    
+    // Starting value (70% of final)
+    let currentValue = Math.floor(finalValue * 0.7);
+    
+    // Duration of animation in ms
+    const duration = 600;
+    
+    // Number of steps
+    const steps = 20;
+    
+    // Increment per step
+    const increment = (finalValue - currentValue) / steps;
+    
+    // Interval between steps
+    const interval = duration / steps;
+    
+    // Animation function
+    const animate = () => {
+        currentValue += increment;
+        
+        // If we've reached or exceeded the final value, set to final
+        if (currentValue >= finalValue) {
+            valueElement.textContent = finalValue;
+            return;
+        }
+        
+        // Update display with rounded value
+        valueElement.textContent = Math.round(currentValue);
+        
+        // Continue animation
+        setTimeout(animate, interval);
+    };
+    
+    // Start animation
+    animate();
+}
+
+/**
+ * Initialize hover effects for stat rows
+ */
+function initStatHoverEffects() {
+    const statRows = document.querySelectorAll('.stat-row');
+    
+    statRows.forEach(row => {
+        row.addEventListener('mouseenter', () => {
+            row.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+            row.style.paddingLeft = '10px';
+        });
+        
+        row.addEventListener('mouseleave', () => {
+            row.style.backgroundColor = '';
+            row.style.paddingLeft = '';
+        });
+    });
+}
+
+/**
+ * Initialize placeholder charts with randomized data
+ */
+function initPlaceholderCharts() {
+    // Check if chart container exists
+    const chartContainer = document.querySelector('.contribution-chart');
+    if (!chartContainer) return;
+    
+    // Create canvas element
+    const canvas = document.createElement('canvas');
+    canvas.width = chartContainer.clientWidth;
+    canvas.height = 200;
+    canvas.style.width = '100%';
+    canvas.style.height = '200px';
+    
+    // Replace placeholder with canvas
+    chartContainer.innerHTML = '';
+    chartContainer.appendChild(canvas);
+    
+    // Get context
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    // Draw simple chart background
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw grid lines
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.lineWidth = 1;
+    
+    // Horizontal grid lines
+    for (let i = 0; i < 5; i++) {
+        const y = 40 + i * 30;
+        ctx.beginPath();
+        ctx.moveTo(30, y);
+        ctx.lineTo(canvas.width - 20, y);
+        ctx.stroke();
+    }
+    
+    // Vertical grid lines
+    for (let i = 0; i < 7; i++) {
+        const x = 50 + i * ((canvas.width - 70) / 6);
+        ctx.beginPath();
+        ctx.moveTo(x, 30);
+        ctx.lineTo(x, 180);
+        ctx.stroke();
+    }
+    
+    // Generate random data
+    const dataPoints = 7;
+    const data = Array.from({ length: dataPoints }, () => 
+        Math.floor(Math.random() * 100) + 50
+    );
+    
+    // Draw data line
+    ctx.strokeStyle = 'rgba(249, 75, 31, 0.8)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    
+    // Plot points
+    const pointWidth = (canvas.width - 70) / 6;
+    for (let i = 0; i < dataPoints; i++) {
+        const x = 50 + i * pointWidth;
+        const y = 180 - (data[i] / 150) * 140;
+        
+        if (i === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
+        
+        // Draw point
+        ctx.fillStyle = 'rgba(249, 75, 31, 1)';
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // Stroke the line
+    ctx.stroke();
+    
+    // Add gradient fill beneath the line
+    const gradient = ctx.createLinearGradient(0, 40, 0, 180);
+    gradient.addColorStop(0, 'rgba(249, 75, 31, 0.3)');
+    gradient.addColorStop(1, 'rgba(249, 75, 31, 0.0)');
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.moveTo(50, 180);
+    
+    for (let i = 0; i < dataPoints; i++) {
+        const x = 50 + i * pointWidth;
+        const y = 180 - (data[i] / 150) * 140;
+        ctx.lineTo(x, y);
+    }
+    
+    ctx.lineTo(50 + (dataPoints - 1) * pointWidth, 180);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Add labels
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'center';
+    
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    for (let i = 0; i < days.length; i++) {
+        const x = 50 + i * pointWidth;
+        ctx.fillText(days[i], x, 195);
+    }
+}
+
+/**
+ * Format number with commas for thousands
  */
 function formatNumber(num) {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
 /**
- * Add visual feedback for stat values
+ * Calculate time difference and format it
  */
-function enhanceStatDisplay() {
-    const statValues = document.querySelectorAll('.account-info-value');
+function getTimeDifference(timestamp) {
+    if (!timestamp) return 'Never';
     
-    statValues.forEach(value => {
-        const text = value.textContent.trim();
-        
-        // Add color coding for numerical values
-        if (!isNaN(parseInt(text))) {
-            const num = parseInt(text);
-            
-            // Example: Color code PvP stats
-            if (value.parentElement.querySelector('.account-info-label').textContent.includes('Kill')) {
-                if (num > 100) {
-                    value.classList.add('text-accent');
-                } else if (num > 50) {
-                    value.style.color = '#ffc107'; // Yellow
-                }
-            }
-            
-            // Format large numbers
-            if (num > 1000) {
-                value.textContent = formatNumber(num);
-            }
-        }
-    });
+    const now = new Date();
+    const date = new Date(timestamp * 1000);
+    const diffMs = now - date;
+    const diffSec = Math.floor(diffMs / 1000);
+    
+    if (diffSec < 60) return `${diffSec} seconds ago`;
+    
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin} minutes ago`;
+    
+    const diffHour = Math.floor(diffMin / 60);
+    if (diffHour < 24) return `${diffHour} hours ago`;
+    
+    const diffDay = Math.floor(diffHour / 24);
+    if (diffDay < 30) return `${diffDay} days ago`;
+    
+    const diffMonth = Math.floor(diffDay / 30);
+    if (diffMonth < 12) return `${diffMonth} months ago`;
+    
+    const diffYear = Math.floor(diffMonth / 12);
+    return `${diffYear} years ago`;
 }
 
 /**
- * Adjust equipment and inventory areas to match heights
+ * Apply pulse effect to elements
  */
-function equalizeHeights() {
-    const equipmentCard = document.querySelector('.equipment-card');
-    const inventoryCard = document.querySelector('.inventory-card');
+function pulseElement(element) {
+    if (!element) return;
     
-    if (equipmentCard && inventoryCard && window.innerWidth > 1200) {
-        // Reset heights first
-        equipmentCard.style.height = '';
-        inventoryCard.style.height = '';
-        
-        // Get natural heights
-        const equipmentHeight = equipmentCard.offsetHeight;
-        const inventoryHeight = inventoryCard.offsetHeight;
-        
-        // Set both to the larger height
-        const maxHeight = Math.max(equipmentHeight, inventoryHeight);
-        equipmentCard.style.height = `${maxHeight}px`;
-        inventoryCard.style.height = `${maxHeight}px`;
-    }
+    // Add pulse class
+    element.classList.add('pulse-animation');
+    
+    // Remove after animation completes
+    setTimeout(() => {
+        element.classList.remove('pulse-animation');
+    }, 1000);
 }
 
 /**
- * Initialize inventory pagination
+ * Initialize map interaction (placeholder)
  */
-function initInventoryPagination() {
-    const prevButton = document.getElementById('prev-page');
-    const nextButton = document.getElementById('next-page');
-    const currentPageSpan = document.getElementById('current-page');
-    const totalItemsInput = document.getElementById('total-items');
-    const itemsPerPageInput = document.getElementById('items-per-page');
+function initMapInteraction() {
+    const mapContainer = document.querySelector('.map-container');
+    const mapMarker = document.querySelector('.map-marker');
     
-    if (!prevButton || !nextButton || !currentPageSpan || !totalItemsInput || !itemsPerPageInput) {
-        return; // Required elements not found
-    }
+    if (!mapContainer || !mapMarker) return;
     
-    const totalItems = parseInt(totalItemsInput.value);
-    const itemsPerPage = parseInt(itemsPerPageInput.value);
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
-    
-    let currentPage = 1;
-    
-    // Disable prev button on first page
-    prevButton.disabled = currentPage === 1;
-    // Disable next button if only one page
-    nextButton.disabled = currentPage >= totalPages;
-    
-    prevButton.addEventListener('click', function() {
-        if (currentPage > 1) {
-            loadPage(currentPage - 1);
+    // Add click event to map container to simulate teleport functionality
+    mapContainer.addEventListener('click', (e) => {
+        // Get click coordinates relative to the container
+        const rect = mapContainer.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        // Calculate percentage position
+        const percentX = (x / mapContainer.clientWidth) * 100;
+        const percentY = (y / mapContainer.clientHeight) * 100;
+        
+        // Limit marker to stay within bounds (5% margin)
+        const limitedX = Math.min(95, Math.max(5, percentX));
+        const limitedY = Math.min(95, Math.max(5, percentY));
+        
+        // Update marker position with animation
+        mapMarker.style.transition = 'left 0.3s, top 0.3s';
+        mapMarker.style.left = `${limitedX}%`;
+        mapMarker.style.top = `${limitedY}%`;
+        
+        // Update coordinate display (simulated values)
+        const coordX = document.querySelector('.coordinate-display:nth-child(1) .coordinate-value');
+        const coordY = document.querySelector('.coordinate-display:nth-child(2) .coordinate-value');
+        
+        if (coordX && coordY) {
+            // Convert percentage to simulated coordinates (0-32768 range)
+            const simulatedX = Math.floor((limitedX / 100) * 32768);
+            const simulatedY = Math.floor((limitedY / 100) * 32768);
+            
+            coordX.textContent = simulatedX;
+            coordY.textContent = simulatedY;
+            
+            // Add pulse effect to coordinate displays
+            pulseElement(coordX);
+            pulseElement(coordY);
         }
     });
-    
-    nextButton.addEventListener('click', function() {
-        if (currentPage < totalPages) {
-            loadPage(currentPage + 1);
-        }
-    });
-    
-    function loadPage(pageNum) {
-        if (pageNum < 1 || pageNum > totalPages) {
-            return;
-        }
-        
-        // Show loading indicator
-        const inventoryGrid = document.getElementById('inventory-grid');
-        if (inventoryGrid) {
-            inventoryGrid.classList.add('loading');
-        }
-        
-        // Fetch data for the requested page
-        const charId = window.location.search.match(/id=(\d+)/)[1]; // Extract character ID from URL
-        
-        // AJAX request to get inventory data for the page
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', `inventory-data.php?char_id=${charId}&page=${pageNum}&per_page=${itemsPerPage}`, true);
-        
-        xhr.onload = function() {
-            if (this.status >= 200 && this.status < 300) {
-                try {
-                    const response = JSON.parse(this.responseText);
-                    
-                    if (response.success) {
-                        // Update inventory grid with new items
-                        updateInventoryGrid(response.items);
-                        
-                        // Update pagination controls
-                        currentPage = pageNum;
-                        currentPageSpan.textContent = currentPage;
-                        prevButton.disabled = currentPage === 1;
-                        nextButton.disabled = currentPage >= totalPages;
-                        
-                        // For demo purposes, simulate pagination without AJAX
-                        simulatePagination(pageNum);
-                    } else {
-                        console.error('Error loading inventory page:', response.message);
-                    }
-                } catch (e) {
-                    console.error('Error parsing inventory data:', e);
-                    // For demo purposes, simulate pagination without AJAX
-                    simulatePagination(pageNum);
-                }
-            } else {
-                console.error('Error loading inventory page:', this.statusText);
-                // For demo purposes, simulate pagination without AJAX
-                simulatePagination(pageNum);
-            }
-            
-            // Hide loading indicator
-            if (inventoryGrid) {
-                inventoryGrid.classList.remove('loading');
-            }
-        };
-        
-        xhr.onerror = function() {
-            console.error('Network error when loading inventory page');
-            // For demo purposes, simulate pagination without AJAX
-            simulatePagination(pageNum);
-            
-            // Hide loading indicator
-            if (inventoryGrid) {
-                inventoryGrid.classList.remove('loading');
-            }
-        };
-        
-        // Send request
-        xhr.send();
-    }
-    
-    function updateInventoryGrid(items) {
-        const inventoryGrid = document.getElementById('inventory-grid');
-        if (!inventoryGrid) return;
-        
-        // Clear existing items
-        inventoryGrid.innerHTML = '';
-        
-        // Add new items
-        items.forEach(item => {
-            const itemHtml = `
-                <div class="inventory-slot tooltip">
-                    <div class="item-icon" data-item-id="${item.item_id}">
-                        <img src="${item.icon_url}" onerror="this.src='../assets/img/placeholders/noiconid.png'" alt="${item.item_name}">
-                        ${item.count > 1 ? `<div class="item-count">${item.count}</div>` : ''}
-                        ${item.enchantlvl > 0 ? `<div class="item-enchant">+${item.enchantlvl}</div>` : ''}
-                        <span class="tooltip-text">
-                            <strong>${item.item_name}</strong><br>
-                            Quantity: ${item.count}<br>
-                            ${item.enchantlvl > 0 ? `Enchant: +${item.enchantlvl}<br>` : ''}
-                            ${item.attr_enchantlvl > 0 ? `Attribute: +${item.attr_enchantlvl}<br>` : ''}
-                            ${item.special_enchant > 0 ? `Special: +${item.special_enchant}<br>` : ''}
-                            ${item.durability > 0 ? `Durability: ${item.durability}%<br>` : ''}
-                            Item Type: ${item.item_type}<br>
-                            Item ID: ${item.item_id}
-                        </span>
-                    </div>
-                </div>
-            `;
-            inventoryGrid.innerHTML += itemHtml;
-        });
-        
-        // Add empty slots to fill the grid
-        const emptySlots = itemsPerPage - items.length;
-        for (let i = 0; i < emptySlots; i++) {
-            const emptySlotHtml = '<div class="inventory-slot empty"></div>';
-            inventoryGrid.innerHTML += emptySlotHtml;
-        }
-        
-        // Re-initialize inventory interactions
-        initInventoryInteractions();
-    }
-    
-    // Function to simulate pagination for demo purposes without actual AJAX
-    function simulatePagination(pageNum) {
-        // Update current page display
-        currentPage = pageNum;
-        currentPageSpan.textContent = currentPage;
-        
-        // Update button states
-        prevButton.disabled = currentPage === 1;
-        nextButton.disabled = currentPage >= totalPages;
-        
-        // For demo purposes only - in real implementation, the updateInventoryGrid function would be called with actual data
-        console.log(`Simulated loading of page ${pageNum}`);
-    }
 }
 
-// Call these functions on page load and resize
-enhanceStatDisplay();
-window.addEventListener('resize', function() {
-    equalizeHeights();
+// Call map interaction initialization at the end of DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Log all tab elements to debug
+    console.log('Tab buttons:');
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        console.log(`- ${btn.textContent.trim()}: data-tab="${btn.getAttribute('data-tab')}"`);
+    });
+    
+    console.log('Tab contents:');
+    document.querySelectorAll('.tab-content').forEach(content => {
+        console.log(`- ${content.id}`);
+    });
 });
 
-// Initialize equalization after a short delay to ensure all elements are rendered
-setTimeout(equalizeHeights, 500);
+// Fix tab functionality if script loads after page is already displayed
+window.addEventListener('load', function() {
+    // If no tabs are active after page load, activate the first tab
+    if (!document.querySelector('.tab-content.active')) {
+        const firstTabButton = document.querySelector('.tab-button');
+        if (firstTabButton) {
+            console.log('No active tab found, activating first tab');
+            firstTabButton.click();
+        }
+    }
+});
