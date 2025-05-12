@@ -260,6 +260,19 @@ include 'includes/admin-header.php';
                 </div>
             </a>
             
+			<!-- NPC Data -->
+            <a href="<?php echo $adminBaseUrl; ?>pages/npcs/npc_list.php" class="admin-card">
+                <div class="admin-card-header">
+                    <h2 class="admin-card-title">NPC Data</h2>
+                </div>
+                <div class="admin-card-img">
+                    <img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/npc.png" alt="NPC" width="80" height="80">
+                </div>
+                <div class="admin-card-body">
+                    <div class="admin-card-count">NPC Data</div>
+                </div>
+            </a>
+			
             <!-- Database Tools -->
             <a href="<?php echo $adminBaseUrl; ?>tools/tools-index.php" class="admin-card">
                 <div class="admin-card-header">
