@@ -1,81 +1,91 @@
 <?php
 /**
- * Map-specific utility functions
- * Contains functions for working with map data
+ * Map Functions
+ * Helper functions for map management
  */
 
 /**
- * Get list of maps with pagination
+ * Get map by ID
  * 
  * @param mysqli $conn Database connection
- * @param int $page Current page number
- * @param int $pageSize Number of items per page
- * @param string $searchTerm Optional search term
- * @return array Array containing maps data and pagination info
+ * @param int $mapId Map ID
+ * @return array|false Map data or false if not found
  */
-function getMaps($conn, $page = 1, $pageSize = 20, $searchTerm = '') {
-    // Ensure parameters are valid
-    $page = max(1, (int)$page);
-    $pageSize = max(1, (int)$pageSize);
+function getMapById($conn, $mapId) {
+    $query = "SELECT * FROM mapids WHERE mapid = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("i", $mapId);
+    $stmt->execute();
+    $result = $stmt->get_result();
     
-    // Calculate offset for pagination
-    $offset = ($page - 1) * $pageSize;
+    if ($result && $result->num_rows > 0) {
+        $map = $result->fetch_assoc();
+        
+        // Set image URL
+        $map['image_url'] = getMapImagePath($map['pngId']);
+        
+        return $map;
+    }
     
-    // Base query with pngId included
-    $sql = "SELECT mapid, locationname, desc_kr, underwater, beginZone, redKnightZone, 
-            startX, endX, startY, endY, pngId 
-            FROM mapids";
+    return false;
+}
+
+/**
+ * Get maps with pagination
+ * 
+ * @param mysqli $conn Database connection
+ * @param int $page Current page
+ * @param int $perPage Items per page
+ * @param string $searchTerm Optional search term
+ * @return array Maps data with pagination info
+ */
+function getMaps($conn, $page = 1, $perPage = 20, $searchTerm = '') {
+    $offset = ($page - 1) * $perPage;
     
-    // Add search condition if search term is provided
+    // Base query
+    $query = "SELECT * FROM mapids";
+    $countQuery = "SELECT COUNT(*) as total FROM mapids";
+    
+    // Add search condition if provided
     if (!empty($searchTerm)) {
-        $searchTerm = $conn->real_escape_string($searchTerm);
-        $sql .= " WHERE locationname LIKE '%$searchTerm%' OR desc_kr LIKE '%$searchTerm%'";
+        $searchCondition = " WHERE locationname LIKE ? OR desc_kr LIKE ?";
+        $query .= $searchCondition;
+        $countQuery .= $searchCondition;
+        $searchParam = "%$searchTerm%";
     }
     
-    // Add order and pagination
-    $sql .= " ORDER BY mapid LIMIT $offset, $pageSize";
+    // Add ordering and limit
+    $query .= " ORDER BY mapid ASC LIMIT ?, ?";
     
-    // Execute query with error handling
-    $result = executeQuery($sql, $conn);
-    
-    if (!$result) {
-        error_log("Failed to fetch maps: " . $conn->error);
-        return [
-            'maps' => [],
-            'total' => 0,
-            'pages' => 0,
-            'current_page' => $page,
-            'error' => "Database error: " . $conn->error
-        ];
-    }
-    
-    // Get total count for pagination
-    $countSql = "SELECT COUNT(*) as total FROM mapids";
+    // Prepare and execute count query
     if (!empty($searchTerm)) {
-        $countSql .= " WHERE locationname LIKE '%$searchTerm%' OR desc_kr LIKE '%$searchTerm%'";
-    }
-    
-    $countResult = executeQuery($countSql, $conn);
-    
-    if (!$countResult) {
-        error_log("Failed to get map count: " . $conn->error);
-        $totalCount = 0;
+        $countStmt = $conn->prepare($countQuery);
+        $countStmt->bind_param("ss", $searchParam, $searchParam);
     } else {
-        $totalCount = $countResult->fetch_assoc()['total'];
+        $countStmt = $conn->prepare($countQuery);
     }
     
-    $totalPages = ceil($totalCount / $pageSize);
+    $countStmt->execute();
+    $countResult = $countStmt->get_result();
+    $totalCount = $countResult->fetch_assoc()['total'];
+    $totalPages = ceil($totalCount / $perPage);
     
-    // Build result array
+    // Prepare and execute main query
+    $stmt = $conn->prepare($query);
+    
+    if (!empty($searchTerm)) {
+        $stmt->bind_param("ssii", $searchParam, $searchParam, $offset, $perPage);
+    } else {
+        $stmt->bind_param("ii", $offset, $perPage);
+    }
+    
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
     $maps = [];
     while ($row = $result->fetch_assoc()) {
-        // Ensure all required fields are present
-        if (!isset($row['mapid']) || !isset($row['locationname'])) {
-            error_log("Incomplete map data found: " . json_encode($row));
-            continue;
-        }
-        
-        // Add map to results
+        // Add image path to each map
+        $row['image_url'] = getMapImagePath($row['pngId']);
         $maps[] = $row;
     }
     
@@ -83,176 +93,91 @@ function getMaps($conn, $page = 1, $pageSize = 20, $searchTerm = '') {
         'maps' => $maps,
         'total' => $totalCount,
         'pages' => $totalPages,
-        'current_page' => $page
+        'current' => $page
     ];
 }
 
 /**
- * Get the image path for a map based on its pngId
+ * Create a new map
  * 
- * @param int $pngId The PNG ID associated with the map
- * @return string URL to the map image or placeholder if not found
+ * @param mysqli $conn Database connection
+ * @param array $data Map data
+ * @return int|false The new map ID or false on failure
  */
-function getMapImagePath($pngId) {
-    // Base paths
-    $mapImagesBaseDir = $_SERVER['DOCUMENT_ROOT'] . '/assets/img/icons/maps/';
-    $mapImagesBaseUrl = '/assets/img/icons/maps/';
-    $placeholderImageUrl = '/assets/img/icons/placeholders/map-placeholder.png';
+function createMap($conn, $data) {
+    $query = "INSERT INTO mapids (
+        mapid, locationname, desc_kr, underwater, beginZone, redKnightZone, ruunCastleZone, interWarZone,
+        startX, endX, startY, endY, monster_amount, drop_rate, markable, teleportable, escapable, 
+        resurrection, painwand, penalty, take_pets, recall_pets, usable_item, usable_skill, dungeon,
+        decreaseHp, dominationTeleport, geradBuffZone, growBuffZone, interKind, script, pngId
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
-    // If no pngId is provided, return placeholder
-    if (!$pngId) {
-        return $placeholderImageUrl;
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param(
+        "issiiiiiiiiiddiiiiiiiiiiiiiisi",
+        $data['mapid'], $data['locationname'], $data['desc_kr'], $data['underwater'], $data['beginZone'], 
+        $data['redKnightZone'], $data['ruunCastleZone'], $data['interWarZone'], $data['startX'], $data['endX'], 
+        $data['startY'], $data['endY'], $data['monster_amount'], $data['drop_rate'], $data['markable'], 
+        $data['teleportable'], $data['escapable'], $data['resurrection'], $data['painwand'], 
+        $data['penalty'], $data['take_pets'], $data['recall_pets'], $data['usable_item'], 
+        $data['usable_skill'], $data['dungeon'], $data['decreaseHp'], $data['dominationTeleport'], 
+        $data['geradBuffZone'], $data['growBuffZone'], $data['interKind'], $data['script'], $data['pngId']
+    );
+    
+    if ($stmt->execute()) {
+        return $data['mapid'];
     }
     
-    // Check for map image in various formats (case insensitive)
-    $formats = ['jpg', 'jpeg', 'png'];
-    foreach ($formats as $format) {
-        // Check for exact match with pngId
-        $exactPath = $mapImagesBaseDir . $pngId . '.' . $format;
-        if (file_exists($exactPath)) {
-            return $mapImagesBaseUrl . $pngId . '.' . $format;
-        }
-        
-        // Check in subfolder with pngId name
-        $subfolderPath = $mapImagesBaseDir . $pngId . '/' . $pngId . '.' . $format;
-        if (file_exists($subfolderPath)) {
-            return $mapImagesBaseUrl . $pngId . '/' . $pngId . '.' . $format;
-        }
-    }
-    
-    // No image found, return placeholder
-    return $placeholderImageUrl;
+    return false;
 }
 
 /**
- * Get map details by ID
+ * Update an existing map
  * 
  * @param mysqli $conn Database connection
  * @param int $mapId Map ID
- * @return array|null Map details or null if not found
+ * @param array $data Map data
+ * @return bool Success or failure
  */
-function getMapById($conn, $mapId) {
-    $mapId = (int)$mapId;
-    $sql = "SELECT * FROM mapids WHERE mapid = $mapId";
-    $result = executeQuery($sql, $conn);
+function updateMap($conn, $mapId, $data) {
+    $query = "UPDATE mapids SET 
+        locationname = ?, desc_kr = ?, underwater = ?, beginZone = ?, redKnightZone = ?, 
+        ruunCastleZone = ?, interWarZone = ?, startX = ?, endX = ?, startY = ?, endY = ?, 
+        monster_amount = ?, drop_rate = ?, markable = ?, teleportable = ?, escapable = ?, 
+        resurrection = ?, painwand = ?, penalty = ?, take_pets = ?, recall_pets = ?, 
+        usable_item = ?, usable_skill = ?, dungeon = ?, decreaseHp = ?, dominationTeleport = ?, 
+        geradBuffZone = ?, growBuffZone = ?, interKind = ?, script = ?, pngId = ?
+    WHERE mapid = ?";
     
-    if ($result && $result->num_rows > 0) {
-        $map = $result->fetch_assoc();
-        
-        // Set default values for fields that might not exist
-        $defaultFields = [
-            'ruunCastleZone' => 0,
-            'interWarZone' => 0,
-            'dungeon' => 0,
-            'decreaseHp' => 0,
-            'dominationTeleport' => 0,
-            'geradBuffZone' => 0,
-            'growBuffZone' => 0,
-            'interKind' => 0,
-            'script' => '',
-            'pngId' => 0
-        ];
-        
-        foreach ($defaultFields as $field => $defaultValue) {
-            if (!isset($map[$field])) {
-                $map[$field] = $defaultValue;
-            }
-        }
-        
-        // Get map image path
-        $map['image_url'] = getMapImagePath($map['pngId'] ?? 0);
-        
-        return $map;
-    }
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param(
+        "ssiiiiiiiiddiiiiiiiiiiiiiiiisi", 
+        $data['locationname'], $data['desc_kr'], $data['underwater'], $data['beginZone'], 
+        $data['redKnightZone'], $data['ruunCastleZone'], $data['interWarZone'], $data['startX'], 
+        $data['endX'], $data['startY'], $data['endY'], $data['monster_amount'], $data['drop_rate'], 
+        $data['markable'], $data['teleportable'], $data['escapable'], $data['resurrection'], 
+        $data['painwand'], $data['penalty'], $data['take_pets'], $data['recall_pets'], 
+        $data['usable_item'], $data['usable_skill'], $data['dungeon'], $data['decreaseHp'], 
+        $data['dominationTeleport'], $data['geradBuffZone'], $data['growBuffZone'], 
+        $data['interKind'], $data['script'], $data['pngId'], $mapId
+    );
     
-    return null;
+    return $stmt->execute();
 }
 
 /**
- * Get monsters in a specific map
+ * Delete a map
  * 
  * @param mysqli $conn Database connection
  * @param int $mapId Map ID
- * @return array Array of monsters in the map
+ * @return bool Success or failure
  */
-function getMapMonsters($conn, $mapId) {
-    $mapId = (int)$mapId;
-    $sql = "SELECT n.npcid, n.name, n.desc_kr, n.lvl, s.count
-            FROM spawnlist s
-            JOIN npc n ON s.npc_templateid = n.npcid
-            WHERE s.mapid = $mapId AND n.impl = 'L1Monster'
-            GROUP BY n.npcid
-            ORDER BY n.lvl DESC";
+function deleteMap($conn, $mapId) {
+    $query = "DELETE FROM mapids WHERE mapid = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("i", $mapId);
     
-    $result = executeQuery($sql, $conn);
-    
-    $monsters = [];
-    if ($result) {
-        while ($row = $result->fetch_assoc()) {
-            $monsters[] = $row;
-        }
-    }
-    
-    return $monsters;
-}
-
-/**
- * Get NPCs in a specific map
- * 
- * @param mysqli $conn Database connection
- * @param int $mapId Map ID
- * @return array Array of NPCs in the map
- */
-function getMapNpcs($conn, $mapId) {
-    $mapId = (int)$mapId;
-    
-    // Query for standard NPCs
-    $sql = "SELECT n.npcid, n.name, n.desc_kr, s.locx, s.locy
-            FROM spawnlist_npc s
-            JOIN npc n ON s.npc_templateid = n.npcid
-            WHERE s.mapid = $mapId AND (n.impl = 'L1Npc' OR n.impl = 'L1Merchant')
-            ORDER BY n.name";
-    
-    $result = executeQuery($sql, $conn);
-    
-    $npcs = [];
-    if ($result) {
-        while ($row = $result->fetch_assoc()) {
-            $npcs[] = $row;
-        }
-    }
-    
-    // Query for shop NPCs
-    $sqlShops = "SELECT npc_id as npcid, name, title, locx, locy
-                FROM spawnlist_npc_shop
-                WHERE mapid = $mapId
-                ORDER BY name";
-    
-    $resultShops = executeQuery($sqlShops, $conn);
-    
-    if ($resultShops) {
-        while ($row = $resultShops->fetch_assoc()) {
-            $row['desc_kr'] = $row['title']; // Use title as description
-            $npcs[] = $row;
-        }
-    }
-    
-    // Query for cash shop NPCs
-    $sqlCashShops = "SELECT npc_id as npcid, name, title, locx, locy
-                    FROM spawnlist_npc_cash_shop
-                    WHERE mapid = $mapId
-                    ORDER BY name";
-    
-    $resultCashShops = executeQuery($sqlCashShops, $conn);
-    
-    if ($resultCashShops) {
-        while ($row = $resultCashShops->fetch_assoc()) {
-            $row['desc_kr'] = 'Cash Shop: ' . $row['title']; // Identify as cash shop
-            $npcs[] = $row;
-        }
-    }
-    
-    return $npcs;
+    return $stmt->execute();
 }
 
 /**
@@ -261,270 +186,36 @@ function getMapNpcs($conn, $mapId) {
  * @param int $underwater Underwater flag
  * @param int $beginZone Beginner zone flag
  * @param int $redKnightZone Red Knight zone flag
- * @return string Map type description
+ * @return string Map type name
  */
 function getMapTypeName($underwater, $beginZone, $redKnightZone) {
-    if ($underwater == 1) {
-        return 'Underwater Map';
-    } elseif ($beginZone == 1) {
-        return 'Beginner Zone';
-    } elseif ($redKnightZone == 1) {
-        return 'Red Knight Zone';
+    if ($underwater) {
+        return "Underwater";
+    } elseif ($beginZone) {
+        return "Beginner Zone";
+    } elseif ($redKnightZone) {
+        return "Red Knight Zone";
+    } else {
+        return "Normal";
     }
-    return 'Normal Map';
 }
 
 /**
- * Update map information
+ * Get map image path
  * 
- * @param mysqli $conn Database connection
- * @param int $mapId Map ID
- * @param array $data Map data to update
- * @return bool True if successful, false otherwise
+ * @param int $pngId PNG ID
+ * @return string Image path
  */
-function updateMap($conn, $mapId, $data) {
-    $mapId = (int)$mapId;
+function getMapImagePath($pngId) {
+    $baseUrl = '/l1j-database/';
     
-    // Sanitize input data
-    $locationname = $conn->real_escape_string($data['locationname']);
-    $desc_kr = $conn->real_escape_string($data['desc_kr']);
-    $underwater = (int)$data['underwater'];
-    $beginZone = (int)$data['beginZone'];
-    $redKnightZone = (int)$data['redKnightZone'];
-    $startX = (int)$data['startX'];
-    $endX = (int)$data['endX'];
-    $startY = (int)$data['startY'];
-    $endY = (int)$data['endY'];
-    $monster_amount = (float)$data['monster_amount'];
-    $drop_rate = (float)$data['drop_rate'];
-    $markable = (int)$data['markable'];
-    $teleportable = (int)$data['teleportable'];
-    $escapable = (int)$data['escapable'];
-    $resurrection = (int)$data['resurrection'];
-    $painwand = (int)$data['painwand'];
-    $penalty = (int)$data['penalty'];
-    $take_pets = (int)$data['take_pets'];
-    $recall_pets = (int)$data['recall_pets'];
-    $usable_item = (int)$data['usable_item'];
-    $usable_skill = (int)$data['usable_skill'];
-    
-    // Additional fields 
-    $dungeon = isset($data['dungeon']) ? (int)$data['dungeon'] : 0;
-    $decreaseHp = isset($data['decreaseHp']) ? (int)$data['decreaseHp'] : 0;
-    $dominationTeleport = isset($data['dominationTeleport']) ? (int)$data['dominationTeleport'] : 0;
-    $ruunCastleZone = isset($data['ruunCastleZone']) ? (int)$data['ruunCastleZone'] : 0;
-    $interWarZone = isset($data['interWarZone']) ? (int)$data['interWarZone'] : 0;
-    $geradBuffZone = isset($data['geradBuffZone']) ? (int)$data['geradBuffZone'] : 0;
-    $growBuffZone = isset($data['growBuffZone']) ? (int)$data['growBuffZone'] : 0;
-    $interKind = isset($data['interKind']) ? (int)$data['interKind'] : 0;
-    $script = isset($data['script']) ? $conn->real_escape_string($data['script']) : '';
-    $pngId = isset($data['pngId']) ? (int)$data['pngId'] : 0;
-    
-    // Build the SQL update statement
-    $sql = "UPDATE mapids SET 
-            locationname = '$locationname',
-            desc_kr = '$desc_kr',
-            underwater = $underwater,
-            beginZone = $beginZone,
-            redKnightZone = $redKnightZone,
-            startX = $startX,
-            endX = $endX,
-            startY = $startY,
-            endY = $endY,
-            monster_amount = $monster_amount,
-            drop_rate = $drop_rate,
-            markable = $markable,
-            teleportable = $teleportable,
-            escapable = $escapable,
-            resurrection = $resurrection,
-            painwand = $painwand,
-            penalty = $penalty,
-            take_pets = $take_pets,
-            recall_pets = $recall_pets,
-            usable_item = $usable_item,
-            usable_skill = $usable_skill";
-    
-    // Add additional fields if they exist in the table
-    $columnsCheck = executeQuery("SHOW COLUMNS FROM mapids", $conn);
-    $columns = [];
-    
-    if ($columnsCheck) {
-        while ($column = $columnsCheck->fetch_assoc()) {
-            $columns[] = $column['Field'];
-        }
-        
-        // Add additional fields if they exist in the table
-        $additionalFields = [
-            'dungeon' => $dungeon,
-            'decreaseHp' => $decreaseHp,
-            'dominationTeleport' => $dominationTeleport,
-            'ruunCastleZone' => $ruunCastleZone,
-            'interWarZone' => $interWarZone,
-            'geradBuffZone' => $geradBuffZone,
-            'growBuffZone' => $growBuffZone,
-            'interKind' => $interKind,
-            'script' => "'$script'",
-            'pngId' => $pngId
-        ];
-        
-        foreach ($additionalFields as $field => $value) {
-            if (in_array($field, $columns)) {
-                $sql .= ", $field = " . $value;
-            }
-        }
+    if (empty($pngId) || $pngId <= 0) {
+        // Use the correct placeholder path in the maps folder
+        return $baseUrl . 'assets/img/icons/maps/map-placeholder.png';
     }
     
-    $sql .= " WHERE mapid = $mapId";
-    
-    // Execute the update query and return result
-    $result = $conn->query($sql);
-    
-    if (!$result) {
-        error_log("Failed to update map: " . $conn->error . " in query: " . $sql);
-    }
-    
-    return $result;
+    return $baseUrl . "assets/img/icons/maps/{$pngId}.jpeg";
 }
 
-/**
- * Create a new map
- * 
- * @param mysqli $conn Database connection
- * @param array $data Map data to insert
- * @return int|bool New map ID if successful, false otherwise
- */
-function createMap($conn, $data) {
-    // Sanitize input data
-    $mapid = (int)$data['mapid'];
-    $locationname = $conn->real_escape_string($data['locationname']);
-    $desc_kr = $conn->real_escape_string($data['desc_kr']);
-    $underwater = (int)$data['underwater'];
-    $beginZone = (int)$data['beginZone'];
-    $redKnightZone = (int)$data['redKnightZone'];
-    $startX = (int)$data['startX'];
-    $endX = (int)$data['endX'];
-    $startY = (int)$data['startY'];
-    $endY = (int)$data['endY'];
-    $monster_amount = (float)$data['monster_amount'];
-    $drop_rate = (float)$data['drop_rate'];
-    $markable = (int)$data['markable'];
-    $teleportable = (int)$data['teleportable'];
-    $escapable = (int)$data['escapable'];
-    $resurrection = (int)$data['resurrection'];
-    $painwand = (int)$data['painwand'];
-    $penalty = (int)$data['penalty'];
-    $take_pets = (int)$data['take_pets'];
-    $recall_pets = (int)$data['recall_pets'];
-    $usable_item = (int)$data['usable_item'];
-    $usable_skill = (int)$data['usable_skill'];
-    
-    // Additional fields
-    $dungeon = isset($data['dungeon']) ? (int)$data['dungeon'] : 0;
-    $decreaseHp = isset($data['decreaseHp']) ? (int)$data['decreaseHp'] : 0;
-    $dominationTeleport = isset($data['dominationTeleport']) ? (int)$data['dominationTeleport'] : 0;
-    $ruunCastleZone = isset($data['ruunCastleZone']) ? (int)$data['ruunCastleZone'] : 0;
-    $interWarZone = isset($data['interWarZone']) ? (int)$data['interWarZone'] : 0;
-    $geradBuffZone = isset($data['geradBuffZone']) ? (int)$data['geradBuffZone'] : 0;
-    $growBuffZone = isset($data['growBuffZone']) ? (int)$data['growBuffZone'] : 0;
-    $interKind = isset($data['interKind']) ? (int)$data['interKind'] : 0;
-    $script = isset($data['script']) ? $conn->real_escape_string($data['script']) : '';
-    $pngId = isset($data['pngId']) ? (int)$data['pngId'] : 0;
-    
-    // Get table columns to ensure we only insert fields that exist
-    $columnsCheck = executeQuery("SHOW COLUMNS FROM mapids", $conn);
-    $columns = [];
-    
-    if ($columnsCheck) {
-        while ($column = $columnsCheck->fetch_assoc()) {
-            $columns[] = $column['Field'];
-        }
-    }
-    
-    // Build column and value lists for the INSERT query
-    $columnList = [];
-    $valueList = [];
-    
-    // Basic fields
-    $basicFields = [
-        'mapid' => $mapid,
-        'locationname' => "'$locationname'",
-        'desc_kr' => "'$desc_kr'",
-        'underwater' => $underwater,
-        'beginZone' => $beginZone,
-        'redKnightZone' => $redKnightZone,
-        'startX' => $startX,
-        'endX' => $endX,
-        'startY' => $startY,
-        'endY' => $endY,
-        'monster_amount' => $monster_amount,
-        'drop_rate' => $drop_rate,
-        'markable' => $markable,
-        'teleportable' => $teleportable,
-        'escapable' => $escapable,
-        'resurrection' => $resurrection,
-        'painwand' => $painwand,
-        'penalty' => $penalty,
-        'take_pets' => $take_pets,
-        'recall_pets' => $recall_pets,
-        'usable_item' => $usable_item,
-        'usable_skill' => $usable_skill
-    ];
-    
-    // Add additional fields
-    $additionalFields = [
-        'dungeon' => $dungeon,
-        'decreaseHp' => $decreaseHp,
-        'dominationTeleport' => $dominationTeleport,
-        'ruunCastleZone' => $ruunCastleZone,
-        'interWarZone' => $interWarZone,
-        'geradBuffZone' => $geradBuffZone,
-        'growBuffZone' => $growBuffZone,
-        'interKind' => $interKind,
-        'script' => "'$script'",
-        'pngId' => $pngId
-    ];
-    
-    // Combine fields and filter to only include fields that exist in the table
-    $allFields = array_merge($basicFields, $additionalFields);
-    
-    foreach ($allFields as $field => $value) {
-        if (in_array($field, $columns)) {
-            $columnList[] = $field;
-            $valueList[] = $value;
-        }
-    }
-    
-    // Combine column and value lists
-    $columnStr = implode(', ', $columnList);
-    $valueStr = implode(', ', $valueList);
-    
-    // Create SQL query
-    $sql = "INSERT INTO mapids ($columnStr) VALUES ($valueStr)";
-    
-    if ($conn->query($sql)) {
-        return $mapid;
-    }
-    
-    error_log("Failed to create map: " . $conn->error . " in query: " . $sql);
-    return false;
-}
-
-/**
- * Delete a map
- * 
- * @param mysqli $conn Database connection
- * @param int $mapId Map ID
- * @return bool True if successful, false otherwise
- */
-function deleteMap($conn, $mapId) {
-    $mapId = (int)$mapId;
-    $sql = "DELETE FROM mapids WHERE mapid = $mapId";
-    
-    $result = $conn->query($sql);
-    
-    if (!$result) {
-        error_log("Failed to delete map: " . $conn->error . " in query: " . $sql);
-    }
-    
-    return $result;
-}
+// Removed duplicated sanitizeInput() function - use the one from config.php instead
+?>

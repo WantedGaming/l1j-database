@@ -96,7 +96,7 @@ include 'includes/admin-header.php';
             
             <div class="stat-card">
                 <div class="stat-icon">
-                    <i class="fas fa-shield"></i>
+                    <i class="fas fa-shield-alt"></i>
                 </div>
                 <div class="stat-content">
                     <div class="stat-number"><?php echo number_format($stats['armor']); ?></div>
@@ -128,6 +128,7 @@ include 'includes/admin-header.php';
     
     <!-- Database Management Cards -->
     <section class="admin-sections">
+        <h2 class="section-title mb-4">Database Management</h2>
         <div class="admin-card-grid">
             <!-- Weapons Management Card -->
             <a href="<?php echo $adminBaseUrl; ?>pages/weapons/admin-weapon-list.php" class="admin-card">
@@ -138,7 +139,7 @@ include 'includes/admin-header.php';
                     <img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/weapon.png" alt="Weapon" width="80" height="80">
                 </div>
                 <div class="admin-card-body">
-                    <div class="admin-card-count"><?php echo number_format($stats['weapons']); ?></div>
+                    <div class="admin-card-count"><?php echo number_format($stats['weapons']); ?> Items</div>
                 </div>
             </a>
             
@@ -151,7 +152,7 @@ include 'includes/admin-header.php';
                     <img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/armor.png" alt="Armor" width="80" height="80">
                 </div>
                 <div class="admin-card-body">
-                    <div class="admin-card-count"><?php echo number_format($stats['armor']); ?></div>
+                    <div class="admin-card-count"><?php echo number_format($stats['armor']); ?> Items</div>
                 </div>
             </a>
             
@@ -164,7 +165,7 @@ include 'includes/admin-header.php';
                     <img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/items.png" alt="Items" width="80" height="80">
                 </div>
                 <div class="admin-card-body">
-                    <div class="admin-card-count"><?php echo number_format($stats['items']); ?></div>
+                    <div class="admin-card-count"><?php echo number_format($stats['items']); ?> Items</div>
                 </div>
             </a>
             
@@ -177,7 +178,7 @@ include 'includes/admin-header.php';
                     <img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/monsters.png" alt="Monsters" width="80" height="80">
                 </div>
                 <div class="admin-card-body">
-                    <div class="admin-card-count"><?php echo number_format($stats['monsters']); ?></div>
+                    <div class="admin-card-count"><?php echo number_format($stats['monsters']); ?> Entries</div>
                 </div>
             </a>
             
@@ -190,7 +191,7 @@ include 'includes/admin-header.php';
                     <img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/maps.png" alt="Maps" width="80" height="80">
                 </div>
                 <div class="admin-card-body">
-                    <div class="admin-card-count"><?php echo number_format($stats['maps']); ?></div>
+                    <div class="admin-card-count"><?php echo number_format($stats['maps']); ?> Entries</div>
                 </div>
             </a>
             
@@ -203,7 +204,7 @@ include 'includes/admin-header.php';
                     <img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/magic_dolls.png" alt="Magic Dolls" width="80" height="80">
                 </div>
                 <div class="admin-card-body">
-                    <div class="admin-card-count"><?php echo number_format($stats['dolls']); ?></div>
+                    <div class="admin-card-count"><?php echo number_format($stats['dolls']); ?> Items</div>
                 </div>
             </a>
             
@@ -216,7 +217,7 @@ include 'includes/admin-header.php';
                     <img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/npc.png" alt="NPCs" width="80" height="80">
                 </div>
                 <div class="admin-card-body">
-                    <div class="admin-card-count"><?php echo number_format($stats['npcs']); ?></div>
+                    <div class="admin-card-count"><?php echo number_format($stats['npcs']); ?> Characters</div>
                 </div>
             </a>
             
@@ -229,7 +230,7 @@ include 'includes/admin-header.php';
                     <img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/skills.png" alt="Skills" width="80" height="80">
                 </div>
                 <div class="admin-card-body">
-                    <div class="admin-card-count"><?php echo number_format($stats['skills']); ?></div>
+                    <div class="admin-card-count"><?php echo number_format($stats['skills']); ?> Abilities</div>
                 </div>
             </a>
             
@@ -242,11 +243,11 @@ include 'includes/admin-header.php';
                     <img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/polymorphs.png" alt="Polymorph" width="80" height="80">
                 </div>
                 <div class="admin-card-body">
-                    <div class="admin-card-count"><?php echo number_format($stats['polymorph']); ?></div>
+                    <div class="admin-card-count"><?php echo number_format($stats['polymorph']); ?> Forms</div>
                 </div>
             </a>
-			
-			<!-- Accounts & Character Management Card -->
+            
+            <!-- Accounts & Character Management Card -->
             <a href="<?php echo $adminBaseUrl; ?>pages/accounts/account-list.php" class="admin-card">
                 <div class="admin-card-header">
                     <h2 class="admin-card-title">Accounts</h2>
@@ -255,23 +256,70 @@ include 'includes/admin-header.php';
                     <img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/accounts.png" alt="Accounts" width="80" height="80">
                 </div>
                 <div class="admin-card-body">
-                    <div class="admin-card-count"><?php echo number_format($stats['accounts']); ?></div>
+                    <div class="admin-card-count"><?php echo number_format($stats['accounts']); ?> Users</div>
                 </div>
             </a>
-			
+            
             <!-- Database Tools -->
-			<a href="<?php echo $adminBaseUrl; ?>tools/tools-index.php" class="admin-card">
-				<div class="admin-card-header">
-					<h2 class="admin-card-title">DB Tools</h2>
-				</div>
-				<div class="admin-card-img">
-					<img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/settings.png" alt="Setting" width="80" height="80">
-				</div>
-				<div class="admin-card-body">
-					<div class="admin-card-count">Database Tools</div>
-				</div>
-			</a>
-			
+            <a href="<?php echo $adminBaseUrl; ?>tools/tools-index.php" class="admin-card">
+                <div class="admin-card-header">
+                    <h2 class="admin-card-title">DB Tools</h2>
+                </div>
+                <div class="admin-card-img">
+                    <img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/settings.png" alt="Setting" width="80" height="80">
+                </div>
+                <div class="admin-card-body">
+                    <div class="admin-card-count">Database Tools</div>
+                </div>
+            </a>
+        </div>
+    </section>
+    
+    <!-- Quick Actions Section -->
+    <section class="admin-sections">
+        <h2 class="section-title mb-4">Quick Actions</h2>
+        <div class="quick-actions-container">
+            <div class="form-container">
+                <div class="form-row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <div class="alert alert-info">
+                                <div class="alert-icon">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <div>
+                                    <strong>Welcome to the admin dashboard!</strong>
+                                    <p>From here you can manage all aspects of the Lineage II database.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Quick Search</label>
+                            <div class="flex gap-2">
+                                <input type="text" class="form-control" placeholder="Search database...">
+                                <button class="btn btn-primary">
+                                    <i class="fas fa-search btn-icon"></i>
+                                    Search
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="flex gap-2">
+                                <a href="<?php echo $adminBaseUrl; ?>tools/backup.php" class="btn btn-secondary">
+                                    <i class="fas fa-database btn-icon"></i>
+                                    Backup Database
+                                </a>
+                                <a href="<?php echo $adminBaseUrl; ?>tools/maintenance.php" class="btn btn-secondary">
+                                    <i class="fas fa-wrench btn-icon"></i>
+                                    Maintenance
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 </div>

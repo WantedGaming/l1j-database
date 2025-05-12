@@ -78,7 +78,7 @@ include '../../includes/admin-header.php';
             <div class="character-header-left">
                 <div class="character-portrait-container">
                     <div class="character-portrait">
-                        <img src="<?php echo $websiteBaseUrl; ?>assets/img/placeholders/class/<?php echo $charData['Class']; ?>_<?php echo $charData['gender']; ?>.png" 
+                        <img src="<?php echo $websiteBaseUrl; ?>assets/img/placeholders/class/header/<?php echo $charData['Class']; ?>_<?php echo $charData['gender']; ?>.png" 
                             alt="<?php echo getClassName($charData['Class'], $charData['gender']); ?>">
                         
                         <div class="character-level">

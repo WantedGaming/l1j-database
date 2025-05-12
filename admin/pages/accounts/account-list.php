@@ -13,6 +13,9 @@ require_once '../../includes/account-functions.php';
 $currentAdminPage = 'accounts';
 $pageTitle = 'Account Management';
 
+// Define website base URL from admin base URL
+$websiteBaseUrl = preg_replace('/\/admin(\/.*)?$/', '/', $adminBaseUrl);
+
 // Get page number from URL, default to 1
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 if ($page < 1) $page = 1;
@@ -32,28 +35,35 @@ include '../../includes/admin-header.php';
 
 <link rel="stylesheet" href="<?php echo $adminBaseUrl; ?>assets/css/account-styles.css">
 
-<div class="container">
+<div class="page-container">
+    <!-- Breadcrumb navigation -->
+    <div class="breadcrumb">
+        <a href="<?php echo $adminBaseUrl; ?>">Dashboard</a>
+        <span class="separator">/</span>
+        <span class="current">Account Management</span>
+    </div>
+
     <!-- Enhanced Hero Section -->
     <div class="admin-hero">
         <div class="hero-header">
             <div class="admin-hero-content">
                 <h1 class="admin-hero-title">Account Management</h1>
-                <p class="admin-hero-subtitle">Manage accounts and character - <?php echo number_format($totalAccounts); ?> accounts found</p>
+                <p class="admin-hero-subtitle">Manage accounts and characters - <?php echo number_format($totalAccounts); ?> accounts found</p>
             </div>
         </div>
         
         <div class="hero-controls">
             <form action="<?php echo $adminBaseUrl; ?>pages/accounts/account-list.php" method="GET" class="hero-search-form">
                 <div class="search-input-group">
-                    <input type="text" name="search" class="form-control" placeholder="Search accounts by login or IP..." value="<?php echo htmlspecialchars($searchTerm); ?>">
-                    <button type="submit" class="btn btn-primary">
+                    <input type="text" name="search" placeholder="Search accounts by login or IP..." value="<?php echo htmlspecialchars($searchTerm); ?>">
+                    <button type="submit">
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
             </form>
             
             <div class="hero-filter-controls">
-                <select class="form-control" id="account-status-filter">
+                <select id="account-status-filter">
                     <option value="all">All Statuses</option>
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
@@ -70,83 +80,96 @@ include '../../includes/admin-header.php';
             No accounts found<?php echo !empty($searchTerm) ? ' matching "' . htmlspecialchars($searchTerm) . '"' : ''; ?>.
         </div>
     <?php else: ?>
-        <!-- Accounts Grid -->
-        <div class="account-grid">
-            <?php foreach ($accounts as $account): 
-                // Get status for this account
-                $status = getAccountStatus($account);
-                
-                // Get characters for this account
-                $characters = getAccountCharacters($conn, $account['login']);
-            ?>
-                <div class="account-card" data-account-status="<?php echo $status['class']; ?>">
-                    <div class="account-header">
-                        <h3 class="account-title"><?php echo htmlspecialchars($account['login']); ?></h3>
-                        <span class="account-status <?php echo $status['class']; ?>"><?php echo $status['label']; ?></span>
-                    </div>
-                    
-                    <div class="account-details">
-                        <!-- Modified to use a horizontal layout with both items in the same row -->
-                        <div class="account-info-row">
-                            <div class="account-info-item">
-                                <div class="account-info-label">Last Active</div>
-                                <div class="account-info-value"><?php echo formatTimeUSA($account['lastactive']); ?></div>
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Accounts Grid - Main Section -->
+            <div class="section">
+                <div class="account-grid">
+                    <?php foreach ($accounts as $account): 
+                        // Get status for this account
+                        $status = getAccountStatus($account);
+                        
+                        // Get characters for this account
+                        $characters = getAccountCharacters($conn, $account['login']);
+                    ?>
+                        <div class="account-card" data-account-status="<?php echo $status['class']; ?>">
+                            <div class="account-header">
+                                <h3 class="account-title">
+                                    <i class="fas fa-user"></i>
+                                    <?php echo htmlspecialchars($account['login']); ?>
+                                </h3>
+                                <span class="account-status <?php echo $status['class']; ?>"><?php echo $status['label']; ?></span>
                             </div>
-                            <div class="account-info-item">
-                                <div class="account-info-label">Access Level</div>
-                                <div class="account-info-value">
-                                    <span class="account-access"><?php echo getAccessLevelName($account['access_level']); ?></span>
+                            
+                            <div class="account-details">
+                                <div class="account-info-row">
+                                    <div class="account-info-item">
+                                        <div class="account-info-label">Last Active</div>
+                                        <div class="account-info-value"><?php echo formatTimeUSA($account['lastactive']); ?></div>
+                                    </div>
+                                    <div class="account-info-item">
+                                        <div class="account-info-label">Access Level</div>
+                                        <div class="account-info-value">
+                                            <span class="account-access"><?php echo getAccessLevelName($account['access_level']); ?></span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <div class="characters-section">
-                        <div class="section-header">
-                            <h4>Characters (<?php echo count($characters); ?>)</h4>
-                        </div>
-                        
-                        <?php if (empty($characters)): ?>
-                            <div class="empty-characters">
-                                No characters for this account.
+                            
+                            <div class="characters-section">
+                                <div class="section-header">
+                                    <h4>Characters (<?php echo count($characters); ?>)</h4>
+                                </div>
+                                
+                                <?php if (empty($characters)): ?>
+                                    <div class="empty-characters">
+                                        <i class="fas fa-user-slash"></i>
+                                        <span>No characters for this account.</span>
+                                    </div>
+                                <?php else: ?>
+                                    <ul class="character-list">
+                                        <?php foreach ($characters as $character): ?>
+                                            <li class="character-item">
+                                                <div class="character-level-badge">Lv.<?php echo $character['level']; ?></div>
+                                                <img src="<?php echo $websiteBaseUrl; ?>assets/img/placeholders/class/header/<?php echo $character['Class']; ?>_<?php echo $character['gender']; ?>.png" 
+                                                     alt="<?php echo getClassName($character['Class'], $character['gender']); ?>" 
+                                                     class="character-icon">
+                                                <div class="character-info">
+                                                    <div class="character-name">
+                                                        <a href="<?php echo $adminBaseUrl; ?>pages/accounts/character-detail.php?id=<?php echo $character['objid']; ?>">
+                                                            <?php echo htmlspecialchars($character['char_name']); ?>
+                                                        </a>
+                                                    </div>
+                                                    <div class="character-class">
+                                                        <?php echo getClassName($character['Class'], $character['gender']); ?>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                <?php endif; ?>
                             </div>
-                        <?php else: ?>
-                            <ul class="character-list">
-                                <?php foreach ($characters as $character): ?>
-                                    <li class="character-item">
-                                        <div class="character-level-badge"><?php echo $character['level']; ?></div>
-                                        <img src="<?php echo getClassImagePath($character['Class'], $character['gender']); ?>" 
-                                             alt="<?php echo getClassName($character['Class'], $character['gender']); ?>" 
-                                             class="character-icon">
-                                        <div class="character-info">
-                                            <div class="character-name">
-                                                <a href="<?php echo $adminBaseUrl; ?>pages/accounts/character-detail.php?id=<?php echo $character['objid']; ?>">
-                                                    <?php echo htmlspecialchars($character['char_name']); ?>
-                                                </a>
-                                                <?php /* Removed clan name display since we're not fetching it */ ?>
-                                            </div>
-                                            <div class="character-class">
-                                                <?php echo getClassName($character['Class'], $character['gender']); ?>
-                                            </div>
-                                        </div>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ul>
-                        <?php endif; ?>
-                    </div>
-                    
-                    <div class="account-ip">
-                        IP: <span class="account-ip-value"><?php echo htmlspecialchars($account['ip']); ?></span>
-                    </div>
+                            
+                            <div class="account-ip">
+                                <i class="fas fa-network-wired"></i>
+                                <span class="account-ip-value"><?php echo htmlspecialchars($account['ip']); ?></span>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
-            <?php endforeach; ?>
+                
+                <!-- Pagination -->
+                <div class="pagination-container">
+                    <div class="pagination-info">
+                        Showing <?php echo count($accounts); ?> of <?php echo number_format($totalAccounts); ?> accounts
+                    </div>
+                    <?php 
+                        $urlPattern = $adminBaseUrl . 'pages/accounts/account-list.php?page=%d' . (!empty($searchTerm) ? '&search=' . urlencode($searchTerm) : '');
+                        echo generateAdminPagination($page, $totalPages, $totalAccounts, $urlPattern);
+                    ?>
+                </div>
+            </div>
         </div>
-        
-        <!-- Pagination -->
-        <?php 
-            $urlPattern = $adminBaseUrl . 'pages/accounts/account-list.php?page=%d' . (!empty($searchTerm) ? '&search=' . urlencode($searchTerm) : '');
-            echo generateAdminPagination($page, $totalPages, $totalAccounts, $urlPattern);
-        ?>
     <?php endif; ?>
 </div>
 
