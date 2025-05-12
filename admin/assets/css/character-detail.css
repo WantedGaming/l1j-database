@@ -1,39 +1,38 @@
-/* Character Detail - Modern Redesign - No Tabs Version
+/* Character Detail - Modern Redesign
 -------------------------------------------------- */
 :root {
-  /* Use the same color scheme as admin-style.css */
+  /* Color scheme */
   --background: #030303;
   --primary: #080808;
   --secondary: #0a0a0a;
   --accent: #f94b1f;
   --accent-hover: #ff6b40;
+  --accent-muted: rgba(249, 75, 31, 0.2);
   --text: #ffffff;
   --text-muted: #a0a0a0;
+  --text-secondary: #a0a0a0;
   --success: #28a745;
   --info: #17a2b8;
   --warning: #ffc107;
   --danger: #dc3545;
-  --border-radius: 8px;
-  
-  /* Additional color variables specific to character detail */
-  --accent-muted: rgba(249, 75, 31, 0.2);
   --border-color: rgba(255, 255, 255, 0.08);
-  
-  /* Sizing variables */
+  --border-radius: 8px;
   --border-radius-sm: 4px;
   --border-radius-lg: 12px;
+  
+  /* Spacing */
   --spacing-xs: 5px;
   --spacing-sm: 10px;
   --spacing-md: 15px;
   --spacing-lg: 20px;
   --spacing-xl: 30px;
   
-  /* Animation variables */
+  /* Animation */
   --transition-fast: 0.15s ease;
   --transition-normal: 0.25s ease;
   --transition-slow: 0.4s ease;
   
-  /* Shadow variables */
+  /* Shadows */
   --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.15);
   --shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.3);
@@ -47,15 +46,13 @@
   --font-size-xl: 1.5rem;
   --font-size-xxl: 2rem;
   
-  /* Attribute colors */
+  /* Attribute and stat colors */
   --str-color: #f44336;
   --dex-color: #4caf50;
   --con-color: #ff9800;
   --int-color: #2196f3;
   --wis-color: #9c27b0;
   --cha-color: #e91e63;
-  
-  /* Stats colors */
   --hp-color: #f44336;
   --mp-color: #2196f3;
   --pvp-color: #ff9800;
@@ -148,6 +145,50 @@ body {
   color: var(--accent);
 }
 
+.section-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin: var(--spacing-lg) 0 var(--spacing-md);
+  padding-bottom: var(--spacing-xs);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text);
+}
+
+.section-title:first-child {
+  margin-top: 0;
+}
+
+/* Grid layouts */
+.content-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-lg);
+}
+
+.content-grid.two-columns {
+  grid-template-columns: 1fr 1fr;
+}
+
+.content-grid .character-overview {
+  grid-column: span 2;
+}
+
+.content-grid .buffs-card {
+  grid-column: span 1;
+}
+
+.content-grid .pvp-stats-card {
+  grid-column: span 3;
+}
+
+/* Column cards layout */
+.column-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  height: 100%;
+}
+
 /* --------------------------------
    Card Styles
 -------------------------------- */
@@ -189,59 +230,6 @@ body {
 .card-actions {
   display: flex;
   gap: var(--spacing-sm);
-}
-
-/* Grid layouts */
-.content-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--spacing-lg);
-}
-
-.content-grid.two-columns {
-  grid-template-columns: 1fr 1fr;
-}
-
-@media (max-width: 1200px) {
-  .content-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .content-grid, 
-  .content-grid.two-columns {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Span full width for certain cards */
-.content-grid .character-overview {
-  grid-column: span 2;
-}
-
-.content-grid .buffs-card {
-  grid-column: span 1;
-}
-
-.content-grid .pvp-stats-card {
-  grid-column: span 3;
-}
-
-@media (max-width: 1200px) {
-  .content-grid .character-overview,
-  .content-grid .buffs-card,
-  .content-grid .pvp-stats-card {
-    grid-column: span 2;
-  }
-}
-
-@media (max-width: 768px) {
-  .content-grid .character-overview,
-  .content-grid .buffs-card,
-  .content-grid .pvp-stats-card {
-    grid-column: span 1;
-  }
 }
 
 /* --------------------------------
@@ -430,19 +418,8 @@ body {
   min-width: 80px;
 }
 
-.stat-label {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  margin-bottom: 2px;
-}
-
-.stat-value {
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
 .stat-pill.negative .stat-value {
-  color: var(--danger-color);
+  color: var(--danger);
 }
 
 .character-header-right {
@@ -564,6 +541,55 @@ body {
 }
 
 /* --------------------------------
+   Premium Benefits Section
+-------------------------------- */
+.premium-benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--spacing-md);
+}
+
+.benefit-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.benefit-card .card-header {
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.benefit-card .card-header h3 {
+  font-size: 14px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.benefit-card .card-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+  flex-grow: 1;
+}
+
+.benefit-value {
+  font-weight: 600;
+  font-size: 16px;
+  text-align: center;
+}
+
+.benefit-value.active {
+  color: var(--success);
+}
+
+.benefit-value.inactive {
+  color: var(--text-muted);
+}
+
+/* --------------------------------
    Character Overview Styles
 -------------------------------- */
 .character-progress-bars {
@@ -607,29 +633,10 @@ body {
   background-color: var(--pvp-color);
 }
 
-.section-title {
-  font-size: var(--font-size-lg);
-  font-weight: 600;
-  margin: var(--spacing-lg) 0 var(--spacing-md);
-  padding-bottom: var(--spacing-xs);
-  border-bottom: 1px solid var(--border-color);
-  color: var(--text);
-}
-
-.section-title:first-child {
-  margin-top: 0;
-}
-
 .attributes-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--spacing-md);
-}
-
-@media (max-width: 600px) {
-  .attributes-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 
 .attribute-item {
@@ -704,12 +711,6 @@ body {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--spacing-md);
-}
-
-@media (max-width: 480px) {
-  .buffs-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 .buff-item {
@@ -797,74 +798,61 @@ body {
 }
 
 /* --------------------------------
-   Stats Section Styles
+   Account Characters & Clan Card Shared Styles
 -------------------------------- */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--spacing-xl);
-}
-
-@media (max-width: 768px) {
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.stats-section {
-  margin-bottom: var(--spacing-lg);
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.stat-row {
+.account-chars-card,
+.clan-details-card {
   display: flex;
-  justify-content: space-between;
-  padding: var(--spacing-sm) 0;
-  border-bottom: 1px solid var(--border-color);
+  flex-direction: column;
+  height: 100%;
 }
 
-.stat-row:last-child {
-  border-bottom: none;
+.account-chars-card .card-body {
+  padding: var(--spacing-md);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: visible; /* No scrollbar for character list */
 }
 
-.stat-label {
-  color: var(--text-secondary);
-}
-
-.stat-value {
-  font-weight: 500;
-}
-
-.stat-value a {
-  color: var(--accent);
-  text-decoration: none;
-  transition: color var(--transition-fast);
-}
-
-.stat-value a:hover {
-  text-decoration: underline;
+.clan-details-card .card-body {
+  padding: var(--spacing-md);
+  overflow-y: auto; /* Allow scrolling if content is too large */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 /* --------------------------------
-   Account Characters Section Styles
+   Account Characters Section
 -------------------------------- */
 .account-characters-list {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm); /* Compact layout */
 }
 
 .character-list-item {
   display: grid;
   grid-template-columns: 70px 1fr auto auto;
   gap: var(--spacing-md);
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm); /* Compact padding */
   background-color: rgba(0, 0, 0, 0.1);
   border-radius: var(--border-radius-sm);
   align-items: center;
   transition: background-color var(--transition-fast);
   border: 1px solid var(--border-color);
+  min-height: 70px; /* Consistent height */
+}
+
+.character-list-item.empty-slot {
+  background-color: rgba(0, 0, 0, 0.05);
+  border: 1px dashed var(--border-color);
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  grid-template-columns: 1fr;
+  opacity: 0.7;
 }
 
 .character-list-item:hover {
@@ -957,23 +945,6 @@ body {
   font-weight: 500;
 }
 
-.status-badge {
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: 50px;
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-}
-
-.status-badge.online {
-  background-color: rgba(40, 167, 69, 0.2);
-  color: var(--success);
-}
-
-.status-badge.offline {
-  background-color: rgba(158, 158, 158, 0.2);
-  color: var(--text-muted);
-}
-
 .character-list-actions {
   display: flex;
   align-items: center;
@@ -1002,13 +973,28 @@ body {
 }
 
 /* --------------------------------
-   Clan Section Styles
+   Status Badges
 -------------------------------- */
-.clan-details-card,
-.clan-contribution-card {
-  height: 100%;
+.status-badge {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 50px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
 }
 
+.status-badge.online {
+  background-color: rgba(40, 167, 69, 0.2);
+  color: var(--success);
+}
+
+.status-badge.offline {
+  background-color: rgba(158, 158, 158, 0.2);
+  color: var(--text-muted);
+}
+
+/* --------------------------------
+   Clan Information Styles
+-------------------------------- */
 .clan-info {
   display: flex;
   flex-direction: column;
@@ -1079,7 +1065,8 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: var(--spacing-md);
-  margin-top: var(--spacing-md);
+  margin-top: auto; /* Push to bottom */
+  padding-top: var(--spacing-md);
 }
 
 .btn-outline {
@@ -1100,6 +1087,64 @@ body {
 .btn-outline:hover {
   background-color: var(--accent);
   color: white;
+}
+
+/* --------------------------------
+   Tabbed Card Styles
+-------------------------------- */
+.tabbed-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.tabbed-card .tabs-container {
+  margin-left: auto;
+}
+
+.tabbed-card .tab-buttons {
+  display: flex;
+  gap: 2px;
+}
+
+.tabbed-card .tab-button {
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
+  padding: var(--spacing-xs) var(--spacing-md);
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
+  font-size: 13px;
+  transition: all var(--transition-fast);
+}
+
+.tabbed-card .tab-button.active {
+  background-color: var(--accent);
+  color: white;
+}
+
+.tabbed-card .tab-content-container {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.tabbed-card .tab-content {
+  display: none;
+  flex-grow: 1;
+}
+
+.tabbed-card .tab-content.active {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* --------------------------------
+   Contribution Analysis Styles
+-------------------------------- */
+.contribution-analysis {
+  padding: var(--spacing-md) 0;
 }
 
 .chart-placeholder {
@@ -1146,6 +1191,28 @@ body {
   font-size: var(--font-size-lg);
 }
 
+.contribution-history {
+  margin-top: var(--spacing-lg);
+}
+
+.history-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.history-placeholder i {
+  font-size: 24px;
+  opacity: 0.5;
+}
+
 .clan-empty-state {
   display: flex;
   flex-direction: column;
@@ -1175,16 +1242,14 @@ body {
 /* --------------------------------
    Location Section Styles
 -------------------------------- */
-.location-info {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-lg);
+.location-card .card-body {
+  padding: var(--spacing-md);
 }
 
-@media (max-width: 768px) {
-  .location-info {
-    grid-template-columns: 1fr;
-  }
+.location-card .location-stats {
+  margin: var(--spacing-md) 0;
+  border-top: 1px solid var(--border-color);
+  padding-top: var(--spacing-md);
 }
 
 .location-map {
@@ -1260,12 +1325,6 @@ body {
   font-weight: 600;
 }
 
-.location-details {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
-}
-
 .location-name {
   padding: var(--spacing-md);
   background-color: rgba(0, 0, 0, 0.15);
@@ -1283,16 +1342,41 @@ body {
   color: var(--text-secondary);
 }
 
-.location-stats {
+/* --------------------------------
+   Stat Rows
+-------------------------------- */
+.stat-row {
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-  background-color: rgba(0, 0, 0, 0.15);
-  padding: var(--spacing-md);
-  border-radius: var(--border-radius-sm);
-  border: 1px solid var(--border-color);
+  justify-content: space-between;
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--border-color);
 }
 
+.stat-row:last-child {
+  border-bottom: none;
+}
+
+.stat-label {
+  color: var(--text-secondary);
+}
+
+.stat-value {
+  font-weight: 500;
+}
+
+.stat-value a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.stat-value a:hover {
+  text-decoration: underline;
+}
+
+/* --------------------------------
+   Button Styles
+-------------------------------- */
 .teleport-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1431,174 +1515,60 @@ body {
 /* --------------------------------
    Utility Classes
 -------------------------------- */
-.text-center {
-  text-align: center;
-}
-
-.mb-1 {
-  margin-bottom: var(--spacing-xs);
-}
-
-.mb-2 {
-  margin-bottom: var(--spacing-sm);
-}
-
-.mb-3 {
-  margin-bottom: var(--spacing-md);
-}
-
-.mb-4 {
-  margin-bottom: var(--spacing-lg);
-}
-
-.mb-5 {
-  margin-bottom: var(--spacing-xl);
-}
-
-.mt-1 {
-  margin-top: var(--spacing-xs);
-}
-
-.mt-2 {
-  margin-top: var(--spacing-sm);
-}
-
-.mt-3 {
-  margin-top: var(--spacing-md);
-}
-
-.mt-4 {
-  margin-top: var(--spacing-lg);
-}
-
-.mt-5 {
-  margin-top: var(--spacing-xl);
-}
-
-.flex {
-  display: flex;
-}
-
-.flex-col {
-  flex-direction: column;
-}
-
-.items-center {
-  align-items: center;
-}
-
-.justify-between {
-  justify-content: space-between;
-}
-
-.gap-1 {
-  gap: var(--spacing-xs);
-}
-
-.gap-2 {
-  gap: var(--spacing-sm);
-}
-
-.gap-3 {
-  gap: var(--spacing-md);
-}
-
-.gap-4 {
-  gap: var(--spacing-lg);
-}
-
-.w-full {
-  width: 100%;
-}
-
-.font-bold {
-  font-weight: 700;
-}
-
-.font-semibold {
-  font-weight: 600;
-}
-
-.font-medium {
-  font-weight: 500;
-}
-
-.text-sm {
-  font-size: var(--font-size-sm);
-}
-
-.text-lg {
-  font-size: var(--font-size-lg);
-}
-
-.text-xl {
-  font-size: var(--font-size-xl);
-}
-
-.text-2xl {
-  font-size: var(--font-size-xxl);
-}
-
-.text-accent {
-  color: var(--accent);
-}
-
-.text-success {
-  color: var(--success);
-}
-
-.text-warning {
-  color: var(--warning);
-}
-
-.text-danger {
-  color: var(--danger);
-}
-
-.text-muted {
-  color: var(--text-muted);
-}
-
-.border-accent {
-  border-color: var(--accent);
-}
-
-.bg-accent {
-  background-color: var(--accent);
-}
-
-.bg-accent-muted {
-  background-color: var(--accent-muted);
-}
-
-.rounded {
-  border-radius: var(--border-radius-sm);
-}
-
-.rounded-md {
-  border-radius: var(--border-radius);
-}
-
-.rounded-lg {
-  border-radius: var(--border-radius-lg);
-}
-
-.shadow {
-  box-shadow: var(--shadow);
-}
-
-.shadow-lg {
-  box-shadow: var(--shadow-lg);
-}
-
-.transition {
-  transition: all var(--transition-normal);
-}
+.text-center { text-align: center; }
+.mb-1 { margin-bottom: var(--spacing-xs); }
+.mb-2 { margin-bottom: var(--spacing-sm); }
+.mb-3 { margin-bottom: var(--spacing-md); }
+.mb-4 { margin-bottom: var(--spacing-lg); }
+.mb-5 { margin-bottom: var(--spacing-xl); }
+.mt-1 { margin-top: var(--spacing-xs); }
+.mt-2 { margin-top: var(--spacing-sm); }
+.mt-3 { margin-top: var(--spacing-md); }
+.mt-4 { margin-top: var(--spacing-lg); }
+.mt-5 { margin-top: var(--spacing-xl); }
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-1 { gap: var(--spacing-xs); }
+.gap-2 { gap: var(--spacing-sm); }
+.gap-3 { gap: var(--spacing-md); }
+.gap-4 { gap: var(--spacing-lg); }
+.w-full { width: 100%; }
+.font-bold { font-weight: 700; }
+.font-semibold { font-weight: 600; }
+.font-medium { font-weight: 500; }
+.text-sm { font-size: var(--font-size-sm); }
+.text-lg { font-size: var(--font-size-lg); }
+.text-xl { font-size: var(--font-size-xl); }
+.text-2xl { font-size: var(--font-size-xxl); }
+.text-accent { color: var(--accent); }
+.text-success { color: var(--success); }
+.text-warning { color: var(--warning); }
+.text-danger { color: var(--danger); }
+.text-muted { color: var(--text-muted); }
+.border-accent { border-color: var(--accent); }
+.bg-accent { background-color: var(--accent); }
+.bg-accent-muted { background-color: var(--accent-muted); }
+.rounded { border-radius: var(--border-radius-sm); }
+.rounded-md { border-radius: var(--border-radius); }
+.rounded-lg { border-radius: var(--border-radius-lg); }
+.shadow { box-shadow: var(--shadow); }
+.shadow-lg { box-shadow: var(--shadow-lg); }
+.transition { transition: all var(--transition-normal); }
 
 /* --------------------------------
    Responsive Adjustments
 -------------------------------- */
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
+  .premium-benefits-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .content-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
   .character-header {
     grid-template-columns: 120px 1fr;
   }
@@ -1622,7 +1592,32 @@ body {
   }
 }
 
+@media (max-width: 768px) {
+  .premium-benefits-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .content-grid.two-columns,
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .content-grid .character-overview,
+  .content-grid .buffs-card,
+  .content-grid .pvp-stats-card {
+    grid-column: span 1;
+  }
+  
+  .attributes-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 480px) {
+  .premium-benefits-grid {
+    grid-template-columns: 1fr;
+  }
+  
   .character-header {
     grid-template-columns: 1fr;
     gap: var(--spacing-md);
@@ -1645,11 +1640,6 @@ body {
     grid-column: span 1;
   }
   
-  .content-grid,
-  .content-grid.two-columns {
-    grid-template-columns: 1fr;
-  }
-  
   .character-list-item {
     grid-template-columns: 50px 1fr;
     gap: var(--spacing-sm);
@@ -1667,5 +1657,9 @@ body {
   
   .character-list-actions {
     justify-content: center;
+  }
+  
+  .buffs-grid {
+    grid-template-columns: 1fr;
   }
 }

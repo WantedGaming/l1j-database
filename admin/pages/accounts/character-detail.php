@@ -195,6 +195,120 @@ include '../../includes/admin-header.php';
             </div>
         </div>
 
+        <!-- Premium Benefits Section -->
+        <div class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-gem"></i> Premium Benefits</h2>
+            </div>
+            
+            <div class="premium-benefits-grid">
+                <!-- Bonus Status Card -->
+                <div class="card benefit-card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-star"></i> Bonus Status</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="benefit-value <?php echo $charData['BonusStatus'] ? 'active' : 'inactive'; ?>">
+                            <?php echo $charData['BonusStatus'] ? 'Active' : 'Inactive'; ?>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Elixir Status Card -->
+                <div class="card benefit-card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-wine-glass-alt"></i> Elixir Status</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="benefit-value <?php echo $charData['ElixirStatus'] ? 'active' : 'inactive'; ?>">
+                            <?php echo $charData['ElixirStatus'] ? 'Active' : 'Inactive'; ?>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Ein Point Card -->
+                <div class="card benefit-card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-pray"></i> Ein Point</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="benefit-value">
+                            <?php echo $charData['EinPoint']; ?> points
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tam End Time Card -->
+                <div class="card benefit-card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-hourglass-half"></i> Tam End Time</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="benefit-value">
+                            <?php 
+                            if ($charData['TamEndTime']) {
+                                $timestamp = strtotime($charData['TamEndTime']);
+                                if ($timestamp > time()) {
+                                    echo formatTimeRemaining($timestamp - time()) . ' remaining';
+                                } else {
+                                    echo 'Expired (' . date('M d, Y H:i', $timestamp) . ')';
+                                }
+                            } else {
+                                echo 'Not active';
+                            }
+                            ?>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- TOPAZ Time Card -->
+                <div class="card benefit-card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-gem"></i> TOPAZ Time</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="benefit-value">
+                            <?php 
+                            if ($charData['TOPAZTime']) {
+                                $timestamp = strtotime($charData['TOPAZTime']);
+                                if ($timestamp > time()) {
+                                    echo formatTimeRemaining($timestamp - time()) . ' remaining';
+                                } else {
+                                    echo 'Expired (' . date('M d, Y H:i', $timestamp) . ')';
+                                }
+                            } else {
+                                echo 'Not active';
+                            }
+                            ?>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Ein Grace Time Card -->
+                <div class="card benefit-card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-shield-alt"></i> Ein Grace Time</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="benefit-value">
+                            <?php 
+                            if ($charData['EinhasadGraceTime']) {
+                                $timestamp = strtotime($charData['EinhasadGraceTime']);
+                                if ($timestamp > time()) {
+                                    echo formatTimeRemaining($timestamp - time()) . ' remaining';
+                                } else {
+                                    echo 'Expired (' . date('M d, Y H:i', $timestamp) . ')';
+                                }
+                            } else {
+                                echo 'Not active';
+                            }
+                            ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Character Overview Section -->
         <div class="section">
             <div class="section-header">
@@ -443,299 +557,128 @@ include '../../includes/admin-header.php';
             </div>
         </div>
         
-        <!-- Detailed Statistics Section -->
+        <!-- Character Details and Location Section (New Layout) -->
         <div class="section">
-            <div class="section-header">
-                <h2><i class="fas fa-chart-bar"></i> Premium Benefits</h2>
-            </div>
-            
-            <div class="card stats-card">
-                <div class="card-body">
-                    <div class="stats-section">
-                        <div class="stat-row">
-                            <div class="stat-label">Bonus Status</div>
-                            <div class="stat-value"><?php echo $charData['BonusStatus'] ? 'Active' : 'Inactive'; ?></div>
-                        </div>
-                        <div class="stat-row">
-                            <div class="stat-label">Elixir Status</div>
-                            <div class="stat-value"><?php echo $charData['ElixirStatus'] ? 'Active' : 'Inactive'; ?></div>
-                        </div>
-                        <div class="stat-row">
-                            <div class="stat-label">Ein Point</div>
-                            <div class="stat-value"><?php echo $charData['EinPoint']; ?></div>
-                        </div>
-                        <div class="stat-row">
-                            <div class="stat-label">Tam End Time</div>
-                            <div class="stat-value">
-                                <?php echo $charData['TamEndTime'] ? date('M d, Y H:i', strtotime($charData['TamEndTime'])) : 'N/A'; ?>
-                            </div>
-                        </div>
-                        <div class="stat-row">
-                            <div class="stat-label">TOPAZ Time</div>
-                            <div class="stat-value">
-                                <?php echo $charData['TOPAZTime'] ? date('M d, Y H:i', strtotime($charData['TOPAZTime'])) : 'N/A'; ?>
-                            </div>
-                        </div>
-                        <div class="stat-row">
-                            <div class="stat-label">Ein Grace Time</div>
-                            <div class="stat-value">
-                                <?php echo $charData['EinhasadGraceTime'] ? date('M d, Y H:i', strtotime($charData['EinhasadGraceTime'])) : 'N/A'; ?>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Account Characters Section -->
-        <div class="section">
-            <div class="section-header">
-                <h2><i class="fas fa-users"></i> Account Characters</h2>
-            </div>
-            
-            <div class="card account-chars-card">
-                <div class="card-header">
-                    <h3 class="card-title">Other Characters on This Account</h3>
-                    <div class="card-actions">
-                        <a href="account-detail.php?name=<?php echo urlencode($accountName); ?>" class="btn-outline">
-                            <i class="fas fa-user"></i> View Account Details
-                        </a>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="account-characters-list">
-                        <?php foreach($altCharacters as $altChar): ?>
-                        <div class="character-list-item <?php echo ($altChar['objid'] == $charId) ? 'current' : ''; ?>">
-                            <div class="character-list-avatar">
-                                <img src="<?php echo $websiteBaseUrl; ?>assets/img/placeholders/class/header/<?php echo $altChar['Class']; ?>_<?php echo $altChar['gender']; ?>.png" 
-                                     alt="<?php echo getClassName($altChar['Class'], $altChar['gender']); ?>">
-                            </div>
-                            
-                            <div class="character-list-info">
-                                <div class="character-list-name">
-                                    <?php echo htmlspecialchars($altChar['char_name']); ?>
-                                    <?php if ($altChar['objid'] == $charId): ?>
-                                    <span class="current-char-badge">Current</span>
-                                    <?php endif; ?>
-                                </div>
-                                
-                                <div class="character-list-class">
-                                    <?php echo getClassName($altChar['Class'], $altChar['gender']); ?>
-                                </div>
-                                
-                                <div class="character-list-clan">
-                                    <?php echo !empty($altChar['Clanname']) ? htmlspecialchars($altChar['Clanname']) : 'No Clan'; ?>
-                                </div>
-                            </div>
-                            
-                            <div class="character-list-stats">
-                                <div class="list-stat">
-                                    <span class="list-stat-label">Level</span>
-                                    <span class="list-stat-value"><?php echo $altChar['level']; ?></span>
-                                </div>
-                                
-                                <div class="list-stat">
-                                    <span class="list-stat-label">PVP</span>
-                                    <span class="list-stat-value"><?php echo $altChar['PC_Kill']; ?>/<?php echo $altChar['PC_Death']; ?></span>
-                                </div>
-                                
-                                <div class="list-stat">
-                                    <span class="list-stat-label">Status</span>
-                                    <span class="list-stat-value status-badge <?php echo $altChar['OnlineStatus'] ? 'online' : 'offline'; ?>">
-                                        <?php echo $altChar['OnlineStatus'] ? 'Online' : 'Offline'; ?>
-                                    </span>
-                                </div>
-                            </div>
-                            
-                            <div class="character-list-actions">
-                                <?php if ($altChar['objid'] != $charId): ?>
-                                <a href="character-detail.php?id=<?php echo $altChar['objid']; ?>" class="btn-outline-small">
-                                    View
-                                </a>
-                                <?php else: ?>
-                                <span class="current-indicator">Current</span>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Clan Information Section -->
-        <div class="section">
-            <div class="section-header">
-                <h2><i class="fas fa-shield-alt"></i> Clan Information</h2>
-            </div>
-            
-            <?php if ($charData['ClanID']): ?>
             <div class="content-grid two-columns">
-                <!-- Clan Information -->
-                <div class="card clan-details-card">
+                <!-- COLUMN 1: Account Characters -->
+                <div class="card account-chars-card">
                     <div class="card-header">
-                        <h3 class="card-title">Clan Details</h3>
+                        <h3 class="card-title">Account Characters</h3>
                     </div>
                     <div class="card-body">
-                        <div class="clan-info">
-                            <div class="clan-banner">
-                                <div class="clan-emblem">
-                                    <i class="fas fa-shield-alt"></i>
-                                </div>
-                                <div class="clan-name-container">
-                                    <h3 class="clan-name"><?php echo htmlspecialchars($charData['Clanname']); ?></h3>
-                                    <div class="clan-id">ID: <?php echo $charData['ClanID']; ?></div>
-                                </div>
-                            </div>
-                            
-                            <div class="clan-stats-grid">
-                                <div class="clan-stat-item">
-                                    <div class="clan-stat-label">Character Rank</div>
-                                    <div class="clan-stat-value"><?php echo getClanRankName($charData['ClanRank']); ?></div>
+                        <div class="account-characters-list">
+                            <?php 
+                            // Display existing characters first
+                            $charactersShown = 0;
+                            foreach($altCharacters as $altChar): 
+                                $charactersShown++;
+                            ?>
+                            <div class="character-list-item <?php echo ($altChar['objid'] == $charId) ? 'current' : ''; ?>">
+                                <div class="character-list-avatar">
+                                    <img src="<?php echo $websiteBaseUrl; ?>assets/img/placeholders/class/header/<?php echo $altChar['Class']; ?>_<?php echo $altChar['gender']; ?>.png" 
+                                         alt="<?php echo getClassName($altChar['Class'], $altChar['gender']); ?>">
                                 </div>
                                 
-                                <div class="clan-stat-item">
-                                    <div class="clan-stat-label">Joined On</div>
-                                    <div class="clan-stat-value">
-                                        <?php echo $charData['pledgeJoinDate'] ? date('M d, Y', intval($charData['pledgeJoinDate'])) : 'Unknown'; ?>
-                                    </div>
-                                </div>
-                                
-                                <div class="clan-stat-item">
-                                    <div class="clan-stat-label">Rank Since</div>
-                                    <div class="clan-stat-value">
-                                        <?php echo $charData['pledgeRankDate'] ? date('M d, Y', intval($charData['pledgeRankDate'])) : 'Unknown'; ?>
-                                    </div>
-                                </div>
-                                
-                                <div class="clan-stat-item">
-                                    <div class="clan-stat-label">Contribution</div>
-                                    <div class="clan-stat-value"><?php echo number_format($charData['ClanContribution']); ?></div>
-                                </div>
-                                
-                                <div class="clan-stat-item">
-                                    <div class="clan-stat-label">Weekly Contribution</div>
-                                    <div class="clan-stat-value"><?php echo number_format($charData['ClanWeekContribution']); ?></div>
-                                </div>
-                                
-                                <div class="clan-stat-item">
-                                    <div class="clan-stat-label">Clan Title</div>
-                                    <div class="clan-stat-value"><?php echo htmlspecialchars($charData['Title'] ?: 'None'); ?></div>
-                                </div>
-                            </div>
-                            
-                            <div class="clan-actions">
-                                <button class="btn-outline">
-                                    <i class="fas fa-users"></i> View Members
-                                </button>
-                                
-                                <button class="btn-outline">
-                                    <i class="fas fa-scroll"></i> Clan History
-                                </button>
-                                
-                                <button class="btn-outline">
-                                    <i class="fas fa-crown"></i> Clan Hierarchy
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Clan Contribution -->
-                <div class="card clan-contribution-card">
-                    <div class="card-header">
-                        <h3 class="card-title">Contribution Analysis</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="contribution-chart">
-                            <div class="chart-placeholder">
-                                <i class="fas fa-chart-bar"></i>
-                                <span>Contribution chart will be displayed here</span>
-                            </div>
-                        </div>
-                        
-                        <div class="contribution-stats">
-                            <div class="contribution-stat">
-                                <div class="contribution-stat-label">Weekly Average</div>
-                                <div class="contribution-stat-value">
-                                    <?php 
-                                    // Calculate estimated weekly average if data is available
-                                    if ($charData['pledgeJoinDate'] && $charData['ClanContribution'] > 0) {
-                                        $weeksInClan = max(1, floor((time() - $charData['pledgeJoinDate']) / 604800));
-                                        $weeklyAvg = round($charData['ClanContribution'] / $weeksInClan);
-                                        echo number_format($weeklyAvg);
-                                    } else {
-                                        echo 'N/A';
-                                    }
-                                    ?>
-                                </div>
-                            </div>
-                            
-                            <div class="contribution-stat">
-                                <div class="contribution-stat-label">Current Week</div>
-                                <div class="contribution-stat-value"><?php echo number_format($charData['ClanWeekContribution']); ?></div>
-                            </div>
-                            
-                            <div class="contribution-stat">
-                                <div class="contribution-stat-label">All-Time</div>
-                                <div class="contribution-stat-value"><?php echo number_format($charData['ClanContribution']); ?></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <?php else: ?>
-            <div class="clan-empty-state">
-                <div class="empty-state-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <h3>No Clan Affiliation</h3>
-                <p>This character is not a member of any clan.</p>
-            </div>
-            <?php endif; ?>
-        </div>
-        
-        <!-- Location Information Section -->
-        <div class="section">
-            <div class="section-header">
-                <h2><i class="fas fa-map-marker-alt"></i> Location Information</h2>
-            </div>
-            
-            <div class="card location-card">
-                <div class="card-body">
-                    <div class="location-info">
-                        <div class="location-map">
-                            <div class="map-container">
-                                <div class="map-overlay">
-                                    <div class="map-placeholder">
-                                        <i class="fas fa-map-marked-alt"></i>
+                                <div class="character-list-info">
+                                    <div class="character-list-name">
+                                        <?php echo htmlspecialchars($altChar['char_name']); ?>
+                                        <?php if ($altChar['objid'] == $charId): ?>
+                                        <span class="current-char-badge">Current</span>
+                                        <?php endif; ?>
                                     </div>
                                     
-                                    <div class="map-marker" style="left: <?php echo min(95, max(5, ($charData['LocX'] / 32768) * 100)); ?>%; top: <?php echo min(95, max(5, ($charData['LocY'] / 32768) * 100)); ?>%;">
-                                        <i class="fas fa-map-marker-alt"></i>
+                                    <div class="character-list-class">
+                                        <?php echo getClassName($altChar['Class'], $altChar['gender']); ?>
+                                    </div>
+                                    
+                                    <div class="character-list-clan">
+                                        <?php echo !empty($altChar['Clanname']) ? htmlspecialchars($altChar['Clanname']) : 'No Clan'; ?>
+                                    </div>
+                                </div>
+                                
+                                <div class="character-list-stats">
+                                    <div class="list-stat">
+                                        <span class="list-stat-label">Level</span>
+                                        <span class="list-stat-value"><?php echo $altChar['level']; ?></span>
+                                    </div>
+                                    
+                                    <div class="list-stat">
+                                        <span class="list-stat-label">PVP</span>
+                                        <span class="list-stat-value"><?php echo $altChar['PC_Kill']; ?>/<?php echo $altChar['PC_Death']; ?></span>
+                                    </div>
+                                    
+                                    <div class="list-stat">
+                                        <span class="list-stat-label">Status</span>
+                                        <span class="list-stat-value status-badge <?php echo $altChar['OnlineStatus'] ? 'online' : 'offline'; ?>">
+                                            <?php echo $altChar['OnlineStatus'] ? 'Online' : 'Offline'; ?>
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="character-list-actions">
+                                    <?php if ($altChar['objid'] != $charId): ?>
+                                    <a href="character-detail.php?id=<?php echo $altChar['objid']; ?>" class="btn-outline-small">
+                                        View
+                                    </a>
+                                    <?php else: ?>
+                                    <span class="current-indicator">Current</span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                            
+                            <?php 
+                            // Add empty slots to fill up to 10 total
+                            $emptySlots = 10 - $charactersShown;
+                            for ($i = 0; $i < $emptySlots; $i++): 
+                            ?>
+                            <div class="character-list-item empty-slot">
+                                <div>Character Slot <?php echo $charactersShown + $i + 1; ?> - Empty</div>
+                            </div>
+                            <?php endfor; ?>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COLUMN 2: Map and Clan Information -->
+                <div class="column-cards">
+                    <!-- Map Location Card -->
+                    <div class="card location-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Location Information</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="location-map">
+                                <div class="map-container">
+                                    <div class="map-overlay">
+                                        <div class="map-placeholder">
+                                            <i class="fas fa-map-marked-alt"></i>
+                                        </div>
+                                        
+                                        <div class="map-marker" style="left: <?php echo min(95, max(5, ($charData['LocX'] / 32768) * 100)); ?>%; top: <?php echo min(95, max(5, ($charData['LocY'] / 32768) * 100)); ?>%;">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="location-coordinates">
+                                    <div class="coordinate-display">
+                                        <div class="coordinate-label">X:</div>
+                                        <div class="coordinate-value"><?php echo $charData['LocX']; ?></div>
+                                    </div>
+                                    
+                                    <div class="coordinate-display">
+                                        <div class="coordinate-label">Y:</div>
+                                        <div class="coordinate-value"><?php echo $charData['LocY']; ?></div>
+                                    </div>
+                                    
+                                    <div class="coordinate-display">
+                                        <div class="coordinate-label">Map:</div>
+                                        <div class="coordinate-value"><?php echo $charData['MapID']; ?></div>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div class="location-coordinates">
-                                <div class="coordinate-display">
-                                    <div class="coordinate-label">X:</div>
-                                    <div class="coordinate-value"><?php echo $charData['LocX']; ?></div>
-                                </div>
-                                
-                                <div class="coordinate-display">
-                                    <div class="coordinate-label">Y:</div>
-                                    <div class="coordinate-value"><?php echo $charData['LocY']; ?></div>
-                                </div>
-                                
-                                <div class="coordinate-display">
-                                    <div class="coordinate-label">Map:</div>
-                                    <div class="coordinate-value"><?php echo $charData['MapID']; ?></div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="location-details">
                             <div class="location-name">
                                 <h3><?php echo $mapName; ?></h3>
                                 <div class="map-id">Map ID: <?php echo $charData['MapID']; ?></div>
@@ -771,11 +714,74 @@ include '../../includes/admin-header.php';
                                 <button class="btn-primary" onclick="openModal('teleportModal')">
                                     <i class="fas fa-map-marker-alt"></i> Teleport Character
                                 </button>
-                                
-                                <button class="btn-outline">
-                                    <i class="fas fa-history"></i> Location History
-                                </button>
                             </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Clan Information Card -->
+                    <div class="card clan-details-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Clan Information</h3>
+                        </div>
+                        
+                        <div class="card-body">
+                            <?php if ($charData['ClanID']): ?>
+                            <div class="clan-info">
+                                <div class="clan-banner">
+                                    <div class="clan-emblem">
+                                        <i class="fas fa-shield-alt"></i>
+                                    </div>
+                                    <div class="clan-name-container">
+                                        <h3 class="clan-name"><?php echo htmlspecialchars($charData['Clanname']); ?></h3>
+                                        <div class="clan-id">ID: <?php echo $charData['ClanID']; ?></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="clan-stats-grid">
+                                    <div class="clan-stat-item">
+                                        <div class="clan-stat-label">Character Rank</div>
+                                        <div class="clan-stat-value"><?php echo getClanRankName($charData['ClanRank']); ?></div>
+                                    </div>
+                                    
+                                    <div class="clan-stat-item">
+                                        <div class="clan-stat-label">Joined On</div>
+                                        <div class="clan-stat-value">
+                                            <?php echo $charData['pledgeJoinDate'] ? date('M d, Y', intval($charData['pledgeJoinDate'])) : 'Unknown'; ?>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="clan-stat-item">
+                                        <div class="clan-stat-label">Rank Since</div>
+                                        <div class="clan-stat-value">
+                                            <?php echo $charData['pledgeRankDate'] ? date('M d, Y', intval($charData['pledgeRankDate'])) : 'Unknown'; ?>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="clan-stat-item">
+                                        <div class="clan-stat-label">Contribution</div>
+                                        <div class="clan-stat-value"><?php echo number_format($charData['ClanContribution']); ?></div>
+                                    </div>
+                                    
+                                    <div class="clan-stat-item">
+                                        <div class="clan-stat-label">Weekly Contribution</div>
+                                        <div class="clan-stat-value"><?php echo number_format($charData['ClanWeekContribution']); ?></div>
+                                    </div>
+                                    
+                                    <div class="clan-stat-item">
+                                        <div class="clan-stat-label">Clan Title</div>
+                                        <div class="clan-stat-value"><?php echo htmlspecialchars($charData['Title'] ?: 'None'); ?></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php else: ?>
+                            <div class="clan-empty-state">
+                                <div class="empty-state-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <h3>No Clan Affiliation</h3>
+                                <p>This character is not a member of any clan.</p>
+                            </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

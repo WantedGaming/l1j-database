@@ -23,60 +23,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize map functionality with a slight delay
     setTimeout(initMapInteraction, 500);
+    
+    // Initialize equal heights for the two-column layout
+    initEqualHeights();
 });
-
-/**
- * Initialize tab navigation
- */
-function initTabs() {
-    const tabButtons = document.querySelectorAll('.tab-button');
-    const tabContents = document.querySelectorAll('.tab-content');
-    
-    // Add click event to each tab button
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            // Remove active class from all buttons and contents
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            tabContents.forEach(content => content.classList.remove('active'));
-            
-            // Add active class to clicked button
-            button.classList.add('active');
-            
-            // Show corresponding tab content
-            const tabId = button.getAttribute('data-tab');
-            const tabContent = document.getElementById(`${tabId}-tab`);
-            
-            if (tabContent) {
-                tabContent.classList.add('active');
-                console.log(`Activated tab: ${tabId}`);
-            } else {
-                console.error(`Tab content not found: ${tabId}-tab`);
-            }
-            
-            // Store active tab in local storage for persistence
-            localStorage.setItem('activeCharacterTab', tabId);
-        });
-    });
-    
-    // Check if there's a stored active tab
-    const activeTab = localStorage.getItem('activeCharacterTab');
-    if (activeTab) {
-        const storedTabButton = document.querySelector(`.tab-button[data-tab="${activeTab}"]`);
-        if (storedTabButton) {
-            storedTabButton.click();
-        } else {
-            // If stored tab doesn't exist, default to first tab
-            if (tabButtons.length > 0) {
-                tabButtons[0].click();
-            }
-        }
-    } else {
-        // Default to first tab if no stored preference
-        if (tabButtons.length > 0) {
-            tabButtons[0].click();
-        }
-    }
-}
 
 /**
  * Initialize dropdown menus
@@ -245,163 +195,165 @@ function initStatHoverEffects() {
  */
 function initPlaceholderCharts() {
     // Check if chart container exists
-    const chartContainer = document.querySelector('.contribution-chart');
-    if (!chartContainer) return;
+    const chartContainers = document.querySelectorAll('.contribution-chart');
+    if (chartContainers.length === 0) return;
     
-    // Create canvas element
-    const canvas = document.createElement('canvas');
-    canvas.width = chartContainer.clientWidth;
-    canvas.height = 200;
-    canvas.style.width = '100%';
-    canvas.style.height = '200px';
-    
-    // Replace placeholder with canvas
-    chartContainer.innerHTML = '';
-    chartContainer.appendChild(canvas);
-    
-    // Get context
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    
-    // Draw simple chart background
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw grid lines
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-    ctx.lineWidth = 1;
-    
-    // Horizontal grid lines
-    for (let i = 0; i < 5; i++) {
-        const y = 40 + i * 30;
-        ctx.beginPath();
-        ctx.moveTo(30, y);
-        ctx.lineTo(canvas.width - 20, y);
-        ctx.stroke();
-    }
-    
-    // Vertical grid lines
-    for (let i = 0; i < 7; i++) {
-        const x = 50 + i * ((canvas.width - 70) / 6);
-        ctx.beginPath();
-        ctx.moveTo(x, 30);
-        ctx.lineTo(x, 180);
-        ctx.stroke();
-    }
-    
-    // Generate random data
-    const dataPoints = 7;
-    const data = Array.from({ length: dataPoints }, () => 
-        Math.floor(Math.random() * 100) + 50
-    );
-    
-    // Draw data line
-    ctx.strokeStyle = 'rgba(249, 75, 31, 0.8)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    
-    // Plot points
-    const pointWidth = (canvas.width - 70) / 6;
-    for (let i = 0; i < dataPoints; i++) {
-        const x = 50 + i * pointWidth;
-        const y = 180 - (data[i] / 150) * 140;
+    chartContainers.forEach(chartContainer => {
+        // Create canvas element
+        const canvas = document.createElement('canvas');
+        canvas.width = chartContainer.clientWidth;
+        canvas.height = 200;
+        canvas.style.width = '100%';
+        canvas.style.height = '200px';
         
-        if (i === 0) {
-            ctx.moveTo(x, y);
-        } else {
+        // Replace placeholder with canvas
+        chartContainer.innerHTML = '';
+        chartContainer.appendChild(canvas);
+        
+        // Get context
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        
+        // Draw simple chart background
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw grid lines
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.lineWidth = 1;
+        
+        // Horizontal grid lines
+        for (let i = 0; i < 5; i++) {
+            const y = 40 + i * 30;
+            ctx.beginPath();
+            ctx.moveTo(30, y);
+            ctx.lineTo(canvas.width - 20, y);
+            ctx.stroke();
+        }
+        
+        // Vertical grid lines
+        for (let i = 0; i < 7; i++) {
+            const x = 50 + i * ((canvas.width - 70) / 6);
+            ctx.beginPath();
+            ctx.moveTo(x, 30);
+            ctx.lineTo(x, 180);
+            ctx.stroke();
+        }
+        
+        // Generate random data
+        const dataPoints = 7;
+        const data = Array.from({ length: dataPoints }, () => 
+            Math.floor(Math.random() * 100) + 50
+        );
+        
+        // Draw data line
+        ctx.strokeStyle = 'rgba(249, 75, 31, 0.8)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        
+        // Plot points
+        const pointWidth = (canvas.width - 70) / 6;
+        for (let i = 0; i < dataPoints; i++) {
+            const x = 50 + i * pointWidth;
+            const y = 180 - (data[i] / 150) * 140;
+            
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+            
+            // Draw point
+            ctx.fillStyle = 'rgba(249, 75, 31, 1)';
+            ctx.beginPath();
+            ctx.arc(x, y, 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Stroke the line
+        ctx.stroke();
+        
+        // Add gradient fill beneath the line
+        const gradient = ctx.createLinearGradient(0, 40, 0, 180);
+        gradient.addColorStop(0, 'rgba(249, 75, 31, 0.3)');
+        gradient.addColorStop(1, 'rgba(249, 75, 31, 0.0)');
+        
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.moveTo(50, 180);
+        
+        for (let i = 0; i < dataPoints; i++) {
+            const x = 50 + i * pointWidth;
+            const y = 180 - (data[i] / 150) * 140;
             ctx.lineTo(x, y);
         }
         
-        // Draw point
-        ctx.fillStyle = 'rgba(249, 75, 31, 1)';
-        ctx.beginPath();
-        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.lineTo(50 + (dataPoints - 1) * pointWidth, 180);
+        ctx.closePath();
         ctx.fill();
-    }
-    
-    // Stroke the line
-    ctx.stroke();
-    
-    // Add gradient fill beneath the line
-    const gradient = ctx.createLinearGradient(0, 40, 0, 180);
-    gradient.addColorStop(0, 'rgba(249, 75, 31, 0.3)');
-    gradient.addColorStop(1, 'rgba(249, 75, 31, 0.0)');
-    
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.moveTo(50, 180);
-    
-    for (let i = 0; i < dataPoints; i++) {
-        const x = 50 + i * pointWidth;
-        const y = 180 - (data[i] / 150) * 140;
-        ctx.lineTo(x, y);
-    }
-    
-    ctx.lineTo(50 + (dataPoints - 1) * pointWidth, 180);
-    ctx.closePath();
-    ctx.fill();
-    
-    // Add labels
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-    ctx.font = '10px Arial';
-    ctx.textAlign = 'center';
-    
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    for (let i = 0; i < days.length; i++) {
-        const x = 50 + i * pointWidth;
-        ctx.fillText(days[i], x, 195);
-    }
+        
+        // Add labels
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.font = '10px Arial';
+        ctx.textAlign = 'center';
+        
+        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        for (let i = 0; i < days.length; i++) {
+            const x = 50 + i * pointWidth;
+            ctx.fillText(days[i], x, 195);
+        }
+    });
 }
 
 /**
- * Format number with commas for thousands
+ * Initialize equal heights for the two-column layout
  */
-function formatNumber(num) {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
-
-/**
- * Calculate time difference and format it
- */
-function getTimeDifference(timestamp) {
-    if (!timestamp) return 'Never';
+function initEqualHeights() {
+    function adjustColumnHeights() {
+        const accountCharsList = document.querySelector('.account-chars-card');
+        const clanDetails = document.querySelector('.clan-details-card');
+        
+        if (accountCharsList && clanDetails) {
+            // Reset heights first
+            accountCharsList.style.height = '';
+            clanDetails.style.height = '';
+            
+            // Get the natural heights
+            const accountHeight = accountCharsList.offsetHeight;
+            const clanHeight = clanDetails.offsetHeight;
+            
+            // Set both to the maximum height
+            const maxHeight = Math.max(accountHeight, clanHeight);
+            accountCharsList.style.height = maxHeight + 'px';
+            clanDetails.style.height = maxHeight + 'px';
+            
+            // Adjust content area heights for scrolling if needed
+            const accountContent = accountCharsList.querySelector('.card-body');
+            const clanContent = clanDetails.querySelector('.card-body');
+            
+            if (accountContent && clanContent) {
+                const accountHeaderHeight = accountCharsList.querySelector('.card-header').offsetHeight;
+                const clanHeaderHeight = clanDetails.querySelector('.card-header').offsetHeight;
+                
+                accountContent.style.height = (maxHeight - accountHeaderHeight - 2) + 'px'; // 2px for borders
+                clanContent.style.height = (maxHeight - clanHeaderHeight - 2) + 'px';
+            }
+        }
+    }
     
-    const now = new Date();
-    const date = new Date(timestamp * 1000);
-    const diffMs = now - date;
-    const diffSec = Math.floor(diffMs / 1000);
+    // Adjust heights on load and resize
+    window.addEventListener('load', function() {
+        setTimeout(adjustColumnHeights, 200);
+    });
     
-    if (diffSec < 60) return `${diffSec} seconds ago`;
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(adjustColumnHeights, 100);
+    });
     
-    const diffMin = Math.floor(diffSec / 60);
-    if (diffMin < 60) return `${diffMin} minutes ago`;
-    
-    const diffHour = Math.floor(diffMin / 60);
-    if (diffHour < 24) return `${diffHour} hours ago`;
-    
-    const diffDay = Math.floor(diffHour / 24);
-    if (diffDay < 30) return `${diffDay} days ago`;
-    
-    const diffMonth = Math.floor(diffDay / 30);
-    if (diffMonth < 12) return `${diffMonth} months ago`;
-    
-    const diffYear = Math.floor(diffMonth / 12);
-    return `${diffYear} years ago`;
-}
-
-/**
- * Apply pulse effect to elements
- */
-function pulseElement(element) {
-    if (!element) return;
-    
-    // Add pulse class
-    element.classList.add('pulse-animation');
-    
-    // Remove after animation completes
-    setTimeout(() => {
-        element.classList.remove('pulse-animation');
-    }, 1000);
+    // Run once immediately
+    setTimeout(adjustColumnHeights, 100);
 }
 
 /**
@@ -452,28 +404,24 @@ function initMapInteraction() {
     });
 }
 
-// Call map interaction initialization at the end of DOMContentLoaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Log all tab elements to debug
-    console.log('Tab buttons:');
-    document.querySelectorAll('.tab-button').forEach(btn => {
-        console.log(`- ${btn.textContent.trim()}: data-tab="${btn.getAttribute('data-tab')}"`);
-    });
+/**
+ * Apply pulse effect to elements
+ */
+function pulseElement(element) {
+    if (!element) return;
     
-    console.log('Tab contents:');
-    document.querySelectorAll('.tab-content').forEach(content => {
-        console.log(`- ${content.id}`);
-    });
-});
+    // Add pulse class
+    element.classList.add('pulse-animation');
+    
+    // Remove after animation completes
+    setTimeout(() => {
+        element.classList.remove('pulse-animation');
+    }, 1000);
+}
 
-// Fix tab functionality if script loads after page is already displayed
-window.addEventListener('load', function() {
-    // If no tabs are active after page load, activate the first tab
-    if (!document.querySelector('.tab-content.active')) {
-        const firstTabButton = document.querySelector('.tab-button');
-        if (firstTabButton) {
-            console.log('No active tab found, activating first tab');
-            firstTabButton.click();
-        }
-    }
-});
+/**
+ * Format number with commas for thousands
+ */
+function formatNumber(num) {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
