@@ -279,7 +279,6 @@ include '../../includes/admin-header.php';
                     <div class="profile-avatar">
                         <img src="<?php echo $websiteBaseUrl; ?>assets/img/placeholders/class/header/<?php echo $charData['Class']; ?>_<?php echo $charData['gender']; ?>.png" 
                             alt="<?php echo getClassName($charData['Class'], $charData['gender']); ?>">
-                        <div class="profile-level-badge"><?php echo $charData['level']; ?></div>
                     </div>
                     
                     <!-- Character Name and Class -->
@@ -494,6 +493,14 @@ include '../../includes/admin-header.php';
                                     <div class="attribute-values">
                                         <div class="attribute-main"><?php echo $charData['Cha']; ?></div>
                                         <div class="attribute-base">Base: <?php echo $charData['BaseCha']; ?></div>
+                                    </div>
+                                </div>
+								
+								<div class="attribute">
+                                    <div class="attribute-icon-ac">AC</div>
+                                    <div class="attribute-values">
+                                        <div class="attribute-main"><?php echo $charData['Ac']; ?></div>
+                                        <div class="attribute-base">Base: <?php echo $charData['Ac']; ?></div>
                                     </div>
                                 </div>
                             </div>
