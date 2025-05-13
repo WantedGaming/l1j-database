@@ -65,6 +65,34 @@ $accountQuery = "SELECT COUNT(*) as count FROM accounts";
 $accountResult = executeQuery($accountQuery, $conn);
 $stats['accounts'] = $accountResult ? $accountResult->fetch_assoc()['count'] : 0;
 
+// Get total drops count
+$dropQuery = "SELECT COUNT(*) as count FROM droplist";
+$dropResult = executeQuery($dropQuery, $conn);
+$stats['drops'] = $dropResult ? $dropResult->fetch_assoc()['count'] : 0;
+
+// Get total spawns count
+$spawnTables = [
+    'spawnlist',
+    'spawnlist_ub',
+    'spawnlist_unicorntemple',
+    'spawnlist_worldwar',
+    'spawnlist_other',
+    'spawnlist_ruun',
+    'spawnlist_boss'
+];
+
+$totalSpawns = 0;
+
+foreach ($spawnTables as $table) {
+    $query = "SELECT COUNT(*) as count FROM $table";
+    $result = executeQuery($query, $conn);
+    if ($result) {
+        $totalSpawns += $result->fetch_assoc()['count'];
+    }
+}
+
+$stats['total_spawns'] = $totalSpawns;
+
 // Calculate total database entries
 $totalEntries = array_sum($stats);
 
@@ -259,34 +287,77 @@ include 'includes/admin-header.php';
                     <div class="admin-card-count"><?php echo number_format($stats['accounts']); ?> Users</div>
                 </div>
             </a>
-            
-			<!-- NPC Data -->
-            <a href="<?php echo $adminBaseUrl; ?>pages/npcs/npc_list.php" class="admin-card">
-                <div class="admin-card-header">
-                    <h2 class="admin-card-title">NPC Data</h2>
-                </div>
-                <div class="admin-card-img">
-                    <img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/npc.png" alt="NPC" width="80" height="80">
-                </div>
-                <div class="admin-card-body">
-                    <div class="admin-card-count">NPC Data</div>
-                </div>
-            </a>
-			
-            <!-- Database Tools -->
-            <a href="<?php echo $adminBaseUrl; ?>tools/tools-index.php" class="admin-card">
-                <div class="admin-card-header">
-                    <h2 class="admin-card-title">DB Tools</h2>
-                </div>
-                <div class="admin-card-img">
-                    <img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/settings.png" alt="Setting" width="80" height="80">
-                </div>
-                <div class="admin-card-body">
-                    <div class="admin-card-count">Database Tools</div>
-                </div>
-            </a>
         </div>
     </section>
+	
+	<!-- Current structure with separate admin-card-grid divs for each card -->
+		<section class="admin-sections">
+			<h2 class="section-title mb-4">Insert Spawn & Drops</h2>
+			<div class="admin-card-grid equal-width-cards">
+				<a href="<?php echo $adminBaseUrl; ?>pages/spawns/spawn-list.php" class="admin-card">
+					<div class="admin-card-header">
+						<h2 class="admin-card-title">Spawns</h2>
+					</div>
+					<div class="admin-card-img">
+						<img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/spawns.png" alt="Spawns" width="80" height="80">
+					</div>
+					<div class="admin-card-body">
+						<div class="admin-card-count"><?php echo number_format($stats['total_spawns']); ?> Items</div>
+					</div>
+				</a>
+				
+				<a href="<?php echo $adminBaseUrl; ?>pages/drops/drop-list.php" class="admin-card">
+					<div class="admin-card-header">
+						<h2 class="admin-card-title">Drops</h2>
+					</div>
+					<div class="admin-card-img">
+						<img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/drops.png" alt="Drops" width="80" height="80">
+					</div>
+					<div class="admin-card-body">
+						<div class="admin-card-count"><?php echo number_format($stats['drops']); ?> Items</div>
+					</div>
+				</a>
+				
+				<a href="<?php echo $adminBaseUrl; ?>pages/monsters/admin-monster-list.php" class="admin-card">
+					<div class="admin-card-header">
+						<h2 class="admin-card-title">Monsters</h2>
+					</div>
+					<div class="admin-card-img">
+						<img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/monsters2.png" alt="Monsters" width="80" height="80">
+					</div>
+					<div class="admin-card-body">
+						<div class="admin-card-count"><?php echo number_format($stats['monsters']); ?> Items</div>
+					</div>
+				</a>
+			</div>
+			
+			<div class="admin-card-grid equal-width-cards mt-4">
+					<a href="<?php echo $adminBaseUrl; ?>pages/npcs/npc_list.php" class="admin-card">
+						<div class="admin-card-header">
+							<h2 class="admin-card-title">NPC Data</h2>
+						</div>
+						<div class="admin-card-img">
+							<img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/npc.png" alt="NPC" width="80" height="80">
+						</div>
+						<div class="admin-card-body">
+							<div class="admin-card-count">NPC Data</div>
+						</div>
+					</a>
+					
+					<a href="<?php echo $adminBaseUrl; ?>tools/tools-index.php" class="admin-card">
+						<div class="admin-card-header">
+							<h2 class="admin-card-title">DB Tools</h2>
+						</div>
+						<div class="admin-card-img">
+							<img src="<?php echo $baseUrl; ?>assets/img/placeholders/admin_dashboard/settings.png" alt="Setting" width="80" height="80">
+						</div>
+						<div class="admin-card-body">
+							<div class="admin-card-count">Database Tools</div>
+						</div>
+					</a>
+				</div>
+			
+		</section>
     
     <!-- Quick Actions Section -->
     <section class="admin-sections">

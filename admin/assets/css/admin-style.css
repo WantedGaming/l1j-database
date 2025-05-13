@@ -419,6 +419,13 @@ a:hover {
   gap: var(--spacing-lg);
 }
 
+.admin-card-grid2 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 equal-width columns */
+  gap: 16px; /* Adds spacing between columns (optional) */
+  height: 300px;
+}
+
 .admin-card {
   background-color: var(--primary);
   border-radius: var(--border-radius);
@@ -487,6 +494,24 @@ a:hover {
   font-weight: 600;
   color: var(--accent);
 }
+
+.equal-width-cards {
+			display: grid;
+			grid-template-columns: repeat(3, 1fr);
+			gap: 20px;
+		}
+		
+		@media (max-width: 991px) {
+			.equal-width-cards {
+				grid-template-columns: repeat(2, 1fr);
+			}
+		}
+		
+		@media (max-width: 576px) {
+			.equal-width-cards {
+				grid-template-columns: 1fr;
+			}
+		}
 
 /* --------------------------------
    Card Styles (consolidated from both files)
